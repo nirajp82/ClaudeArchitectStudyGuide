@@ -371,13 +371,51 @@ Yes. They load at the start like `CLAUDE.md` itself. `@` keeps the file tidy but
 Put the shared rules in the project's `CLAUDE.md` and commit it to Git, so every developer's Claude Code starts with the same tools, commands, and rules. Turn repeated review findings into rules. Keep it short and specific. Personal preferences go in each developer's own `~/.claude/CLAUDE.md`. This fits the **Developer Productivity & Operational Enablement** exam domain.
 
 **Q12. (Exam angle) A security lead wants to stop Claude Code from ever touching production settings, and asks if a CLAUDE.md rule is enough. How do you answer?**
-No. `CLAUDE.md` is advice the model tries to follow, not a guarantee. For a hard rule, use something Claude Code enforces: permission settings that deny the action, or a hook that blocks it. For company-wide rules, IT can install a company (managed) `CLAUDE.md` that developers can't switch off, alongside managed settings. Use `CLAUDE.md` to explain the rule; use settings and hooks to enforce it. This fits the **Governance, Safety & Risk** exam domain.
+No. A line in `CLAUDE.md` like "never edit `config/production.json`" is **advice** the model tries to follow, not a guarantee. To **block** it, use a **settings file**: a file Claude Code itself checks before every action, so the model can't talk its way past it. All of these files sit on **each developer's computer**:
+
+| Goal | File (Windows path; Mac in brackets) | Who puts it there | Can the developer turn it off? |
+|---|---|---|---|
+| **Explain** the rule | `C:\Users\dev\Projects\journal-app\CLAUDE.md` | The team, through Git | Yes. And it's only advice anyway. |
+| **Block** it in this project | `C:\Users\dev\Projects\journal-app\.claude\settings.json`, with a **deny rule** (below) | The team, through Git | Yes, they could edit the file. It's a team rule, not a company lock. |
+| **Block** it with a script | A **hook** (lesson 12), set up in that same `settings.json` | The team | Same as above |
+| **Block** it for the whole company | `C:\Program Files\ClaudeCode\managed-settings.json` (`/Library/Application Support/ClaudeCode/managed-settings.json`) | IT, on every laptop | **No.** Nothing in the developer's own settings overrides it. `Program Files` needs admin rights to change. |
+| **Explain** it for the whole company | `C:\Program Files\ClaudeCode\CLAUDE.md` (`/Library/Application Support/ClaudeCode/CLAUDE.md`) | IT | No |
+
+A deny rule inside a settings file looks like this:
+
+```json
+{
+  "permissions": {
+    "deny": ["Edit(./config/production.json)"]
+  }
+}
+```
+
+So: `CLAUDE.md` **explains** the rule; settings files and hooks **enforce** it. For "ever," put the deny rule in the company's `managed-settings.json`. This fits the **Governance, Safety & Risk** exam domain.
 
 **Q13. (Exam angle) An architect asks how to share Claude Code rules across 20 repositories without every CLAUDE.md growing huge. How do you answer?**
-- Put company-wide standards in one company (managed) `CLAUDE.md`.
-- Keep each repository's project `CLAUDE.md` to what's specific to it: tools, commands, local rules.
-- Link longer docs with `@` only where needed, remembering they still load.
-- Move detailed, rarely needed instructions into skills (lesson 10), which load only when used.
+A **repository** (repo) is one project folder tracked by Git, like `journal-app`. The problem: if every repo's `CLAUDE.md` repeats the company rules, all 20 files grow, and each one costs context space in every session. Split the rules by where they apply. On **one developer's computer**, that looks like this:
+
+```text
+C:\Program Files\ClaudeCode\
+└── CLAUDE.md                       ← ① company rules, ONCE. IT puts the same file on every
+                                       laptop. Loads in all 20 repos automatically.
+C:\Users\dev\Projects\
+├── journal-app\                    ← repo 1 of 20
+│   ├── CLAUDE.md                   ← ② only journal-app's own rules: tools, commands
+│   ├── docs\api.md                 ← ③ long doc, linked with @docs/api.md only if needed
+│   └── .claude\skills\
+│       └── db-migration\SKILL.md   ← ④ detailed how-to, loads only when used
+└── shopping-app\                   ← repo 2 of 20, same pattern
+    └── CLAUDE.md
+```
+
+| Piece | Where it lives | What goes in it | Context cost |
+|---|---|---|---|
+| ① **Company `CLAUDE.md`** | `C:\Program Files\ClaudeCode\CLAUDE.md` (Mac: `/Library/Application Support/ClaudeCode/CLAUDE.md`), put there by IT | Rules for every repo: "never put passwords in code" | Every session, but written once instead of 20 times |
+| ② **Each repo's `CLAUDE.md`** | The repo's top folder, in Git | Only what's specific to that repo: tools, commands, local rules | Every session in that repo, so keep it short |
+| ③ **`@` links** | Docs inside the repo, e.g. `journal-app/docs/api.md` | Long reference material | ⚠️ Still loads at the start, so only link what's needed |
+| ④ **Skills** (lesson 10) | `journal-app/.claude/skills/<name>/SKILL.md`, committed to Git | Detailed, rarely needed steps, like "how to run a database migration" | Only the skill's name and one-line description load at the start. The full instructions load only when used. |
 
 This fits the **Solution Design & Architecture** exam domain.
 

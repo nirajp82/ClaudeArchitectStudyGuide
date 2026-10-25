@@ -21,7 +21,7 @@ Every lesson is one notes file directly in this folder, named `0X-lesson-name.md
 | 9 | Customizing Claude Code | Subagents | [09-subagents.md](09-subagents.md) | ✅ Done |
 | 10 | Customizing Claude Code | Skills | [10-skills.md](10-skills.md) | ✅ Done |
 | 11 | Customizing Claude Code | MCP | [11-mcp.md](11-mcp.md) | ✅ Done |
-| 12 | Customizing Claude Code | Hooks | `12-hooks.md` | ⬜ |
+| 12 | Customizing Claude Code | Hooks | [12-hooks.md](12-hooks.md) | ✅ Done |
 | — | Quiz | Course quiz | `13-course-quiz-review.md` (missed questions + reasoning) | ⬜ |
 | — | — | Completion badge | — | ⬜ |
 

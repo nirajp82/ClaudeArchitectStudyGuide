@@ -26,8 +26,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **The workflow:** explore → plan → code → commit. **Each step is a prompt you type** in the right mode, not a button.
 - **Explore and plan happen in plan mode.** Plan mode **blocks** edits; typing "don't change anything" is only a request.
 - **Explore prompt:** "Read `src/upload/` and explain how it works. Don't make a plan yet." Ask follow-ups until you could explain the code yourself. Exploring can include web searches.

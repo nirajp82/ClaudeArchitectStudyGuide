@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **Five places, same Claude Code:** terminal, VS Code, JetBrains IDEs, Claude Desktop ("Code" tab), and the web (claude.ai/code). Only the window changes.
 - **Terminal install commands:**
 

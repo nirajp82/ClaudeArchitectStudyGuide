@@ -29,8 +29,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **Who's who:** 🧑 **you** read the changes and decide; 💻 **your Claude Code session** wrote the code and makes the fixes; 🔍 **the reviewer** is an AI that `/code-review` starts (same model, no memory of your conversation), **not a person**.
 - **A true summary can still be incomplete.** In the signup example, the summary was all true but didn't mention a weakened test, a new package, or a settings change.
 - **Your session can't fairly check its own work:** it remembers its choices and tends to agree with itself.

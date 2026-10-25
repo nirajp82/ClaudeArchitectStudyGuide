@@ -29,8 +29,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **The problem:** every **session** (one run of Claude Code, until you close it or `/clear`) starts empty. Without notes, Claude Code re-explores, guesses, and repeats the same mistakes.
 - **`CLAUDE.md`** = a Markdown text file of project notes in the project's top folder (`journal-app/CLAUDE.md`, or `journal-app/.claude/CLAUDE.md`). The course calls it an *onboarding script*.
 - **How it's used:** Claude Code reads it **automatically** at every start, and sends its text to the model with your request. The model never opens the file itself.

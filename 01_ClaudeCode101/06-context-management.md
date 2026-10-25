@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **Context window** = the model's working memory for one session, like a desk of fixed size. It holds the starter pack (instructions, tool list, `CLAUDE.md`), your prompts, files read, tool results, and replies. **Nothing leaves by itself.**
 - **Tokens:** small pieces of text; 100 tokens ≈ 75 English words. The lesson's window is 200,000 tokens; some newer models hold up to 1 million.
 - **Why it matters:** space runs out, old junk distracts the model, and every message costs more (the whole conversation is resent every round).

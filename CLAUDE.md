@@ -73,7 +73,6 @@ I revise from the top of each lesson, so **every lesson starts with a `### Revis
 - **Cover every fact I'd need on the exam or in daily use:** each main idea, every command, keyboard shortcut, file path, setting, number, and ⚠️ warning, plus a one-line exam takeaway. Someone who reads only the summary shouldn't miss anything important.
 - **One fact per bullet**, starting with a bold label: `- **/clear:** starts a new, empty conversation…`. Plain English, defined terms, same naming rules as the rest of the lesson.
 - **Use a small table** only for a set of options that are compared side by side (permission modes, install commands, file locations).
-- **Open with this line:** `*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*`
 - **Keep it current:** when a lesson gets a new fact or follow-up answer, add it to the summary too.
 
 ---
@@ -205,8 +204,6 @@ Every lesson file follows this order exactly:
 ---
 
 ### Revision summary
-
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
 
 - **Main idea / command / path:** one plain-English fact per bullet (see "Revision summary" in section 2).
 - **Exam:** the one-line takeaway for each exam-angle question.

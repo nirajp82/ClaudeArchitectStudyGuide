@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **The loop:** look (the course says *gather context*) → change (*take action*) → check (*verify results*) → repeat until it works. You can add information, stop it, or redirect it at any time.
 - **Brain vs. hands:** the **model** (on Anthropic's servers) decides. **Claude Code** (on your computer) reads files, edits them, runs commands, and asks your permission. The model can't touch your computer.
 - **"Tool call"** = a request from the model to Claude Code, like "read this file." Every model reply is either a tool call (the loop keeps going) or plain text (the loop ends and Claude Code waits for you).

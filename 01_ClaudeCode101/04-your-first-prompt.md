@@ -27,8 +27,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **"Prompt"** = the message you type to Claude Code.
 - **Permission modes:** how often Claude Code stops to ask "Can I do this?"
 

@@ -27,8 +27,6 @@
 
 ### Revision summary
 
-*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
-
 - **What Claude Code is:** an *agentic* coding tool. "Agentic" means it takes actions, not just answers. It reads your codebase, edits files, runs terminal commands, and connects to tools like Git.
 - **Where you can use it:** the terminal (CLI), a VS Code extension, a JetBrains plugin (IntelliJ, PyCharm…), the Claude Desktop app, and the web.
 - **Claude Code vs. Claude.ai:** same model. In Claude.ai, Claude only sees what you paste, and you copy its answers back yourself. Claude Code works inside your project and makes the changes itself.

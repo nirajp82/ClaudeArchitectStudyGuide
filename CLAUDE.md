@@ -63,16 +63,21 @@ Clear doesn't mean long. My other common complaint is "the whole page is too lon
 - **Don't re-teach earlier lessons.** One line plus a link: "(the context window, [lesson 2](02-how-claude-code-works.md))."
 - **Extras from the docs:** only if they matter for the exam or daily use, in 1–2 lines each.
 - **At most 2 diagrams per lesson.** Add "Things to notice" only when the point isn't obvious.
-- **Sizes:** Revision summary 10–20 bullets. Common mix-ups 4–6 rows. Test yourself 3–4 questions. FAQ 10–13 questions, including the exam-angle ones (see section 5). Recap one short bullet per main idea.
+- **Sizes:** Common mix-ups 4–6 rows. Test yourself 3–4 questions. FAQ 10–13 questions, including the exam-angle ones (see section 5). Recap one short bullet per main idea.
 - **Cut, don't pad:** if a sentence doesn't help me understand or remember, delete it.
 
 ### Revision summary: required in every lesson
 
 I revise from the top of each lesson, so **every lesson starts with a `### Revision summary`** section, right after the "On this page" table and before "In one sentence." It is the one place where repeating the lesson is expected.
 
-- **Cover every fact I'd need on the exam or in daily use:** each main idea, every command, keyboard shortcut, file path, setting, number, and ⚠️ warning, plus a one-line exam takeaway. Someone who reads only the summary shouldn't miss anything important.
-- **One fact per bullet**, starting with a bold label: `- **/clear:** starts a new, empty conversation…`. Plain English, defined terms, same naming rules as the rest of the lesson.
-- **Use a small table** only for a set of options that are compared side by side (permission modes, install commands, file locations).
+The model is lesson 6's and lesson 7's summary. Rules:
+
+- **It must stand on its own.** I read it without the rest of the lesson. Never refer to the lesson's running example or screenshots ("in the signup example," "the dark mode plan"). If an example helps, describe it fully in the sentence itself.
+- **Group by topic.** Use one `####` heading per main idea (for example "How to use less of the context window"). Open each topic with one or two sentences that state the idea, then list its facts under it. Related points always sit under one heading, never as separate "Tip 1 / Tip 2" bullets scattered around.
+- **Full, unambiguous sentences.** No fragments, no shorthand like "Same task → compact," no arrows or slashes in place of words. Every sentence names who does what and says why. Define each term the first time it appears.
+- **Cover every fact I'd need on the exam or in daily use:** each main idea, every command, keyboard shortcut, file path, setting, number, and warning.
+- **Use a table** only for options compared side by side (permission modes, commands, file locations). Use numbered lists for steps or a fixed set of reasons.
+- **End with an "Exam takeaways" topic:** one bullet per exam-angle FAQ question, starting with the scenario in bold, then the answer, then the exam domain in brackets.
 - **Keep it current:** when a lesson gets a new fact or follow-up answer, add it to the summary too.
 
 ---
@@ -91,11 +96,11 @@ Use these the way lesson 2 does. **Not every lesson needs all of them**: pick th
 | **Who's who table** | When more than one player is involved (you, Claude Code, your computer, the model, outside services, a separate AI reviewer, teammates): where each lives, what it does, an example. Put it near the top of the lesson, not buried late. | Section 5, "Who's who" |
 | **Step-by-step walkthrough** | For a process, one sub-section per step. In each, show what's asked, what happens, and what is sent or produced, using exact text. | Section 5, "The five rounds" table |
 | **"What goes where" table** | When data moves between places, list what moves and what stays. | "Sent to Anthropic's servers" vs. "Never left your computer" |
-| **🧠 Remember this** | A one or two-line memory hook in a quote block. | "Brain on the server. Hands on your computer." |
+| **Remember this** | A one or two-line memory hook in a quote block, starting with **Remember this:** (no icon). | "Brain on the server. Hands on your computer." |
 | **Common mix-ups table** | ❌ Wrong idea vs. ✅ What really happens. | "My tests run in the cloud." → "They run on your computer." |
 | **Test yourself** | 3–4 quiz questions with answers hidden in `<details>`. | Section 5, "Test yourself" |
 | **Do / Why / Example table** | For practical advice. | Lesson 8's "Which file should a rule go in?" |
-| **⚠️ Warnings** | Call out real risks with a concrete example of what goes wrong. | Turning off permission questions → deleted files |
+| **Warnings** | Call out real risks with a concrete example of what goes wrong. Start with **Warning:** (no icon). | Turning off permission questions → deleted files |
 
 **When I ask a follow-up question about a lesson**, answer it in chat first. If I want it added, add it to the right section of that lesson, plus matching FAQ, mix-up, and test-yourself entries.
 
@@ -114,7 +119,8 @@ Draw diagrams in **Mermaid** (a ` ```mermaid ` code block), never as plain-text 
 | Who sends what to whom, step by step | `sequenceDiagram`, one column per player | Section 5's five-round timeline |
 | A decision | `flowchart TD` | Lesson 6: "Compact or clear?" |
 
-- Use emoji in node labels for players: 🧑 You, 💻 Claude Code, 🗂️ Your files & terminal, ☁️ Model, 🔌 Tool servers.
+- Name players in node labels with plain words (You, Claude Code, Your files & terminal, Model), not emoji.
+- **Avoid icons and emoji everywhere.** Use one only when it makes something clearer than words can, such as ✅ and ❌ in a yes/no comparison table.
 - Use `<br/>` for line breaks inside nodes.
 - After a diagram, add "Things to notice" bullets when the point isn't obvious.
 - Keep ` ```text ` blocks **only for literal content**: folder trees, command output, the exact text of a message.
@@ -205,8 +211,13 @@ Every lesson file follows this order exactly:
 
 ### Revision summary
 
-- **Main idea / command / path:** one plain-English fact per bullet (see "Revision summary" in section 2).
-- **Exam:** the one-line takeaway for each exam-angle question.
+#### (One heading per main idea)
+
+(One or two sentences stating the idea, then its facts as bullets. See "Revision summary" in section 2.)
+
+#### Exam takeaways
+
+- **(Scenario.)** Answer. (Exam domain)
 
 ---
 

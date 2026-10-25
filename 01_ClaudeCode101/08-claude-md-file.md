@@ -12,17 +12,49 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [In one sentence](#in-one-sentence) |
-| 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. The problem: Claude Code forgets everything between sessions](#1-the-problem-claude-code-forgets-everything-between-sessions) |
-| 5 | [2. What a CLAUDE.md file is, and how Claude Code uses it](#2-what-a-claudemd-file-is-and-how-claude-code-uses-it) |
-| 6 | [3. What to write in it: the course's example](#3-what-to-write-in-it-the-courses-example) |
-| 7 | [4. Two CLAUDE.md files: one for the team, one just for you](#4-two-claudemd-files-one-for-the-team-one-just-for-you) |
-| 8 | [5. Three tips for a good CLAUDE.md](#5-three-tips-for-a-good-claudemd) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [In one sentence](#in-one-sentence) |
+| 3 | [The big picture](#the-big-picture) |
+| 4 | [Who's who](#whos-who) |
+| 5 | [1. The problem: Claude Code forgets everything between sessions](#1-the-problem-claude-code-forgets-everything-between-sessions) |
+| 6 | [2. What a CLAUDE.md file is, and how Claude Code uses it](#2-what-a-claudemd-file-is-and-how-claude-code-uses-it) |
+| 7 | [3. What to write in it: the course's example](#3-what-to-write-in-it-the-courses-example) |
+| 8 | [4. Two CLAUDE.md files: one for the team, one just for you](#4-two-claudemd-files-one-for-the-team-one-just-for-you) |
+| 9 | [5. Three tips for a good CLAUDE.md](#5-three-tips-for-a-good-claudemd) |
+| 10 | [Recap](#recap) |
+| 11 | [My notes / practice](#my-notes--practice) |
+| 12 | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **The problem:** every **session** (one run of Claude Code, until you close it or `/clear`) starts empty. Without notes, Claude Code re-explores, guesses, and repeats the same mistakes.
+- **`CLAUDE.md`** = a Markdown text file of project notes in the project's top folder (`journal-app/CLAUDE.md`, or `journal-app/.claude/CLAUDE.md`). The course calls it an *onboarding script*.
+- **How it's used:** Claude Code reads it **automatically** at every start, and sends its text to the model with your request. The model never opens the file itself.
+- **⚠️ It's advice, not a lock.** The model tries to follow it; vague or conflicting rules are followed less. To **block** an action for sure, use a settings-file deny rule or a **hook** (a script Claude Code runs automatically).
+- **`/init`** reads your project and writes a starting `CLAUDE.md`. If one exists, it suggests improvements instead.
+- **What to write:** the project's tools, the **exact** commands (`pnpm dev`, `pnpm test`, `pnpm lint`), and code style rules. Most of all, rules Claude Code can't guess, like "use server actions instead of API routes."
+- **`/context`** → "Memory files" shows which `CLAUDE.md` files loaded.
+- **The files:**
+
+  | File | Path | Applies to | Shared? |
+  |---|---|---|---|
+  | **User** ("user" = you) | `~/.claude/CLAUDE.md` (Windows `C:\Users\you\.claude\CLAUDE.md`) | You, every project | ❌ |
+  | **Project** | `journal-app/CLAUDE.md` | Everyone, this project | ✅ via Git |
+  | **Local** | `journal-app/CLAUDE.local.md`, add to `.gitignore` | You, this project | ❌ |
+  | **Company** (*managed policy*) | Windows `C:\Program Files\ClaudeCode\CLAUDE.md`, Mac `/Library/Application Support/ClaudeCode/CLAUDE.md` | Everyone; can't be turned off | Put there by IT |
+
+- **All files add up;** none replaces another. If two disagree, the model may follow either. Files in folders **above** the start folder load too; a subfolder's `CLAUDE.md` loads when Claude Code works there.
+- **Which file?** "Would this be true for anyone on this project?" Yes → project file. My taste → user file.
+- **Tip 1:** corrected Claude Code twice? Save the rule: "Add to CLAUDE.md: …"
+- **"Add to CLAUDE.md" vs. "Remember":** "Remember X" goes to **auto memory** (Claude Code's own notes, `MEMORY.md` in `~/.claude/projects/<project>/memory/`), just you, this computer. **`/memory`** shows all memory files and turns auto memory on or off.
+- **Tip 2, `@` links:** `@README.md` pulls in another file. Paths start from the `CLAUDE.md`'s folder; links can go four levels deep; outside paths need your approval once. ⚠️ Linked files load at the start, so they still use context.
+- **Tip 3:** start a project without one, notice what you keep correcting, then `/init` and add only that.
+- **Keep it short:** under **200 lines** per file. It's sent in every session, and long files are followed less reliably.
+- **Exam:** same mistakes across a team → commit shared rules in the project `CLAUDE.md`. "Never touch production" → `CLAUDE.md` explains, a deny rule in `.claude/settings.json` blocks, `managed-settings.json` from IT blocks company-wide. Rules for 20 repos → company `CLAUDE.md` once, short per-repo files, skills for rare details.
 
 ---
 

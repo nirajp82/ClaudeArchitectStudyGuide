@@ -12,16 +12,47 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [In one sentence](#in-one-sentence) |
-| 2 | [The five parts](#the-five-parts) |
-| 3 | [1. The context window: the model's working memory](#1-the-context-window-the-models-working-memory) |
-| 4 | [2. When the window fills up: compaction](#2-when-the-window-fills-up-compaction) |
-| 5 | [3. Three commands: /context, /compact, /clear](#3-three-commands-context-compact-clear) |
-| 6 | [4. Compact or clear?](#4-compact-or-clear) |
-| 7 | [5. Three ways to save space](#5-three-ways-to-save-space) |
-| 8 | [Recap](#recap) |
-| 9 | [My notes / practice](#my-notes--practice) |
-| 10 | [FAQ](#faq) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [In one sentence](#in-one-sentence) |
+| 3 | [The five parts](#the-five-parts) |
+| 4 | [1. The context window: the model's working memory](#1-the-context-window-the-models-working-memory) |
+| 5 | [2. When the window fills up: compaction](#2-when-the-window-fills-up-compaction) |
+| 6 | [3. Three commands: /context, /compact, /clear](#3-three-commands-context-compact-clear) |
+| 7 | [4. Compact or clear?](#4-compact-or-clear) |
+| 8 | [5. Three ways to save space](#5-three-ways-to-save-space) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **Context window** = the model's working memory for one session, like a desk of fixed size. It holds the starter pack (instructions, tool list, `CLAUDE.md`), your prompts, files read, tool results, and replies. **Nothing leaves by itself.**
+- **Tokens:** small pieces of text; 100 tokens ≈ 75 English words. The lesson's window is 200,000 tokens; some newer models hold up to 1 million.
+- **Why it matters:** space runs out, old junk distracts the model, and every message costs more (the whole conversation is resent every round).
+- **Compaction:** when the window is nearly full, Claude Code automatically replaces the conversation with a summary. It keeps your request, key ideas, and files involved. It drops full test output, early file contents, and the exact wording of old errors.
+- **After compaction,** Claude Code re-reads `CLAUDE.md` from disk, plus up to five recently used files. Project rules always survive.
+- **⚠️ Lost details:** if an old error comes back, paste it again.
+- **The three commands:**
+
+  | Command | What it does | Past work kept? |
+  |---|---|---|
+  | `/context` | Shows how full the window is and what's using it | Unchanged |
+  | `/compact` | Summarizes the conversation now | ✅ as a summary |
+  | `/clear` | Starts a new, empty conversation | ❌ |
+
+- **`/context` details:** the system prompt and tool list use ~17.5k tokens before you type. The **autocompact buffer** (~45k) is kept free on purpose so compaction has room, and counts as "used." It also lists agents, skills, and memory files.
+- **`/compact Focus on …`** tells it what to keep. A "Compact instructions" section in `CLAUDE.md` does the same for every automatic compaction.
+- **`/clear`** doesn't touch your files, and `CLAUDE.md` still loads. Get the old conversation back with `/resume`. `/reset` and `/new` = `/clear`.
+- **Decision rule:** same task → `/compact`. New task → `/clear` (old work would bias it). Needed in every session → `CLAUDE.md`.
+- **Save space 1, be specific:** a short vague prompt makes Claude Code open many files, so it uses **more** context. Name the files.
+- **Save space 2, turn off unused MCP servers** with `/mcp`. Only tool names and short instructions load at the start. A command-line tool like `gh` uses even less.
+- **Save space 3, subagents:** their research stays in their own context window; only the answer comes back. ⚠️ They still use your plan or budget.
+- **Skills:** only a one-line description loads until used, so moving rare instructions out of `CLAUDE.md` into a skill saves space.
+- **Exam:** sessions "getting worse" → clear between tasks, compact with focus, rules in `CLAUDE.md`, research to subagents. High cost → the same habits plus a short `CLAUDE.md`. Compaction doesn't take back data already sent.
 
 ---
 

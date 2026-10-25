@@ -12,17 +12,47 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [In one sentence](#in-one-sentence) |
-| 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who in a code review](#whos-who-in-a-code-review) |
-| 4 | [1. Why Claude Code's summary isn't enough](#1-why-claude-codes-summary-isnt-enough) |
-| 5 | [2. Step 1: read the changes yourself with /diff](#2-step-1-read-the-changes-yourself-with-diff) |
-| 6 | [3. Step 2: get a second opinion with /code-review](#3-step-2-get-a-second-opinion-with-code-review) |
-| 7 | [4. Step 3: you decide what to do with each problem](#4-step-3-you-decide-what-to-do-with-each-problem) |
-| 8 | [5. How much reviewing is enough?](#5-how-much-reviewing-is-enough) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [In one sentence](#in-one-sentence) |
+| 3 | [The big picture](#the-big-picture) |
+| 4 | [Who's who in a code review](#whos-who-in-a-code-review) |
+| 5 | [1. Why Claude Code's summary isn't enough](#1-why-claude-codes-summary-isnt-enough) |
+| 6 | [2. Step 1: read the changes yourself with /diff](#2-step-1-read-the-changes-yourself-with-diff) |
+| 7 | [3. Step 2: get a second opinion with /code-review](#3-step-2-get-a-second-opinion-with-code-review) |
+| 8 | [4. Step 3: you decide what to do with each problem](#4-step-3-you-decide-what-to-do-with-each-problem) |
+| 9 | [5. How much reviewing is enough?](#5-how-much-reviewing-is-enough) |
+| 10 | [Recap](#recap) |
+| 11 | [My notes / practice](#my-notes--practice) |
+| 12 | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **Who's who:** 🧑 **you** read the changes and decide; 💻 **your Claude Code session** wrote the code and makes the fixes; 🔍 **the reviewer** is an AI that `/code-review` starts (same model, no memory of your conversation), **not a person**.
+- **A true summary can still be incomplete.** In the signup example, the summary was all true but didn't mention a weakened test, a new package, or a settings change.
+- **Your session can't fairly check its own work:** it remembers its choices and tends to agree with itself.
+- **Step 1, `/diff`:** lists files with uncommitted changes. **↑/↓** to move, **Enter** to open a file. `-` lines were removed, `+` lines were added. It can also show what each turn changed.
+- **Three things to look for in a diff:** changes you didn't ask for, tests that got weaker (`it.skip`, looser `expect`), and new packages or **hard-coded** values (like `"http://localhost:3000"`).
+- **Whole change wrong?** `/rewind` (or **Esc** twice on an empty prompt) → pick the message → **Restore code and conversation**. ⚠️ It doesn't undo what terminal commands did, like `npm install`.
+- **Step 2, `/code-review`:** starts a separate reviewer with a **clean context** (blank memory). It runs in the background, reads only the changed code, and lists **findings**. It **changes nothing**. It uses your plan or budget.
+- **Each finding has** a place (`src/config.ts:1` = file and line), a kind (`correctness` or `style`), and one sentence.
+- **Extras:** `/review` = `/code-review`. `--fix` applies findings; thoroughness goes from `low` to `max`; it can review a pull request. `/security-review` is a separate security check.
+- **Step 3, you sort each finding** with two questions: *Is it real?* (open the file at that line) and *Does it matter?* (behavior, data, tests, users).
+
+  | Pile | When | What you do |
+  |---|---|---|
+  | 🔴 Fix now | Real and matters | Ask your session to fix it **and show proof** |
+  | 🟡 Ask why | Not sure it's real | Ask your session to check again |
+  | ⚪ Leave it | Real but small | Write it down; fix later with others (*batching*) |
+
+- **Act on all findings in one message:** "Fix 1 and 3 and show test output. Check 2 again. Skip 4."
+- **Ask for proof:** "I fixed it" is just another summary; test output is evidence. If a fix gets big, run `/code-review` again.
+- **Match checking to risk:** small change → glance at the diff. Big, sensitive (login, payments, personal data), hard to undo, or going to a teammate → diff **and** `/code-review`.
+- **Repeat findings become `CLAUDE.md` rules**, e.g. "Never skip or loosen a test to make it pass."
+- **Exam:** don't let the author session approve its own work (like self-approving pull requests). Passing tests don't prove a change is right. Make review worth the cost by matching it to risk.
 
 ---
 

@@ -12,15 +12,33 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [Definition](#definition) |
-| 2 | [Where it's available](#where-its-available) |
-| 3 | [Claude Code vs. Claude.ai](#claude-code-vs-claudeai) |
-| 4 | [What is an AI agent?](#what-is-an-ai-agent) |
-| 5 | [What Claude Code can do (examples)](#what-claude-code-can-do-examples) |
-| 6 | [Three key concepts for using it well](#three-key-concepts-for-using-it-well) |
-| 7 | [Recap](#recap) |
-| 8 | [My notes / practice](#my-notes--practice) |
-| 9 | [FAQ](#faq) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [Definition](#definition) |
+| 3 | [Where it's available](#where-its-available) |
+| 4 | [Claude Code vs. Claude.ai](#claude-code-vs-claudeai) |
+| 5 | [What is an AI agent?](#what-is-an-ai-agent) |
+| 6 | [What Claude Code can do (examples)](#what-claude-code-can-do-examples) |
+| 7 | [Three key concepts for using it well](#three-key-concepts-for-using-it-well) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **What Claude Code is:** an *agentic* coding tool. "Agentic" means it takes actions, not just answers. It reads your codebase, edits files, runs terminal commands, and connects to tools like Git.
+- **Where you can use it:** the terminal (CLI), a VS Code extension, a JetBrains plugin (IntelliJ, PyCharm…), the Claude Desktop app, and the web.
+- **Claude Code vs. Claude.ai:** same model. In Claude.ai, Claude only sees what you paste, and you copy its answers back yourself. Claude Code works inside your project and makes the changes itself.
+- **"AI agent"** = software that takes actions in its environment (your files, terminal, the web) to reach a goal (your task).
+- **The agent loop:** decide the next step → act → observe the result → repeat until done. Observing is what lets it recover when a test fails.
+- **What an agent acts with:** tools (read, edit, run commands), external services (APIs, databases, issue trackers), and other AI agents.
+- **Key concept 1, the context window:** Claude's short-term memory. Fixed size, measured in **tokens** (pieces of words). A real codebase usually won't fit, and extra files distract, so Claude Code **searches** and reads only the files it needs.
+- **Key concept 2, permissions:** by default Claude Code **asks before it runs a command or changes code**. You can approve step by step, or allow some actions ahead of time.
+- **Key concept 3, mistakes:** it can misunderstand you, add a new bug while fixing one, or over-engineer. Always review its changes and run tests.
+- **Exam:** permission prompts are a **human-in-the-loop** control (a person approves before an action happens): **Governance, Safety & Risk**. Plan for mistakes with code review, tests, clear acceptance criteria, and small tasks.
 
 ---
 

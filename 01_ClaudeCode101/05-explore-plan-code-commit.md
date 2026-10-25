@@ -12,14 +12,40 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [In one sentence](#in-one-sentence) |
-| 2 | [The four steps](#the-four-steps) |
-| 3 | [1. Explore and plan: research before any code](#1-explore-and-plan-research-before-any-code) |
-| 4 | [2. Code: build it and check it](#2-code-build-it-and-check-it) |
-| 5 | [3. Commit: review, then save your work](#3-commit-review-then-save-your-work) |
-| 6 | [Recap](#recap) |
-| 7 | [My notes / practice](#my-notes--practice) |
-| 8 | [FAQ](#faq) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [In one sentence](#in-one-sentence) |
+| 3 | [The four steps](#the-four-steps) |
+| 4 | [1. Explore and plan: research before any code](#1-explore-and-plan-research-before-any-code) |
+| 5 | [2. Code: build it and check it](#2-code-build-it-and-check-it) |
+| 6 | [3. Commit: review, then save your work](#3-commit-review-then-save-your-work) |
+| 7 | [Recap](#recap) |
+| 8 | [My notes / practice](#my-notes--practice) |
+| 9 | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **The workflow:** explore → plan → code → commit. **Each step is a prompt you type** in the right mode, not a button.
+- **Explore and plan happen in plan mode.** Plan mode **blocks** edits; typing "don't change anything" is only a request.
+- **Explore prompt:** "Read `src/upload/` and explain how it works. Don't make a plan yet." Ask follow-ups until you could explain the code yourself. Exploring can include web searches.
+- **Plan prompt:** ask for a plan **with a "Done when" list** (the success criteria).
+- **The plan is the cheapest place to fix mistakes:** a sentence in the plan vs. undoing edits in the code vs. a bug your users see.
+- **Plan options include "Yes, clear context and auto-accept edits":** empties the conversation so the build starts with only the plan. The last option is a text box for changes.
+- **The plan is saved as a file** in `~/.claude/plans/`. **Ctrl+G** opens it in your editor.
+- **"← 1 agent"** in the status bar = the built-in **Plan subagent** is doing the reading in its own conversation. Claude Code starts it; you don't.
+- **Explore subagent:** a built-in read-only helper for when you only want to understand code. Ask: "Use the Explore subagent to summarize this codebase."
+- **Skip the plan** if you can describe the change in one sentence (a typo, a rename).
+- **Code:** picking a **Yes…** option ends plan mode and the build starts right away. That option also sets the permission mode. Press **Esc** to step in. Left plan mode without approving? Type "Implement the plan."
+- **Four tips for the code step:** define success criteria; give it tools to check itself; have a test suite you trust; save repeated fixes in `CLAUDE.md`.
+- **Claude in Chrome:** lets Claude Code open and test your web page (Chrome, Edge, Brave). Needs a paid plan signed in with `/login`, not an API key. Connect with `claude --chrome` or `/chrome`.
+- **⚠️ False positive** = a test that passes even though the code is wrong. Read tests (including ones Claude Code writes) before trusting them.
+- **Commit step:** try the change yourself → `/code-review` → fix what matters → "Commit in the style of our recent commits" (it reads `git log`) → push.
+- **Why a subagent reviews:** your main session wrote the code and is biased toward it. A reviewer subagent starts with a fresh conversation. **Ctrl+O** shows its tool calls, **Ctrl+B** runs it in the background. A custom reviewer lives in `.claude/agents/code-reviewer.md`.
+- **⚠️ A reviewer usually finds something**, even in fine code. Ask for problems that affect correctness or your requirements.
+- **Exam:** plan mode first, success criteria in every plan, trusted tests, subagent review before committing. "Tests pass but production is broken" usually means a false positive.
 
 ---
 

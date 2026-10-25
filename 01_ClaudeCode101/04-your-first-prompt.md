@@ -12,15 +12,45 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [In one sentence](#in-one-sentence) |
-| 2 | [The three parts](#the-three-parts) |
-| 3 | [1. Choose a permission mode](#1-choose-a-permission-mode) |
-| 4 | [2. Plan mode: look and plan, change nothing](#2-plan-mode-look-and-plan-change-nothing) |
-| 5 | [3. Example: add a dark mode toggle](#3-example-add-a-dark-mode-toggle) |
-| 6 | [4. Write a descriptive prompt](#4-write-a-descriptive-prompt) |
-| 7 | [Recap](#recap) |
-| 8 | [My notes / practice](#my-notes--practice) |
-| 9 | [FAQ](#faq) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [In one sentence](#in-one-sentence) |
+| 3 | [The three parts](#the-three-parts) |
+| 4 | [1. Choose a permission mode](#1-choose-a-permission-mode) |
+| 5 | [2. Plan mode: look and plan, change nothing](#2-plan-mode-look-and-plan-change-nothing) |
+| 6 | [3. Example: add a dark mode toggle](#3-example-add-a-dark-mode-toggle) |
+| 7 | [4. Write a descriptive prompt](#4-write-a-descriptive-prompt) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **"Prompt"** = the message you type to Claude Code.
+- **Permission modes:** how often Claude Code stops to ask "Can I do this?"
+
+  | Mode | Status bar | Edits without asking? | Commands without asking? |
+  |---|---|---|---|
+  | Manual | `⏸ manual mode on` | ❌ | ❌ |
+  | Auto-accept | `⏵⏵ accept edits on` | ✅ | ❌ (most) |
+  | Plan mode | `⏸ plan mode on` | Can't edit | Only exploring commands, checked first |
+  | Auto | `⏵⏵ auto mode on` | ✅ | ✅, a second AI model (the *classifier*) checks each action |
+
+- **Shift+Tab** moves to the next mode. Glance at the status bar before typing: recent versions start new terminal sessions in Auto mode. Auto mode only appears if your company allows it.
+- **No right or wrong mode.** Manual for learning or important code, auto-accept for everyday work, Auto for long tasks, plan mode for big or unfamiliar changes.
+- **⚠️ Auto-accept exception:** simple file commands inside the project run without asking: `mkdir`, `touch`, `mv`, `cp`, `rm`, `rmdir`, `sed`. `rm` deletes files, so commit your work first.
+- **Plan mode:** Claude Code researches with read-only tools, asks questions, writes a plan (which files, what changes, what order), and **waits**. Nothing is edited until you approve.
+- **Files read in plan mode are still sent to the model.** Plan mode stops edits, not reading.
+- **Turn plan mode on:** Shift+Tab, or `/plan <your prompt>` for one prompt, or start with `claude --permission-mode plan`. Leave without approving: Shift+Tab again.
+- **When the plan is ready:** **Yes, and use auto mode** (or **Yes, auto-accept edits**), **Yes, manually approve edits**, or **No, keep planning**. **Ctrl+G** opens the plan in your text editor.
+- **When plan mode is worth it:** multi-step features, unfamiliar code, safe code reviews, anything costly to get wrong. A typo? Just ask.
+- **Esc** stops or redirects Claude Code at any time, even after you approve the plan.
+- **A descriptive prompt says:** how far to go, what to build and where, how it behaves, and rules to follow. Even better: what "done" looks like, what not to touch, and extra behavior.
+- **Dark mode example:** the plan found two CSS files with fixed colors, and turned "a good contrast color" into real colors with contrast of at least **4.5 : 1** (the WCAG AA readability rule).
+- **Exam:** make plan mode the default with `defaultMode: "plan"` in the project's `.claude/settings.json`. Auto mode is fine for low-risk work; admins can turn it off in managed settings. Plan mode prevents edits but not reading.
 
 ---
 

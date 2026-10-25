@@ -63,8 +63,18 @@ Clear doesn't mean long. My other common complaint is "the whole page is too lon
 - **Don't re-teach earlier lessons.** One line plus a link: "(the context window, [lesson 2](02-how-claude-code-works.md))."
 - **Extras from the docs:** only if they matter for the exam or daily use, in 1–2 lines each.
 - **At most 2 diagrams per lesson.** Add "Things to notice" only when the point isn't obvious.
-- **Sizes:** Common mix-ups 4–6 rows. Test yourself 3–4 questions. FAQ 10–13 questions, including the exam-angle ones (see section 5). Recap one short bullet per main idea.
+- **Sizes:** Revision summary 10–20 bullets. Common mix-ups 4–6 rows. Test yourself 3–4 questions. FAQ 10–13 questions, including the exam-angle ones (see section 5). Recap one short bullet per main idea.
 - **Cut, don't pad:** if a sentence doesn't help me understand or remember, delete it.
+
+### Revision summary: required in every lesson
+
+I revise from the top of each lesson, so **every lesson starts with a `### Revision summary`** section, right after the "On this page" table and before "In one sentence." It is the one place where repeating the lesson is expected.
+
+- **Cover every fact I'd need on the exam or in daily use:** each main idea, every command, keyboard shortcut, file path, setting, number, and ⚠️ warning, plus a one-line exam takeaway. Someone who reads only the summary shouldn't miss anything important.
+- **One fact per bullet**, starting with a bold label: `- **/clear:** starts a new, empty conversation…`. Plain English, defined terms, same naming rules as the rest of the lesson.
+- **Use a small table** only for a set of options that are compared side by side (permission modes, install commands, file locations).
+- **Open with this line:** `*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*`
+- **Keep it current:** when a lesson gets a new fact or follow-up answer, add it to the summary too.
 
 ---
 
@@ -184,12 +194,22 @@ Every lesson file follows this order exactly:
 
 | # | Section |
 |:---:|:---|
-| 1 | [In one sentence](#in-one-sentence) |
-| 2 | [The big picture](#the-big-picture) |
+| 1 | [Revision summary](#revision-summary) |
+| 2 | [In one sentence](#in-one-sentence) |
+| 3 | [The big picture](#the-big-picture) |
 | … | … |
 | n | [Recap](#recap) |
 | n | [My notes / practice](#my-notes--practice) |
 | n | [FAQ](#faq) |
+
+---
+
+### Revision summary
+
+*Every key fact from this lesson in one place, for quick revision. The sections below explain each point.*
+
+- **Main idea / command / path:** one plain-English fact per bullet (see "Revision summary" in section 2).
+- **Exam:** the one-line takeaway for each exam-angle question.
 
 ---
 

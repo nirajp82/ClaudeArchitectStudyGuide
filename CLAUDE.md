@@ -18,7 +18,7 @@ I'll paste a lesson's **video transcript** and/or its **written course text**, s
 6. **Update the links:**
    - In the course `README.md`, link the lesson and mark it ✅ Done.
    - In the previous lesson, check the "Next" link in **both** its header and footer.
-7. **Don't commit or push** unless I ask. I commit and push myself, often. If a file changed on disk since you last read it, re-read it and build on my version.
+7. **Commit and push every time** you finish a lesson or a change to one, without asking. Use a short commit message that names the lesson. If a file changed on disk since you last read it, re-read it and build on my version first.
 8. **Reply briefly** (section 7).
 
 ---
@@ -288,4 +288,4 @@ Keep the reply short:
 2. **Where the video and the written course differed**, and which version you followed. Follow the written course.
 3. **What you added beyond the course**: comparisons, examples, extra facts, exam-angle answers. Name them so I can check them.
 4. **Missing images**: which ones to paste.
-5. That nothing is committed.
+5. That the change is committed and pushed, with the commit message.

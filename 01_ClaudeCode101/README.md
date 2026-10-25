@@ -18,7 +18,7 @@ Every lesson is one notes file directly in this folder, named `0X-lesson-name.md
 | 6 | Daily workflows | Context management | [06-context-management.md](06-context-management.md) | ✅ Done |
 | 7 | Daily workflows | Code review | [07-code-review.md](07-code-review.md) | ✅ Done |
 | 8 | Customizing Claude Code | The CLAUDE.md file | [08-claude-md-file.md](08-claude-md-file.md) | ✅ Done |
-| 9 | Customizing Claude Code | Subagents | `09-subagents.md` | ⬜ |
+| 9 | Customizing Claude Code | Subagents | [09-subagents.md](09-subagents.md) | ✅ Done |
 | 10 | Customizing Claude Code | Skills | `10-skills.md` | ⬜ |
 | 11 | Customizing Claude Code | MCP | `11-mcp.md` | ⬜ |
 | 12 | Customizing Claude Code | Hooks | `12-hooks.md` | ⬜ |

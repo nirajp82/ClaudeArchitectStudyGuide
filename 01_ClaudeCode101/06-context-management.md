@@ -30,60 +30,59 @@
 
 #### What the context window is
 
-The context window is everything the model can see during one Claude Code session. It works as the model's short-term memory, and it has a fixed size.
+The context window is everything the model can see during one Claude Code session: its short-term memory, with a fixed size.
 
-- It contains Anthropic's built-in instructions, the list of tools, your `CLAUDE.md` file, every prompt you typed, every file Claude Code read, the output of every command it ran, and every reply.
-- Nothing is removed from it automatically. A file Claude Code read an hour ago still takes up space now.
-- Its size is measured in **tokens**. A token is a small piece of text, usually a short word or part of a word. 100 tokens is roughly 75 English words.
-- A typical context window holds 200,000 tokens. Some newer models hold up to 1 million.
+- It holds Anthropic's built-in instructions, the tool list, your `CLAUDE.md`, your prompts, every file Claude Code read, every command's output, and every reply.
+- Nothing leaves it automatically. A file read an hour ago still takes up space.
+- Size is measured in **tokens**: small pieces of text, usually a short word or part of one. 100 tokens is roughly 75 English words.
+- A typical window holds 200,000 tokens; some newer models hold 1 million.
 
 #### Why the size of the context window matters
 
-When the context window fills up, three problems appear:
+A full context window causes three problems:
 
-1. **Claude Code runs out of room.** On a long task, the window fills up and Claude Code has to shorten the conversation to continue. Shortening it loses detail.
-2. **The model's answers get worse.** Everything in the window competes for the model's attention. Leftover files and test output from an earlier, unrelated task can mislead it, for example into copying a code pattern from the wrong part of the project.
-3. **Every message costs more.** The model does not remember earlier messages, so Claude Code sends the entire conversation again with every new message. The fuller the window, the larger each message, and the more of your plan or budget it uses.
+1. **Claude Code runs out of room.** On a long task, it must shorten the conversation to continue, which loses detail.
+2. **The model's answers get worse.** Everything in the window competes for its attention, so leftovers from an unrelated task can mislead it, for example into copying code from the wrong part of the project.
+3. **Every message costs more.** The model doesn't remember earlier messages, so Claude Code resends the whole conversation each time. A fuller window means larger messages and more of your plan or budget used.
 
 #### How Claude Code makes room: compaction
 
-**Compaction** means replacing the conversation with a short summary to free up space. Claude Code does this automatically when the window is nearly full. You can also start it yourself with `/compact`.
+**Compaction** replaces the conversation with a short summary to free space. It happens automatically when the window is nearly full, or when you type `/compact`.
 
-- The summary keeps what you asked for, the key decisions, and which files were involved.
-- The summary drops long command output, the full text of files read earlier, and the exact wording of past error messages.
-- After compaction, Claude Code reloads `CLAUDE.md` from disk, plus up to five files it used recently. Your project rules therefore always survive.
-- Because exact details can be lost, paste an old error message again if it becomes relevant.
+- The summary keeps your request, the key decisions, and which files were involved.
+- It drops long command output, the full text of earlier files, and the exact wording of past errors. If an old error matters again, paste it again.
+- Afterwards, Claude Code reloads `CLAUDE.md` from disk, plus up to five recently used files, so project rules always survive.
 
 #### Three commands for managing the context window
 
 | Command | What it does | Afterwards, Claude Code remembers |
 |---|---|---|
-| `/context` | Shows how full the window is and what is using the space | Everything (nothing changes) |
-| `/compact` | Replaces the conversation with a summary immediately | A summary of the conversation |
-| `/clear` | Starts a new, empty conversation | Nothing from the old conversation |
+| `/context` | Shows how full the window is and what uses the space | Everything |
+| `/compact` | Replaces the conversation with a summary now | A summary |
+| `/clear` | Starts a new, empty conversation | Nothing from before |
 
-- **`/context`** lists usage by category. Before you type anything, Anthropic's instructions and the tool list already use about 17,500 tokens. The **autocompact buffer** (about 45,000 tokens) is space kept free so that automatic compaction has room to run; it is counted as used even though it is empty. The output also lists subagents, skills, and memory files with their sizes.
-- **`/compact`** accepts instructions about what to keep, for example `/compact Focus on the failing email tests`. To guide every automatic compaction, add a section called "Compact instructions" to `CLAUDE.md`.
-- **`/clear`** does not change any of your files, and `CLAUDE.md` is loaded again in the new conversation. The old conversation is saved, and `/resume` reopens it. `/reset` and `/new` do exactly what `/clear` does.
+- **`/context`:** Anthropic's instructions and the tool list use about 17,500 tokens before you type. The **autocompact buffer** (about 45,000 tokens) is kept free so compaction has room to run, and counts as used. Subagents, skills, and memory files are listed with their sizes.
+- **`/compact`** takes instructions on what to keep, such as `/compact Focus on the failing email tests`. A "Compact instructions" section in `CLAUDE.md` guides every automatic compaction.
+- **`/clear`** doesn't change your files, and `CLAUDE.md` loads again. `/resume` reopens the old conversation. `/reset` and `/new` do the same as `/clear`.
 
 #### When to compact and when to clear
 
-- Use **`/compact`** when you are partway through a task and the window is filling up. The important history stays, in summary form.
-- Use **`/clear`** when you start an unrelated task. Otherwise, leftover context from the previous task influences the new one.
-- Put anything that every future session needs into **`CLAUDE.md`**. It is loaded at the start of every session and again after both commands.
+- **Partway through a task, with the window filling up:** use `/compact`, so the history stays in summary form.
+- **Starting an unrelated task:** use `/clear`, so the old task doesn't influence the new one.
+- **Something every future session needs:** put it in `CLAUDE.md`, which loads at every start and after both commands.
 
 #### How to use less of the context window
 
-1. **Write specific prompts.** A vague prompt such as "add password reset" forces Claude Code to search and open many files to work out what you mean, and each file it opens takes up space. A prompt that names the exact files to change uses far less space, even though the prompt itself is longer.
-2. **Turn off MCP servers you are not using.** MCP servers are add-ons that give Claude Code extra tools, such as access to GitHub issues. Each connected server takes up some space at the start of every session, even if you never use it. Type `/mcp` to switch servers off. If a service has a command-line tool, such as `gh` for GitHub, using that tool directly takes up even less space.
-3. **Hand research tasks to a subagent.** A subagent is a helper that works in its own, separate context window. It reads the files it needs there and returns only the answer to your main conversation. A subagent still uses the model, so it still counts against your plan or budget.
-4. **Move rarely used instructions into skills.** For each skill, only a one-line description is loaded at the start of a session; the full instructions load only when the skill is used. Moving specialist instructions out of `CLAUDE.md` into a skill makes every session smaller.
+1. **Write specific prompts.** A vague prompt like "add password reset" makes Claude Code open many files to work out what you mean, and each one takes space. Naming the exact files uses far less, even though the prompt is longer.
+2. **Turn off unused MCP servers.** MCP servers are add-ons that give Claude Code extra tools, such as reading GitHub issues. Each takes some space at the start of every session, even unused. Type `/mcp` to switch them off. A command-line tool such as `gh` uses even less.
+3. **Hand research to a subagent.** A subagent is a helper with its own separate context window; only its answer returns to your conversation. It still uses the model, so it still counts against your plan or budget.
+4. **Move rarely used instructions into skills.** Only a skill's one-line description loads at the start; the full instructions load when used.
 
 #### Exam takeaways
 
-- **A developer says Claude Code gets worse late in long sessions.** The context window is full of old, unrelated material. Recommend `/clear` between unrelated tasks, `/compact` with focus instructions during a long task, permanent rules in `CLAUDE.md`, and subagents for research. (Developer Productivity & Operational Enablement)
-- **A team lead sees high usage costs.** Recommend clearing between tasks, specific prompts, turning off unused MCP servers, a short `CLAUDE.md`, and subagents for work that produces long output. (Developer Productivity & Operational Enablement)
-- **A security reviewer asks whether compaction removes code from Anthropic's servers.** It does not. Compaction only changes what is sent from that point on; anything already sent stays sent. To control what reaches the servers, limit which files Claude Code can read. (Governance, Safety & Risk)
+- **A developer says Claude Code gets worse late in long sessions.** The window is full of old material. Recommend `/clear` between tasks, `/compact` with focus instructions, lasting rules in `CLAUDE.md`, and subagents for research. (Developer Productivity & Operational Enablement)
+- **A team lead sees high usage costs.** Recommend clearing between tasks, specific prompts, fewer MCP servers, a short `CLAUDE.md`, and subagents for work with long output. (Developer Productivity & Operational Enablement)
+- **A security reviewer asks whether compaction removes code from Anthropic's servers.** No. It only changes what is sent from then on. To control what reaches the servers, limit which files Claude Code can read. (Governance, Safety & Risk)
 
 ---
 

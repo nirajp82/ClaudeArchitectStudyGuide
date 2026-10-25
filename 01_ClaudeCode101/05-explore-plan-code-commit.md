@@ -26,24 +26,50 @@
 
 ### Revision summary
 
-- **The workflow:** explore → plan → code → commit. **Each step is a prompt you type** in the right mode, not a button.
-- **Explore and plan happen in plan mode.** Plan mode **blocks** edits; typing "don't change anything" is only a request.
-- **Explore prompt:** "Read `src/upload/` and explain how it works. Don't make a plan yet." Ask follow-ups until you could explain the code yourself. Exploring can include web searches.
-- **Plan prompt:** ask for a plan **with a "Done when" list** (the success criteria).
-- **The plan is the cheapest place to fix mistakes:** a sentence in the plan vs. undoing edits in the code vs. a bug your users see.
-- **Plan options include "Yes, clear context and auto-accept edits":** empties the conversation so the build starts with only the plan. The last option is a text box for changes.
-- **The plan is saved as a file** in `~/.claude/plans/`. **Ctrl+G** opens it in your editor.
-- **"← 1 agent"** in the status bar = the built-in **Plan subagent** is doing the reading in its own conversation. Claude Code starts it; you don't.
-- **Explore subagent:** a built-in read-only helper for when you only want to understand code. Ask: "Use the Explore subagent to summarize this codebase."
-- **Skip the plan** if you can describe the change in one sentence (a typo, a rename).
-- **Code:** picking a **Yes…** option ends plan mode and the build starts right away. That option also sets the permission mode. Press **Esc** to step in. Left plan mode without approving? Type "Implement the plan."
-- **Four tips for the code step:** define success criteria; give it tools to check itself; have a test suite you trust; save repeated fixes in `CLAUDE.md`.
-- **Claude in Chrome:** lets Claude Code open and test your web page (Chrome, Edge, Brave). Needs a paid plan signed in with `/login`, not an API key. Connect with `claude --chrome` or `/chrome`.
-- **⚠️ False positive** = a test that passes even though the code is wrong. Read tests (including ones Claude Code writes) before trusting them.
-- **Commit step:** try the change yourself → `/code-review` → fix what matters → "Commit in the style of our recent commits" (it reads `git log`) → push.
-- **Why a subagent reviews:** your main session wrote the code and is biased toward it. A reviewer subagent starts with a fresh conversation. **Ctrl+O** shows its tool calls, **Ctrl+B** runs it in the background. A custom reviewer lives in `.claude/agents/code-reviewer.md`.
-- **⚠️ A reviewer usually finds something**, even in fine code. Ask for problems that affect correctness or your requirements.
-- **Exam:** plan mode first, success criteria in every plan, trusted tests, subagent review before committing. "Tests pass but production is broken" usually means a false positive.
+#### The workflow
+
+For any task bigger than a one-sentence change, work in four steps: Claude Code reads the code (**explore**), you agree on an approach (**plan**), Claude Code builds and tests it (**code**), and you review and save it to Git (**commit**). Each step is a prompt you type in the right permission mode, not a button. For a one-sentence change, such as a typo, just ask.
+
+#### Steps 1 and 2: explore and plan
+
+Do both steps in plan mode, which blocks all file edits. Typing "don't change anything" is only a request; plan mode enforces it.
+
+- **Explore prompt:** ask Claude Code to read part of the code and explain it without planning yet, for example "Read `src/upload/` and explain how an uploaded image is processed. Don't make a plan yet." Ask follow-ups until you could explain the code yourself.
+- **Plan prompt:** ask for a plan ending in a "Done when" list. This is the *success criteria*: the checks that prove the work is finished, such as "all tests pass and the saved file is in the new format."
+- **The plan is the cheapest place to fix mistakes.** There, a fix costs a sentence; in code, undoing edits across files; after release, a bug your users see.
+- **Plan options:** besides the usual **Yes** options, **Yes, clear context and auto-accept edits** empties the conversation so the build starts fresh with only the plan. The last option is a text box for typing a change.
+- **Plans are saved as files** in `~/.claude/plans/`. Ctrl+G opens the plan in your text editor.
+
+#### Helpers Claude Code uses while exploring
+
+- **"← 1 agent" in the status bar** means Claude Code has started the built-in *Plan subagent* to do the reading in its own separate conversation, keeping yours small. It starts on its own.
+- **The Explore subagent** is a read-only helper for understanding code without changing it. Ask: "Use the Explore subagent to summarize how this codebase is organized." It returns only a summary.
+
+#### Step 3: code
+
+Picking a **Yes** option ends plan mode, and Claude Code starts building right away; the option you picked sets how often it asks you. Press Esc to stop and redirect it. If you left plan mode without approving, type "Implement the plan."
+
+- **Four tips for a good build:**
+  1. Give success criteria, so Claude Code knows when it is done.
+  2. Give it tools to check its own work, such as Claude in Chrome.
+  3. Keep a test suite (automated pass/fail checks) you trust.
+  4. Save fixes you keep repeating in `CLAUDE.md`, the notes file Claude Code reads every session.
+- **Claude in Chrome** is a browser extension that lets Claude Code open your web page, click through it, read browser errors, and take screenshots. It works in Chrome, Edge, and Brave, needs a paid plan signed in with `/login` (not an API key), and connects with `claude --chrome` or `/chrome`.
+- **Warning:** a *false positive* is a test that passes although the code is wrong, such as a test checking only that "a file was saved" when the format matters. Read tests, including ones Claude Code writes, before trusting them.
+
+#### Step 4: commit
+
+Try the change yourself, run `/code-review`, and fix what matters. Then ask "Commit these changes in the same style as our recent commits" (Claude Code copies your past commit messages), and push to GitHub.
+
+- **A separate AI should review the code.** Your main conversation wrote it and tends to see what it meant to write. A reviewer subagent starts empty and sees only the code, like a friend proofreading your essay.
+- **Reviewer controls:** Ctrl+O shows its steps; Ctrl+B runs it in the background. Save your own reviewer's instructions in `.claude/agents/code-reviewer.md`.
+- **Warning:** a reviewer asked to find problems usually finds some, even in good code. Ask for only problems affecting correctness or your requirements.
+
+#### Exam takeaways
+
+- **A team wastes hours undoing Claude Code's changes.** Recommend explore, plan, code, commit: plan mode first, success criteria in every plan, trusted tests, and a subagent review before committing. (Developer Productivity & Operational Enablement)
+- **Claude Code says all tests pass, but the feature is broken in production.** The tests were probably false positives. Review tests, define success criteria, have a person test the change, and add an independent review. (Governance, Safety & Risk)
+- **An architect asks why a separate subagent should review code.** The writing conversation carries its own assumptions and confirms its work; a fresh subagent judges only the result, like not approving your own pull requests. (Governance, Safety & Risk)
 
 ---
 

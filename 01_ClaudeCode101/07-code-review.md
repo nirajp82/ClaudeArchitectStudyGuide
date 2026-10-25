@@ -31,69 +31,68 @@
 
 #### Why you review Claude Code's work
 
-When Claude Code finishes a task, it writes a short report of what it did. That report can be completely true and still leave out important changes.
+When Claude Code finishes, it writes a short report of what it did. The report can be entirely true and still leave out important changes, such as a switched-off test, a new code package, or an edited settings file.
 
-- For example, Claude Code might switch off a test, add a new code package, or change a settings file, and not mention any of it in the report.
-- The Claude Code conversation that wrote the code is a poor judge of its own work. It remembers its own reasoning, so it sees what it meant to write rather than what it actually wrote, much like proofreading your own essay.
-- The solution is a three-step review: read the changes yourself, get an independent AI review, then decide what to fix.
+- The conversation that wrote the code is a poor judge of it. It remembers its own reasoning, so it sees what it meant to write, not what it wrote, like proofreading your own essay.
+- The solution is three steps: read the changes yourself, get an independent AI review, then decide what to fix.
 
 #### Who takes part in a review
 
-| Who | What it is | Its job in the review |
+| Who | What it is | Its job |
 |---|---|---|
 | You | The person using Claude Code | Read the changes and make every decision |
-| Your Claude Code conversation | The conversation that wrote the code | Makes the fixes you ask for, and re-checks findings you doubt |
-| The reviewer | A separate AI that `/code-review` starts. Same model, but no memory of your conversation. Not a person. | Reads only the changed code and reports problems. Changes nothing. |
+| Your Claude Code conversation | The conversation that wrote the code | Makes the fixes you ask for and re-checks doubtful findings |
+| The reviewer | A separate AI started by `/code-review`: same model, no memory of your conversation, not a person | Reads only the changed code and reports problems. Changes nothing. |
 
 #### Step 1: Read the changes yourself with `/diff`
 
-A **diff** shows the before and after of every change. Lines starting with `-` were removed, and lines starting with `+` were added.
+A **diff** shows the before and after of every change: lines starting with `-` were removed, lines starting with `+` were added.
 
-- Type `/diff` to list every file with uncommitted changes (changes not yet saved to Git). Use the arrow keys to move between files and Enter to open one. You can also view what changed in each turn of the conversation.
-- Check every diff for three warning signs:
-  1. **Changes you did not ask for**, such as an edited settings file when you only asked for a change to a form.
-  2. **Weakened tests.** A test that was switched off (for example with `it.skip`) or made less strict still "passes," so "all tests pass" no longer proves anything.
-  3. **New packages and hard-coded values.** A new package is outside code that you now have to trust and keep up to date. A **hard-coded value** is a fixed value typed directly into the code, such as the server address `http://localhost:3000`, which only works on your own computer.
-- If the whole change is wrong, undo it: type `/rewind` (or press Esc twice on an empty prompt), select the message where things went wrong, and choose **Restore code and conversation**. `/rewind` only reverses file edits. It does not undo what commands did, so a package installed with `npm install` stays installed.
+- `/diff` lists every file with uncommitted changes (not yet saved to Git). Arrow keys move between files; Enter opens one. You can also see what changed in each turn.
+- Look for three warning signs:
+  1. **Changes you didn't ask for**, such as an edited settings file when you asked only for a form change.
+  2. **Weakened tests.** A test switched off (for example with `it.skip`) or made less strict still "passes," so "all tests pass" proves nothing.
+  3. **New packages and hard-coded values.** A new package is outside code you must now trust and maintain. A **hard-coded value** is typed directly into the code, such as the server address `http://localhost:3000`, which only works on your own computer.
+- If the whole change is wrong, type `/rewind` (or press Esc twice on an empty prompt), pick the message where it went wrong, and choose **Restore code and conversation**. It reverses file edits only, not what commands did: a package installed with `npm install` stays.
 
 #### Step 2: Get an independent review with `/code-review`
 
-`/code-review` starts a separate AI reviewer with a **clean context**: it knows nothing about your conversation, what you asked for, or why choices were made. It sees only the changed code, which is why it notices things the author missed.
+`/code-review` starts a separate AI reviewer with a **clean context**: it knows nothing about your conversation, your request, or why choices were made. Seeing only the changed code, it notices what the author missed.
 
-- It runs in the background and returns a list of problems, called **findings**. It does not change any code.
-- Each finding gives a location (such as `src/config.ts:1`, meaning line 1 of that file), a category, and a one-sentence description. The category `correctness` means the code may behave wrongly; `style` means it works but breaks the project's conventions.
-- It uses your plan or budget like any other task, so save it for changes that justify it.
-- `/review` is another name for the same command. The `--fix` option applies the findings automatically, you can set how thorough the review is (from `low` to `max`), and you can point it at a pull request. `/security-review` is a separate command that checks only for security problems.
+- It runs in the background and returns a list of problems, called **findings**. It changes no code.
+- Each finding gives a location (`src/config.ts:1` means line 1 of that file), a category, and one sentence. `correctness` means the code may behave wrongly; `style` means it works but breaks the project's conventions.
+- It uses your plan or budget, so save it for changes that justify it.
+- `/review` is the same command. `--fix` applies the findings, thoroughness ranges from `low` to `max`, and it can review a pull request. `/security-review` is a separate security-only check.
 
 #### Step 3: Decide what to do with each finding
 
-The reviewer only reports; you decide. Fixing everything is a mistake, because not every finding is urgent and the reviewer can be wrong.
+The reviewer only reports; you decide. Don't fix everything: not every finding is urgent, and the reviewer can be wrong.
 
-- For each finding, ask two questions:
-  1. **Is it real?** Open the file at the line the finding names and check the code yourself.
-  2. **If it is real, does it matter?** It matters if it changes how the software behaves, risks losing or exposing data, weakens tests, or affects users.
-- Then put the finding in one of three groups:
+- Ask two questions per finding:
+  1. **Is it real?** Open the file at the named line and check.
+  2. **Does it matter?** It matters if it changes how the software behaves, risks losing or exposing data, weakens tests, or affects users.
+- Then put it in one of three groups:
 
   | Group | Choose it when | What to do |
   |---|---|---|
-  | Fix now | The problem is real and it matters | Ask your Claude Code conversation to fix it and show the test output as proof |
-  | Ask why | You are not sure the problem is real | Ask your Claude Code conversation to re-check the finding, pointing it to the line in question |
-  | Leave it | The problem is real but minor, such as a style issue | Write it down and fix it later together with other minor issues (the course calls this *batching*) |
+  | Fix now | It is real and it matters | Ask your conversation to fix it and show test output as proof |
+  | Ask why | You're not sure it is real | Ask your conversation to re-check it, pointing to the line |
+  | Leave it | It is real but minor, such as style | Write it down and fix it later with other minor issues (*batching*) |
 
-- Give all your decisions in one message, for example: "Fix findings 1 and 3, then run the tests and show me the output. Check finding 2 again, because line 4 already removes extra spaces. Skip finding 4 for now."
-- Always ask for proof. "I fixed it" is just another report; test output is evidence you can see. If a fix turns into a large change, run `/code-review` again.
+- Give all decisions in one message: "Fix findings 1 and 3 and show me the test output. Check finding 2 again; line 4 already removes extra spaces. Skip finding 4."
+- Always ask for proof. "I fixed it" is just another report; test output is evidence. If a fix grows large, run `/code-review` again.
 
 #### How much review a change needs
 
-- **A small, simple change** (such as a typo in a button label): a quick look at the diff is enough.
-- **A change that is large, touches sensitive code** (login, payments, personal data), **is hard to undo, or is about to go to a teammate:** read the diff and also run `/code-review`.
-- **A problem the reviewer keeps finding:** add a rule to `CLAUDE.md` so Claude Code stops making it, for example "Never skip or loosen a test to make it pass."
+- **Small and simple**, such as a typo in a button label: a quick look at the diff is enough.
+- **Large, sensitive** (login, payments, personal data), **hard to undo, or going to a teammate:** read the diff and run `/code-review`.
+- **A problem the reviewer keeps finding:** add a rule to `CLAUDE.md`, such as "Never skip or loosen a test to make it pass."
 
 #### Exam takeaways
 
-- **A team wants Claude Code to write and approve its own changes in one conversation.** Advise against it: the author conversation tends to confirm its own work, the same reason people do not approve their own pull requests. Require a human to read the diff, a fresh `/code-review`, and test output as proof of every fix. (Governance, Safety & Risk)
-- **A change passes every test but sends live website traffic to `localhost`.** Passing tests do not prove a change is correct. Reading the diff for unrequested changes and hard-coded values would have caught it, and so would `/code-review`. (Governance, Safety & Risk)
-- **A manager asks how to keep code review worth its cost.** Match the amount of checking to the risk of the change, turn repeated findings into `CLAUDE.md` rules, and fix minor findings together in one later session. (Developer Productivity & Operational Enablement)
+- **A team wants Claude Code to write and approve its own changes in one conversation.** Advise against it: the author tends to confirm its own work, which is why people don't approve their own pull requests. Require a human diff read, a fresh `/code-review`, and test output for every fix. (Governance, Safety & Risk)
+- **A change passes every test but sends live traffic to `localhost`.** Passing tests don't prove correctness. Reading the diff for unrequested changes and hard-coded values would have caught it, as would `/code-review`. (Governance, Safety & Risk)
+- **A manager asks how to keep review worth its cost.** Match checking to risk, turn repeated findings into `CLAUDE.md` rules, and batch minor findings into one later session. (Developer Productivity & Operational Enablement)
 
 ---
 

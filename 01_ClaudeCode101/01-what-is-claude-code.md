@@ -27,16 +27,30 @@
 
 ### Revision summary
 
-- **What Claude Code is:** an *agentic* coding tool. "Agentic" means it takes actions, not just answers. It reads your codebase, edits files, runs terminal commands, and connects to tools like Git.
-- **Where you can use it:** the terminal (CLI), a VS Code extension, a JetBrains plugin (IntelliJ, PyCharm…), the Claude Desktop app, and the web.
-- **Claude Code vs. Claude.ai:** same model. In Claude.ai, Claude only sees what you paste, and you copy its answers back yourself. Claude Code works inside your project and makes the changes itself.
-- **"AI agent"** = software that takes actions in its environment (your files, terminal, the web) to reach a goal (your task).
-- **The agent loop:** decide the next step → act → observe the result → repeat until done. Observing is what lets it recover when a test fails.
-- **What an agent acts with:** tools (read, edit, run commands), external services (APIs, databases, issue trackers), and other AI agents.
-- **Key concept 1, the context window:** Claude's short-term memory. Fixed size, measured in **tokens** (pieces of words). A real codebase usually won't fit, and extra files distract, so Claude Code **searches** and reads only the files it needs.
-- **Key concept 2, permissions:** by default Claude Code **asks before it runs a command or changes code**. You can approve step by step, or allow some actions ahead of time.
-- **Key concept 3, mistakes:** it can misunderstand you, add a new bug while fixing one, or over-engineer. Always review its changes and run tests.
-- **Exam:** permission prompts are a **human-in-the-loop** control (a person approves before an action happens): **Governance, Safety & Risk**. Plan for mistakes with code review, tests, clear acceptance criteria, and small tasks.
+#### What Claude Code is
+
+Claude Code is an AI coding tool that does the work instead of only answering questions. It reads your project's files, edits them, runs commands in your terminal, and uses tools you already have, such as Git. The course calls this *agentic*: able to take actions on its own.
+
+- **Where you can use it:** the terminal (the text window where you type commands), VS Code, JetBrains editors such as IntelliJ and PyCharm, the Claude Desktop app, and the web.
+- **How it differs from Claude.ai:** both use the same model. In Claude.ai, the model sees only what you paste, and you copy its answers back yourself. Claude Code works inside your project folder, so it opens your files and makes the changes itself.
+
+#### What an AI agent is
+
+An AI agent is a program that takes actions to reach a goal you give it, such as "fix this failing test."
+
+- **How it works:** it repeats a loop until the goal is reached: decide the next step, do it, look at the result, decide again. Looking at the result is what lets Claude Code notice a test still fails and try something else.
+- **What it acts with:** built-in tools (reading files, editing files, running commands), outside services (such as a database or an issue tracker), and other AI agents it can hand part of the task to.
+
+#### Three ideas for using Claude Code well
+
+1. **It can't see your whole project at once.** The model sees a limited amount of text at a time, called the *context window* and measured in *tokens* (small pieces of words). Most projects don't fit, and unrelated files make the model work worse, so Claude Code searches for the files it needs and reads only those.
+2. **It asks before acting.** By default, it asks permission before running a command or changing code, and nothing happens until you say yes. You can approve each step, or allow some actions ahead of time.
+3. **It can be wrong.** It may misunderstand you, add a new bug while fixing another, or write more complicated code than needed. Always read its changes and run your tests.
+
+#### Exam takeaways
+
+- **A team asks why Claude Code stops to ask permission.** It is a *human-in-the-loop* control: a person approves an action before it happens, which matters for anything with real consequences. (Governance, Safety & Risk)
+- **A team asks how to plan for Claude Code's mistakes.** Assume output may be wrong and catch it with code review, automated tests, a clear definition of "done," and small tasks that are easy to check. (Governance, Safety & Risk)
 
 ---
 

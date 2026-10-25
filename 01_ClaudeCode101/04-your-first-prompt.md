@@ -27,28 +27,40 @@
 
 ### Revision summary
 
-- **"Prompt"** = the message you type to Claude Code.
-- **Permission modes:** how often Claude Code stops to ask "Can I do this?"
+#### Permission modes
 
-  | Mode | Status bar | Edits without asking? | Commands without asking? |
-  |---|---|---|---|
-  | Manual | `⏸ manual mode on` | ❌ | ❌ |
-  | Auto-accept | `⏵⏵ accept edits on` | ✅ | ❌ (most) |
-  | Plan mode | `⏸ plan mode on` | Can't edit | Only exploring commands, checked first |
-  | Auto | `⏵⏵ auto mode on` | ✅ | ✅, a second AI model (the *classifier*) checks each action |
+A permission mode decides how often Claude Code stops to ask "Can I do this?" before editing a file or running a command. Each press of Shift+Tab switches to the next mode, and the status bar (the line under the typing box) shows the current one.
 
-- **Shift+Tab** moves to the next mode. Glance at the status bar before typing: recent versions start new terminal sessions in Auto mode. Auto mode only appears if your company allows it.
-- **No right or wrong mode.** Manual for learning or important code, auto-accept for everyday work, Auto for long tasks, plan mode for big or unfamiliar changes.
-- **⚠️ Auto-accept exception:** simple file commands inside the project run without asking: `mkdir`, `touch`, `mv`, `cp`, `rm`, `rmdir`, `sed`. `rm` deletes files, so commit your work first.
-- **Plan mode:** Claude Code researches with read-only tools, asks questions, writes a plan (which files, what changes, what order), and **waits**. Nothing is edited until you approve.
-- **Files read in plan mode are still sent to the model.** Plan mode stops edits, not reading.
-- **Turn plan mode on:** Shift+Tab, or `/plan <your prompt>` for one prompt, or start with `claude --permission-mode plan`. Leave without approving: Shift+Tab again.
-- **When the plan is ready:** **Yes, and use auto mode** (or **Yes, auto-accept edits**), **Yes, manually approve edits**, or **No, keep planning**. **Ctrl+G** opens the plan in your text editor.
-- **When plan mode is worth it:** multi-step features, unfamiliar code, safe code reviews, anything costly to get wrong. A typo? Just ask.
-- **Esc** stops or redirects Claude Code at any time, even after you approve the plan.
-- **A descriptive prompt says:** how far to go, what to build and where, how it behaves, and rules to follow. Even better: what "done" looks like, what not to touch, and extra behavior.
-- **Dark mode example:** the plan found two CSS files with fixed colors, and turned "a good contrast color" into real colors with contrast of at least **4.5 : 1** (the WCAG AA readability rule).
-- **Exam:** make plan mode the default with `defaultMode: "plan"` in the project's `.claude/settings.json`. Auto mode is fine for low-risk work; admins can turn it off in managed settings. Plan mode prevents edits but not reading.
+| Mode | Status bar shows | File edits | Commands |
+|---|---|---|---|
+| Manual | `⏸ manual mode on` | Asks first | Asks first |
+| Auto-accept | `⏵⏵ accept edits on` | Without asking | Asks first, with a few exceptions (below) |
+| Plan mode | `⏸ plan mode on` | Not allowed | Only commands that look around, checked first |
+| Auto | `⏵⏵ auto mode on` | Without asking | Without asking, but a second AI model blocks dangerous actions |
+
+- **Check the status bar before typing.** Recent versions start new terminal sessions in Auto mode, which appears only if your company allows it.
+- **There is no right or wrong mode.** Manual suits learning and important code, auto-accept everyday work, Auto long tasks, and plan mode big or unfamiliar changes.
+- **Warning:** in auto-accept mode, a few file commands inside your project run without asking: `mkdir`, `touch`, `mv`, `cp`, `rm`, `rmdir`, and `sed`. `rm` deletes files, and a deleted file never saved to Git is gone, so commit first.
+- **Press Esc** to stop or redirect Claude Code at any time, even after approving a plan.
+
+#### Plan mode
+
+In plan mode, Claude Code reads your code, asks about anything unclear, and writes a plan listing which files it will change, what, and in what order. It edits nothing until you approve.
+
+- **Files it reads are still sent to the model.** Plan mode stops edits, not reading.
+- **To turn it on,** press Shift+Tab until `⏸ plan mode on`, start one prompt with `/plan`, or launch with `claude --permission-mode plan`. Press Shift+Tab again to leave without approving.
+- **When the plan is ready,** choose **Yes, and use auto mode** (build without asking; shown as **Yes, auto-accept edits** if Auto isn't available), **Yes, manually approve edits** (asks before each edit), or **No, keep planning** (say what to change). Ctrl+G opens the plan in your text editor.
+- **It is worth it** for multi-step features, unfamiliar code, safe code reviews, and anything costly to get wrong: fixing a plan takes a sentence, fixing code in ten files much longer. For a typo, just ask.
+
+#### Writing a clear prompt
+
+A prompt is the message you type. Claude Code knows only what you tell it and what it finds in your code, so a clear prompt says what to build, where, how far the change reaches, how it behaves, and the rules to follow. Better still, say what "done" looks like, what not to touch, and any extra behavior. For example, "add dark mode" leaves Claude Code guessing, while "add a light/dark toggle to the header, with dark colors based on the existing light theme" does not.
+
+#### Exam takeaways
+
+- **A team keeps getting large changes that touch the wrong files.** Make plan mode the first step for multi-step work so a person reviews which files will change. Set `defaultMode` to `plan` in the project's `.claude/settings.json`. (Developer Productivity & Operational Enablement)
+- **A manager wants everyone in Auto mode.** Fine for everyday work in a test environment; for important code keep a person approving commands or agree a plan first. Admins can turn Auto mode off company-wide. (Governance, Safety & Risk)
+- **A security team asks if plan mode is completely safe for reviews.** It edits nothing, but files it reads are still sent to the model and it can run checked commands. Keep secrets out of likely files and block sensitive ones in permission settings. (Governance, Safety & Risk)
 
 ---
 

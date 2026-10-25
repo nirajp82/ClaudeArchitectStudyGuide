@@ -28,30 +28,54 @@
 
 ### Revision summary
 
-- **The loop:** look (the course says *gather context*) → change (*take action*) → check (*verify results*) → repeat until it works. You can add information, stop it, or redirect it at any time.
-- **Brain vs. hands:** the **model** (on Anthropic's servers) decides. **Claude Code** (on your computer) reads files, edits them, runs commands, and asks your permission. The model can't touch your computer.
-- **"Tool call"** = a request from the model to Claude Code, like "read this file." Every model reply is either a tool call (the loop keeps going) or plain text (the loop ends and Claude Code waits for you).
-- **Context window:** everything the model can see right now. Fixed size. When it's full, Claude Code **compacts** it automatically: old parts become short summaries, so details like an exact old error can be lost. Paste it again if needed.
-- **Tools:** read a file, edit a file, run a command, search the web. You don't name the tool; the model picks it.
-- **Permission modes (Shift+Tab to switch):**
+#### The loop
 
-  | Mode | Edits without asking? | Commands without asking? |
-  |---|---|---|
-  | Manual | ❌ | ❌ |
-  | Auto-accept | ✅ | ❌ |
-  | Plan mode | Can't edit at all | Only looks |
-  | Auto mode | ✅ | ✅, but a safety checker blocks dangerous actions |
+Claude Code works in a loop: it looks at your code, makes a change, and checks whether the change worked, for example by running the tests. If the check fails, it goes round again. The course calls these steps *gathering context*, *taking action*, and *verifying results*. You can add information, stop it, or redirect it at any time.
 
-- **Why auto-accept still asks before commands:** an edit is easy to see and undo; a command can delete a folder or install software.
-- **Auto mode's checker blocks** actions that can't be undone, that destroy things, or that reach outside your project.
-- **⚠️ Turning off the questions** means a mistake happens before you can say "no, wait."
-- **The "starter pack"** at the top of every message to the model: Anthropic's built-in instructions (the **system prompt**), the tool list, facts about your computer (folder, OS, Git status, date), and your `CLAUDE.md`. **No code and no file names.**
-- **The model forgets after every reply**, so Claude Code resends the whole conversation each round. *Prompt caching* makes this cheaper.
-- **What leaves your computer:** only what Claude Code **reads** (files or parts of files, command output, search results). Files it never opens are never sent, not even their names. Edits come back as "replace this text with that."
-- **Compaction doesn't take anything back:** what was sent was sent. Subagents' reads are also sent.
-- **Permissions are checked on your computer** by Claude Code, so the model can't get around them.
-- **Keep secrets in files like `.env`** that Claude Code has no reason to open. Searches skip `.gitignore`d files.
-- **Exam:** pick the mode by how much a mistake would cost, and set it in the team's shared settings file. Data that leaves = what Claude Code read, not the project size. Both are **Governance, Safety & Risk**.
+#### Who does the work
+
+The work is split between two parts: the model decides, and Claude Code acts.
+
+- **The model** is the AI. It runs on Anthropic's servers, decides the next step, and can't touch your computer.
+- **Claude Code** is the program on your computer. It opens, edits, and runs things when the model asks, after checking your permissions.
+- **A tool** is one action Claude Code can take: read a file, edit a file, run a command, or search the web. You don't name the tool; the model picks it.
+- **A tool call** is the model's request for a tool, such as "open `src/login.js`." Each model reply is either a tool call, which continues the loop, or a plain-text answer, which ends it and hands control back to you.
+
+#### The context window
+
+The context window is everything the model can see right now: your messages, its replies, the files Claude Code opened, and command output. It has a fixed size. When it fills up, Claude Code automatically shortens old parts into summaries (*compacting*), which loses detail, so paste an old error again if you need it.
+
+#### Permissions
+
+A permission mode decides what Claude Code may do without asking you. Press Shift+Tab to switch modes.
+
+| Mode | File edits | Commands |
+|---|---|---|
+| Manual | Asks first | Asks first |
+| Auto-accept | Without asking | Asks first |
+| Plan mode | Not allowed | Only commands that look around |
+| Auto mode | Without asking | Without asking, but a safety checker blocks dangerous ones |
+
+- **Auto-accept still asks before commands** because an edit is easy to see and undo, while a command can delete a folder or install software.
+- **Auto mode's checker blocks** actions that can't be undone (deleting a database), that destroy things (wiping a folder), or that reach outside your project (sending files to a website).
+- **Warning:** with the questions turned off, a mistake happens before anyone can stop it, such as deleting files never saved to Git.
+- **Permissions are checked on your computer** by Claude Code before every action. The model can only ask, so it can't get around them.
+
+#### What gets sent to Anthropic's servers
+
+Only what Claude Code reads is sent. Files it never opens stay on your computer, not even their names.
+
+- **The starter pack:** every message starts with background text that Claude Code adds: Anthropic's instructions (the *system prompt*), the tool list, facts about your computer (folder, operating system, Git status, date), and your `CLAUDE.md`. It contains no code and no file names.
+- **The whole conversation, every time:** the model forgets after each reply, so Claude Code resends the whole conversation with each message. *Prompt caching* (the servers reusing parts they've seen) makes this cheaper.
+- **What else is sent:** files or parts of files Claude Code opened, command output, and search results. Edits come back as small "replace this text with that" instructions.
+- **Sent data can't be recalled.** Compacting only changes what is sent from then on, and files that subagents (helper AIs) read are sent too.
+- **Protecting secrets:** keep passwords and keys in files like `.env` that Claude Code has no reason to open. Its searches skip files listed in `.gitignore`.
+
+#### Exam takeaways
+
+- **A team is choosing a permission mode.** The more a mistake would cost, the less freedom Claude Code gets: plan mode for big or risky changes, Manual or auto-accept for everyday work, Auto only where its checks are enough. Set it in the team's shared settings file. (Governance, Safety & Risk)
+- **A developer wants to turn off all permission questions.** Mistakes would happen before anyone could stop them. Keep a person approving anything irreversible, plan first, run in a separate test environment, and rely on tests. (Governance, Safety & Risk)
+- **A security team asks what data leaves the computer.** Only what Claude Code read: requests, files it opened, command output, and search results. It depends on what was read, not on project size. Control it with permission settings and by keeping secrets out of likely files. (Governance, Safety & Risk)
 
 ---
 

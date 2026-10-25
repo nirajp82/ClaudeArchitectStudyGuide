@@ -28,29 +28,47 @@
 
 ### Revision summary
 
-- **Five places, same Claude Code:** terminal, VS Code, JetBrains IDEs, Claude Desktop ("Code" tab), and the web (claude.ai/code). Only the window changes.
-- **Terminal install commands:**
+#### Five places to use Claude Code
 
-  | System | Command | Auto-updates? |
-  |---|---|---|
-  | macOS, Linux, WSL | `curl -fsSL https://claude.ai/install.sh \| bash` | ✅ |
-  | macOS Homebrew | `brew install --cask claude-code` | ❌ |
-  | Windows PowerShell | `irm https://claude.ai/install.ps1 \| iex` | ✅ |
-  | Windows CMD | `curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd` | ✅ |
-  | Windows winget | `winget install Anthropic.ClaudeCode` | ❌ |
+You can use Claude Code in the terminal, VS Code, JetBrains editors, the Claude Desktop app (its "Code" tab), and the web at claude.ai/code. It is the same program everywhere; only the screen changes.
 
-- **Homebrew and winget don't auto-update.** Update yourself with `brew upgrade claude-code` or `winget upgrade Anthropic.ClaudeCode`.
-- **PowerShell or CMD?** PowerShell's prompt starts with `PS C:\...`; CMD's doesn't.
-- **Check the install:** `claude --version`. "Command not found"? Close the terminal and open a new one.
-- **Start it:** `cd` into your project folder, then type `claude`.
-- **First run:** pick a color theme, then sign in with a Claude account (Pro, Max, or Enterprise) or an **API key** (pay per use). Company has Enterprise? Pick that.
-- **Folder access:** Claude Code can reach the folder you start it in **plus every folder inside it**. Start it in the project folder, never your home folder.
-- **VS Code:** Extensions panel → search "Claude Code" → install the one **by Anthropic with the blue check** (the official one). Open it with **Ctrl/Cmd+Shift+P** → "Claude Code: Open in New Tab", or the Claude logo.
-- **JetBrains:** install the plugin from the JetBrains Marketplace, restart, click the Claude logo. It opens the terminal version in a pane.
-- **Claude Desktop "Code" tab:** works in a folder on your computer, can change permission modes, and can run in a cloud environment.
-- **Web:** **GitHub repositories only.** It can't open a folder on your computer.
-- **Which to pick:** terminal gets new features first; VS Code/JetBrains if you live in your editor; Desktop to let it work in the background; web to work from anywhere or run several sessions.
-- **Exam:** a rollout should use auto-updating installs, company Enterprise sign-in, and start Claude Code in the project folder. Limiting the start folder is **least privilege** (only the access a task needs).
+#### Installing Claude Code in the terminal
+
+Paste the command for your system into the terminal and press Enter.
+
+| Your system | Install command | Updates itself? |
+|---|---|---|
+| macOS, Linux, or WSL | `curl -fsSL https://claude.ai/install.sh \| bash` | Yes |
+| macOS with Homebrew | `brew install --cask claude-code` | No |
+| Windows PowerShell | `irm https://claude.ai/install.ps1 \| iex` | Yes |
+| Windows CMD | `curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd` | Yes |
+| Windows with winget | `winget install Anthropic.ClaudeCode` | No |
+
+- **Homebrew and winget installs don't update themselves.** Run `brew upgrade claude-code` or `winget upgrade Anthropic.ClaudeCode` from time to time, or you will miss features and fixes.
+- **PowerShell or CMD?** PowerShell's prompt starts with `PS C:\...`; CMD's has no `PS`.
+- **Check the install** with `claude --version`. If the terminal says "command not found," open a new terminal: a terminal only finds programs installed before it opened.
+
+#### Starting Claude Code for the first time
+
+- **To start it,** move into your project folder with `cd` (for example `cd ~/projects/my-app`) and type `claude`.
+- **On the first run,** pick a color theme, then sign in with a paid Claude account (Pro, Max, or Enterprise) or an API key, a secret code where you pay per use. If your company has Claude Enterprise, choose that.
+- **It can reach the start folder and everything inside it,** but nothing outside. Always start it in the project folder; started in your home folder, it could reach all your personal files.
+
+#### Setting up the other four places
+
+- **VS Code:** in the Extensions panel, install "Claude Code" by Anthropic with the blue check mark, which proves it is the official extension. Open it with Ctrl+Shift+P (Cmd+Shift+P on Mac) and "Claude Code: Open in New Tab," or the Claude logo.
+- **JetBrains:** install the Claude Code plugin from the JetBrains Marketplace, restart, and click the Claude logo. The terminal version opens in a pane beside your code.
+- **Claude Desktop:** the "Code" tab works in a folder on your computer, can change permission modes, and can run work on a remote computer in the cloud.
+- **The web:** works only with code stored on GitHub. It can't open a folder on your computer.
+
+#### Choosing where to use it
+
+The terminal gets new features first. Use VS Code or JetBrains if you spend your day in that editor, Desktop to let Claude Code work in the background, and the web on another computer or to run several sessions at once.
+
+#### Exam takeaways
+
+- **A team is rolling out Claude Code.** Prefer installs that update themselves (or plan how Homebrew and winget get updated), use the company's Enterprise sign-in so usage and settings are managed centrally, and teach people to start in the project folder. (Developer Productivity & Operational Enablement)
+- **A security team asks why the start folder matters.** It sets how much Claude Code can reach. Starting in the project folder limits it to what the task needs, a principle called *least privilege*. (Governance, Safety & Risk)
 
 ---
 

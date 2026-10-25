@@ -74,6 +74,7 @@ The model is lesson 6's and lesson 7's summary. Rules:
 
 - **It must stand on its own.** I read it without the rest of the lesson. Never refer to the lesson's running example or screenshots ("in the signup example," "the dark mode plan"). If an example helps, describe it fully in the sentence itself.
 - **Group by topic.** Use one `####` heading per main idea (for example "How to use less of the context window"). Open each topic with one or two sentences that state the idea, then list its facts under it. Related points always sit under one heading, never as separate "Tip 1 / Tip 2" bullets scattered around.
+- **Compact, but clarity first.** Say each fact once, in as few words as stay clear. Cut repetition and padding, never facts or the words that make a sentence unambiguous.
 - **Full, unambiguous sentences.** No fragments, no shorthand like "Same task → compact," no arrows or slashes in place of words. Every sentence names who does what and says why. Define each term the first time it appears.
 - **Cover every fact I'd need on the exam or in daily use:** each main idea, every command, keyboard shortcut, file path, setting, number, and warning.
 - **Use a table** only for options compared side by side (permission modes, commands, file locations). Use numbered lists for steps or a fixed set of reasons.

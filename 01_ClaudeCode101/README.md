@@ -20,7 +20,7 @@ Every lesson is one notes file directly in this folder, named `0X-lesson-name.md
 | 8 | Customizing Claude Code | The CLAUDE.md file | [08-claude-md-file.md](08-claude-md-file.md) | ✅ Done |
 | 9 | Customizing Claude Code | Subagents | [09-subagents.md](09-subagents.md) | ✅ Done |
 | 10 | Customizing Claude Code | Skills | [10-skills.md](10-skills.md) | ✅ Done |
-| 11 | Customizing Claude Code | MCP | `11-mcp.md` | ⬜ |
+| 11 | Customizing Claude Code | MCP | [11-mcp.md](11-mcp.md) | ✅ Done |
 | 12 | Customizing Claude Code | Hooks | `12-hooks.md` | ⬜ |
 | — | Quiz | Course quiz | `13-course-quiz-review.md` (missed questions + reasoning) | ⬜ |
 | — | — | Completion badge | — | ⬜ |
@@ -45,6 +45,7 @@ Files are created as each lesson is completed. Paste the transcript after each l
   - Lesson 4: auto-accept mode working through a task → `images/04-auto-accept-mode.png`
   - Lesson 4: plan mode status bar indicator → `images/04-plan-mode-indicator.png`
   - Lesson 4: dark mode prompt typed in plan mode → `images/04-dark-mode-prompt.png`
+  - Lesson 11: possible second image in "What can you do with it?" (image 18 was a copy of image 17) → `images/11-what-can-you-do.png`
 ## When you finish this course
 
 1. [ ] Take the **course quiz**. Record every missed or guessed question, and the correct reasoning, in `13-course-quiz-review.md`.

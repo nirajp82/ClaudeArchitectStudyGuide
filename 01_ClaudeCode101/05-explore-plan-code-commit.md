@@ -13,18 +13,21 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The four steps](#the-four-steps) |
-| 4 | [1. Explore and plan: research before any code](#1-explore-and-plan-research-before-any-code) |
-| 5 | [2. Code: build it and check it](#2-code-build-it-and-check-it) |
-| 6 | [3. Commit: review, then save your work](#3-commit-review-then-save-your-work) |
-| 7 | [Recap](#recap) |
-| 8 | [My notes / practice](#my-notes--practice) |
-| 9 | [FAQ](#faq) |
+| 2 | [The four steps](#the-four-steps) |
+| 3 | [1. Explore and plan: research before any code](#1-explore-and-plan-research-before-any-code) |
+| 4 | [2. Code: build it and check it](#2-code-build-it-and-check-it) |
+| 5 | [3. Commit: review, then save your work](#3-commit-review-then-save-your-work) |
+| 6 | [Recap](#recap) |
+| 7 | [My notes / practice](#my-notes--practice) |
+| 8 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+For any task bigger than a small fix, work in four steps: let Claude Code read the code involved, agree on a written plan with it, let it write and test the code, and then check the changes yourself before you save them to Git as a commit.
 
 #### The workflow
 
@@ -73,11 +76,9 @@ Try the change yourself, run `/code-review`, and fix what matters. Then ask "Com
 
 ---
 
-### In one sentence
-
-Don't ask Claude Code to write code straight away: first let it **look around**, then agree on a **plan**, then let it **build and check**, and only then **review and save** your work. The course says: *"If you take one thing away from Claude Code, let it be this workflow."*
-
 ### The four steps
+
+The course says: *"If you take one thing away from Claude Code, let it be this workflow."*
 
 **None of the steps is a button.** Each one is a prompt you type, in the right mode (shown in the status bar; change it with **Shift+Tab**).
 

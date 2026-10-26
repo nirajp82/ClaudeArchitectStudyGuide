@@ -13,21 +13,24 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
-| 4 | [Who's who](#whos-who) |
-| 5 | [1. The problem: Claude Code forgets everything between sessions](#1-the-problem-claude-code-forgets-everything-between-sessions) |
-| 6 | [2. What a CLAUDE.md file is, and how Claude Code uses it](#2-what-a-claudemd-file-is-and-how-claude-code-uses-it) |
-| 7 | [3. What to write in it: the course's example](#3-what-to-write-in-it-the-courses-example) |
-| 8 | [4. Two CLAUDE.md files: one for the team, one just for you](#4-two-claudemd-files-one-for-the-team-one-just-for-you) |
-| 9 | [5. Three tips for a good CLAUDE.md](#5-three-tips-for-a-good-claudemd) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [Who's who](#whos-who) |
+| 4 | [1. The problem: Claude Code forgets everything between sessions](#1-the-problem-claude-code-forgets-everything-between-sessions) |
+| 5 | [2. What a CLAUDE.md file is, and how Claude Code uses it](#2-what-a-claudemd-file-is-and-how-claude-code-uses-it) |
+| 6 | [3. What to write in it: the course's example](#3-what-to-write-in-it-the-courses-example) |
+| 7 | [4. Two CLAUDE.md files: one for the team, one just for you](#4-two-claudemd-files-one-for-the-team-one-just-for-you) |
+| 8 | [5. Three tips for a good CLAUDE.md](#5-three-tips-for-a-good-claudemd) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+CLAUDE.md is a plain text file in your project where you write the facts and rules Claude Code needs to know, such as the command that runs your tests, and Claude Code reads that file automatically at the start of every conversation, so you never have to explain those things again.
 
 #### What `CLAUDE.md` is and why you need it
 
@@ -67,12 +70,6 @@ Every Claude Code session (one run, from typing `claude` until you close it or t
 - **A team sees the same Claude Code mistakes across developers.** Put shared rules in the project `CLAUDE.md` and commit it, turn repeated review findings into rules, and keep personal preferences in each developer's user file. (Developer Productivity & Operational Enablement)
 - **A security lead asks if a `CLAUDE.md` rule can stop edits to production settings.** No, it is only advice. A deny rule in `.claude/settings.json`, such as `"deny": ["Edit(./config/production.json)"]`, blocks it for the project; the same rule in IT's `managed-settings.json` blocks it company-wide and developers can't override it. (Governance, Safety & Risk)
 - **An architect needs shared rules across 20 repositories.** Write company rules once in the company `CLAUDE.md`, keep each repository's file short and specific, link long docs with `@` only when needed, and move rarely used instructions into skills, which load only when used. (Solution Design & Architecture)
-
----
-
-### In one sentence
-
-`CLAUDE.md` is a plain text file of notes **you** write about your project, and Claude Code **reads it automatically every time it starts**, so you don't have to explain the same things again and again.
 
 ---
 

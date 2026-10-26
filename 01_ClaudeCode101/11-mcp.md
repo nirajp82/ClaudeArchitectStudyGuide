@@ -13,21 +13,24 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
-| 4 | [Who's who](#whos-who) |
-| 5 | [1. What MCP lets Claude Code do](#1-what-mcp-lets-claude-code-do) |
-| 6 | [2. Adding an MCP server](#2-adding-an-mcp-server) |
-| 7 | [3. Checking your servers with /mcp](#3-checking-your-servers-with-mcp) |
-| 8 | [4. Scoping servers: who gets which server](#4-scoping-servers-who-gets-which-server) |
-| 9 | [5. Context costs](#5-context-costs) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [Who's who](#whos-who) |
+| 4 | [1. What MCP lets Claude Code do](#1-what-mcp-lets-claude-code-do) |
+| 5 | [2. Adding an MCP server](#2-adding-an-mcp-server) |
+| 6 | [3. Checking your servers with /mcp](#3-checking-your-servers-with-mcp) |
+| 7 | [4. Scoping servers: who gets which server](#4-scoping-servers-who-gets-which-server) |
+| 8 | [5. Context costs](#5-context-costs) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+MCP (Model Context Protocol) is a standard way to connect Claude Code to services outside your project, such as your team's issue tracker or a library's latest documentation, so that the model can read from and use those services by itself whenever your request needs them.
 
 #### What MCP is and why it helps
 
@@ -89,12 +92,6 @@ Every connected server takes up some space in the context window (the conversati
 - **A team wants every developer to have the same issue-tracker connection without manual setup.** Add the server with the project scope so it is saved in `.mcp.json`, and commit that file to Git. Keep tokens out of the file by using `${VAR}` placeholders. (Developer Productivity & Operational Enablement)
 - **A security team worries that a cloned repository can quietly connect Claude Code to unknown services.** Claude Code asks each developer to approve servers from a project's `.mcp.json` before using them, MCP tools still go through permission prompts, and teams should only add servers they trust. (Governance, Safety & Risk)
 - **Sessions with many MCP servers fill the context window quickly.** Disable unused servers with `/mcp`, prefer command-line tools such as `gh` where they exist, and rely on tool search, which keeps full tool definitions out until needed. (Solution Design & Architecture)
-
----
-
-### In one sentence
-
-MCP is a standard plug that lets Claude Code reach tools outside your project, such as your issue tracker or a documentation service, and use them by itself when your request needs them.
 
 ---
 

@@ -13,21 +13,24 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
-| 4 | [Who's who](#whos-who) |
-| 5 | [1. Why use hooks](#1-why-use-hooks) |
-| 6 | [2. How hooks work](#2-how-hooks-work) |
-| 7 | [3. A practical example: auto-formatting](#3-a-practical-example-auto-formatting) |
-| 8 | [4. Blocking with PreToolUse](#4-blocking-with-pretooluse) |
-| 9 | [5. Sharing hooks with your team](#5-sharing-hooks-with-your-team) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [Who's who](#whos-who) |
+| 4 | [1. Why use hooks](#1-why-use-hooks) |
+| 5 | [2. How hooks work](#2-how-hooks-work) |
+| 6 | [3. A practical example: auto-formatting](#3-a-practical-example-auto-formatting) |
+| 7 | [4. Blocking with PreToolUse](#4-blocking-with-pretooluse) |
+| 8 | [5. Sharing hooks with your team](#5-sharing-hooks-with-your-team) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+A hook is a command that you list in a settings file and that Claude Code runs automatically at a fixed moment, such as right after every file edit or right before every terminal command, so the action happens every single time instead of depending on the model remembering an instruction.
 
 #### What a hook is and why it is different
 
@@ -89,12 +92,6 @@ Hooks in the project's `.claude/settings.json` can be committed to Git, so every
 - **A compliance team needs a guaranteed record of every command Claude Code runs.** Add a `PostToolUse` hook with the matcher `Bash` that appends `tool_input.command` to a log file, and commit it in the project's `.claude/settings.json`. A `CLAUDE.md` instruction is not enough because the model may skip it. (Governance, Safety & Risk)
 - **A security team worries that a developer could turn off permission questions and let Claude Code change production config.** A `PreToolUse` hook that exits with code 2 blocks the change in every permission mode, and an organization can enforce it for everyone through managed settings. (Governance, Safety & Risk)
 - **A team wants every developer's code formatted the same way without anyone setting it up.** Put a `PostToolUse` `Edit|Write` formatting hook in `.claude/settings.json`, keep the script in `.claude/hooks/`, refer to it with `CLAUDE_PROJECT_DIR`, and commit both. (Developer Productivity & Operational Enablement)
-
----
-
-### In one sentence
-
-A hook is a command that Claude Code itself runs at a fixed moment, such as after every edit or before every command, so the action happens every time instead of only when the model remembers.
 
 ---
 

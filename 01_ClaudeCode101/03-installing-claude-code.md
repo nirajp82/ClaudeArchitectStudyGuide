@@ -28,6 +28,10 @@
 
 ### Revision summary
 
+#### In one sentence
+
+You install Claude Code by pasting one command into your terminal, then you sign in with a paid Claude account, and after that you can use the same Claude Code in five places: the terminal, VS Code, JetBrains editors, the Claude Desktop app, and the web.
+
 #### Five places to use Claude Code
 
 You can use Claude Code in the terminal, VS Code, JetBrains editors, the Claude Desktop app (its "Code" tab), and the web at claude.ai/code. It is the same program everywhere; only the screen changes.

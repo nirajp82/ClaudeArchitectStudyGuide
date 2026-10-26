@@ -13,21 +13,24 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
-| 4 | [Who's who](#whos-who) |
-| 5 | [1. The problem: exploring fills your context window](#1-the-problem-exploring-fills-your-context-window) |
-| 6 | [2. How a subagent works, step by step](#2-how-a-subagent-works-step-by-step) |
-| 7 | [3. The built-in subagents](#3-the-built-in-subagents) |
-| 8 | [4. Creating your own subagent](#4-creating-your-own-subagent) |
-| 9 | [5. Extra settings: memory and skills](#5-extra-settings-memory-and-skills) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [Who's who](#whos-who) |
+| 4 | [1. The problem: exploring fills your context window](#1-the-problem-exploring-fills-your-context-window) |
+| 5 | [2. How a subagent works, step by step](#2-how-a-subagent-works-step-by-step) |
+| 6 | [3. The built-in subagents](#3-the-built-in-subagents) |
+| 7 | [4. Creating your own subagent](#4-creating-your-own-subagent) |
+| 8 | [5. Extra settings: memory and skills](#5-extra-settings-memory-and-skills) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+A subagent is a second AI helper that your Claude Code conversation starts for one job, such as searching the code for where refunds are handled: the helper reads files in its own separate memory and sends back only a short answer, so your main conversation does not fill up with everything the helper read.
 
 #### What a subagent is and why it helps
 
@@ -71,12 +74,6 @@ A custom subagent is one Markdown file with a settings block at the top (*YAML f
 - **Long investigations keep filling the context window and sessions slow down.** Hand research to subagents, such as Explore or a custom researcher, so only summaries return to the main conversation. (Solution Design & Architecture)
 - **A security team wants an AI reviewer that can never change code.** Set `tools: Read, Glob, Grep` or `disallowedTools: Write, Edit` in the subagent file, because Claude Code enforces tool lists while instructions in the prompt are only advice. (Governance, Safety & Risk)
 - **A team wants everyone to use the same reviewer.** Commit `.claude/agents/code-reviewer.md` to Git so every developer's Claude Code gets it, and use `memory: project` so its notes can be shared too. (Developer Productivity & Operational Enablement)
-
----
-
-### In one sentence
-
-A subagent is a helper that your Claude Code session sends off to do one job in its own separate workspace, and it brings back only the answer, so your main conversation doesn't fill up with everything the helper read along the way.
 
 ---
 

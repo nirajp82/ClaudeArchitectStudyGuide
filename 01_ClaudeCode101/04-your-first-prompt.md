@@ -13,19 +13,22 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The three parts](#the-three-parts) |
-| 4 | [1. Choose a permission mode](#1-choose-a-permission-mode) |
-| 5 | [2. Plan mode: look and plan, change nothing](#2-plan-mode-look-and-plan-change-nothing) |
-| 6 | [3. Example: add a dark mode toggle](#3-example-add-a-dark-mode-toggle) |
-| 7 | [4. Write a descriptive prompt](#4-write-a-descriptive-prompt) |
-| 8 | [Recap](#recap) |
-| 9 | [My notes / practice](#my-notes--practice) |
-| 10 | [FAQ](#faq) |
+| 2 | [The three parts](#the-three-parts) |
+| 3 | [1. Choose a permission mode](#1-choose-a-permission-mode) |
+| 4 | [2. Plan mode: look and plan, change nothing](#2-plan-mode-look-and-plan-change-nothing) |
+| 5 | [3. Example: add a dark mode toggle](#3-example-add-a-dark-mode-toggle) |
+| 6 | [4. Write a descriptive prompt](#4-write-a-descriptive-prompt) |
+| 7 | [Recap](#recap) |
+| 8 | [My notes / practice](#my-notes--practice) |
+| 9 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+Before you give Claude Code a task, you choose how often it must ask for your permission before it acts (you switch between these permission modes with Shift+Tab), and for a large task you turn on plan mode, so that Claude Code only reads your code and writes a plan, and changes nothing until you approve that plan.
 
 #### Permission modes
 
@@ -63,10 +66,6 @@ A prompt is the message you type. Claude Code knows only what you tell it and wh
 - **A security team asks if plan mode is completely safe for reviews.** It edits nothing, but files it reads are still sent to the model and it can run checked commands. Keep secrets out of likely files and block sensitive ones in permission settings. (Governance, Safety & Risk)
 
 ---
-
-### In one sentence
-
-You talk to Claude Code in plain words, but before you press Enter you choose **how much it should ask you first**, and for big jobs you let it **make a plan before it changes anything**.
 
 ### The three parts
 

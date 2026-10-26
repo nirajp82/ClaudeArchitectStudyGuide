@@ -13,21 +13,24 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
-| 4 | [Who's who](#whos-who) |
-| 5 | [1. The problem: repeating yourself](#1-the-problem-repeating-yourself) |
-| 6 | [2. What a skill looks like](#2-what-a-skill-looks-like) |
-| 7 | [3. How Claude Code picks a skill](#3-how-claude-code-picks-a-skill) |
-| 8 | [4. Where skills live](#4-where-skills-live) |
-| 9 | [5. Skills compared with CLAUDE.md, slash commands, and subagents](#5-skills-compared-with-claudemd-slash-commands-and-subagents) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [Who's who](#whos-who) |
+| 4 | [1. The problem: repeating yourself](#1-the-problem-repeating-yourself) |
+| 5 | [2. What a skill looks like](#2-what-a-skill-looks-like) |
+| 6 | [3. How Claude Code picks a skill](#3-how-claude-code-picks-a-skill) |
+| 7 | [4. Where skills live](#4-where-skills-live) |
+| 8 | [5. Skills compared with CLAUDE.md, slash commands, and subagents](#5-skills-compared-with-claudemd-slash-commands-and-subagents) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+A skill is a file of step-by-step instructions for one kind of task, such as reviewing a pull request, that you write once and save in a skills folder, and whenever you ask for that kind of task, Claude Code opens the file and follows its steps without you having to type them again.
 
 #### What a skill is and why it helps
 
@@ -79,12 +82,6 @@ This means a skill uses almost no space until it is needed. The docs call this *
 - **A team keeps pasting the same review checklist into every conversation.** Write it once as a project skill in `.claude/skills/pr-review/SKILL.md` and commit it, so every developer's Claude Code applies it automatically when they ask for a review. (Developer Productivity & Operational Enablement)
 - **A `CLAUDE.md` file has grown huge with task-specific instructions and fills the context window.** Keep only always-true rules in `CLAUDE.md` and move task-specific instructions into skills, because only a skill's description loads until it is needed. (Solution Design & Architecture)
 - **A company wants every developer to follow the same brand guidelines, and individuals must not override them.** Deploy the skill at the enterprise level, because an enterprise skill overrides a personal or project skill with the same name. (Governance, Safety & Risk)
-
----
-
-### In one sentence
-
-A skill is a written how-to guide that you give Claude Code once, and Claude Code pulls it out and follows it by itself whenever you ask for that kind of task.
 
 ---
 

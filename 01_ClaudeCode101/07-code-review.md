@@ -13,21 +13,24 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
-| 4 | [Who's who in a code review](#whos-who-in-a-code-review) |
-| 5 | [1. Why Claude Code's summary isn't enough](#1-why-claude-codes-summary-isnt-enough) |
-| 6 | [2. Step 1: read the changes yourself with /diff](#2-step-1-read-the-changes-yourself-with-diff) |
-| 7 | [3. Step 2: get a second opinion with /code-review](#3-step-2-get-a-second-opinion-with-code-review) |
-| 8 | [4. Step 3: you decide what to do with each problem](#4-step-3-you-decide-what-to-do-with-each-problem) |
-| 9 | [5. How much reviewing is enough?](#5-how-much-reviewing-is-enough) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [Who's who in a code review](#whos-who-in-a-code-review) |
+| 4 | [1. Why Claude Code's summary isn't enough](#1-why-claude-codes-summary-isnt-enough) |
+| 5 | [2. Step 1: read the changes yourself with /diff](#2-step-1-read-the-changes-yourself-with-diff) |
+| 6 | [3. Step 2: get a second opinion with /code-review](#3-step-2-get-a-second-opinion-with-code-review) |
+| 7 | [4. Step 3: you decide what to do with each problem](#4-step-3-you-decide-what-to-do-with-each-problem) |
+| 8 | [5. How much reviewing is enough?](#5-how-much-reviewing-is-enough) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+When Claude Code says a task is finished, do not rely on its own report: read the code changes yourself with /diff, ask a separate AI reviewer to check them with /code-review, and then decide yourself which of the reported problems to fix.
 
 #### Why you review Claude Code's work
 
@@ -93,12 +96,6 @@ The reviewer only reports; you decide. Don't fix everything: not every finding i
 - **A team wants Claude Code to write and approve its own changes in one conversation.** Advise against it: the author tends to confirm its own work, which is why people don't approve their own pull requests. Require a human diff read, a fresh `/code-review`, and test output for every fix. (Governance, Safety & Risk)
 - **A change passes every test but sends live traffic to `localhost`.** Passing tests don't prove correctness. Reading the diff for unrequested changes and hard-coded values would have caught it, as would `/code-review`. (Governance, Safety & Risk)
 - **A manager asks how to keep review worth its cost.** Match checking to risk, turn repeated findings into `CLAUDE.md` rules, and batch minor findings into one later session. (Developer Productivity & Operational Enablement)
-
----
-
-### In one sentence
-
-When Claude Code says "done," don't just trust its report: **look at what it actually changed**, **ask a fresh AI reviewer to check it**, and then **you decide** what to fix.
 
 ---
 

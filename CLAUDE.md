@@ -68,9 +68,11 @@ Clear doesn't mean long. My other common complaint is "the whole page is too lon
 
 ### Revision summary: required in every lesson
 
-I revise from the top of each lesson, so **every lesson starts with a `### Revision summary`** section, right after the "On this page" table and before "In one sentence." It is the one place where repeating the lesson is expected.
+I revise from the top of each lesson, so **every lesson starts with a `### Revision summary`** section, right after the "On this page" table. It is the one place where repeating the lesson is expected.
 
 The model is lesson 6's and lesson 7's summary. Rules:
+
+- **Open with an "In one sentence" topic** (`#### In one sentence`): the whole lesson in one plain sentence. It is not a separate `###` section and has no row in the "On this page" table. Write it so a beginner understands it with no other context: name who does what, say what the thing is in everyday words, give a concrete example, and avoid vague verbs such as "pulls it out." For example, write "A skill is a file of step-by-step instructions for one kind of task, such as reviewing a pull request, that you write once and save in a skills folder, and whenever you ask for that kind of task, Claude Code opens the file and follows its steps," not "A skill is a how-to guide Claude Code pulls out when needed."
 
 - **It must stand on its own.** I read it without the rest of the lesson. Never refer to the lesson's running example or screenshots ("in the signup example," "the dark mode plan"). If an example helps, describe it fully in the sentence itself.
 - **Group by topic.** Use one `####` heading per main idea (for example "How to use less of the context window"). Open each topic with one or two sentences that state the idea, then list its facts under it. Related points always sit under one heading, never as separate "Tip 1 / Tip 2" bullets scattered around.
@@ -89,7 +91,7 @@ Use these the way lesson 2 does. **Not every lesson needs all of them**: pick th
 
 | Technique | What it is | Example from lesson 2 |
 |---|---|---|
-| **In one sentence** | Open the lesson with the whole idea in one plain sentence. | "Claude Code works like a helper who doesn't give up after one try…" |
+| **In one sentence** | Open the revision summary with the whole idea in one plain sentence (see "Revision summary" in section 2). | "Claude Code finishes a task by repeating the same cycle until the job is done…" |
 | **Overview table** | Before details, a table of the lesson's main parts in plain words. | "The four parts": loop, context window, tools, permissions |
 | **Everyday comparison** | Compare each big idea to something from daily life. | Loop = a mechanic. Context window = a whiteboard. Tools = a friend with a wrench vs. on the phone. Permissions = keys for a new assistant. |
 | **One running example** | Pick one realistic task and use it through the whole lesson. | "The login test is failing. Fix it." |
@@ -201,8 +203,7 @@ Every lesson file follows this order exactly:
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The big picture](#the-big-picture) |
+| 2 | [The big picture](#the-big-picture) |
 | … | … |
 | n | [Recap](#recap) |
 | n | [My notes / practice](#my-notes--practice) |
@@ -211,6 +212,10 @@ Every lesson file follows this order exactly:
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+(The whole lesson in one plain sentence that a beginner understands with no other context.)
 
 #### (One heading per main idea)
 
@@ -221,8 +226,6 @@ Every lesson file follows this order exactly:
 - **(Scenario.)** Answer. (Exam domain)
 
 ---
-
-### In one sentence
 
 ### (Overview table of the main parts, and the running example)
 

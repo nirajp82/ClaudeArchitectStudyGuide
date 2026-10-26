@@ -13,20 +13,23 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The five parts](#the-five-parts) |
-| 4 | [1. The context window: the model's working memory](#1-the-context-window-the-models-working-memory) |
-| 5 | [2. When the window fills up: compaction](#2-when-the-window-fills-up-compaction) |
-| 6 | [3. Three commands: /context, /compact, /clear](#3-three-commands-context-compact-clear) |
-| 7 | [4. Compact or clear?](#4-compact-or-clear) |
-| 8 | [5. Three ways to save space](#5-three-ways-to-save-space) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 2 | [The five parts](#the-five-parts) |
+| 3 | [1. The context window: the model's working memory](#1-the-context-window-the-models-working-memory) |
+| 4 | [2. When the window fills up: compaction](#2-when-the-window-fills-up-compaction) |
+| 5 | [3. Three commands: /context, /compact, /clear](#3-three-commands-context-compact-clear) |
+| 6 | [4. Compact or clear?](#4-compact-or-clear) |
+| 7 | [5. Three ways to save space](#5-three-ways-to-save-space) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+Each Claude Code conversation has a limited working memory (the context window) that fills up with everything Claude Code reads, runs, and writes, and the model works worse as it fills, so you check how full it is with /context, shrink it into a short summary with /compact, or empty it completely with /clear.
 
 #### What the context window is
 
@@ -85,10 +88,6 @@ A full context window causes three problems:
 - **A security reviewer asks whether compaction removes code from Anthropic's servers.** No. It only changes what is sent from then on. To control what reaches the servers, limit which files Claude Code can read. (Governance, Safety & Risk)
 
 ---
-
-### In one sentence
-
-Each Claude Code session has a **limited memory**, and everything it reads or does fills it up, so you keep it useful by **checking** it (`/context`), **shrinking** it (`/compact`), **emptying** it (`/clear`), and **not filling it with junk**.
 
 ### The five parts
 

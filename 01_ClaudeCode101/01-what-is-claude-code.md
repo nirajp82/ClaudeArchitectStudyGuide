@@ -27,6 +27,10 @@
 
 ### Revision summary
 
+#### In one sentence
+
+Claude Code is a program on your computer that lets an AI model work directly inside your project: it opens your files, edits your code, and runs commands in your terminal, instead of only writing answers that you copy and paste yourself.
+
 #### What Claude Code is
 
 Claude Code is an AI coding tool that does the work instead of only answering questions. It reads your project's files, edits them, runs commands in your terminal, and uses tools you already have, such as Git. The course calls this *agentic*: able to take actions on its own.

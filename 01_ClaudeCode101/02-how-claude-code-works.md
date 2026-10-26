@@ -13,20 +13,23 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [In one sentence](#in-one-sentence) |
-| 3 | [The four parts](#the-four-parts) |
-| 4 | [1. The loop: look, do, check, repeat](#1-the-loop-look-do-check-repeat) |
-| 5 | [2. The context window: what the model can see right now](#2-the-context-window-what-the-model-can-see-right-now) |
-| 6 | [3. Tools: how Claude Code actually does things](#3-tools-how-claude-code-actually-does-things) |
-| 7 | [4. Permissions: what Claude Code can do without asking](#4-permissions-what-claude-code-can-do-without-asking) |
-| 8 | [5. Behind the scenes: your computer vs. Anthropic's servers](#5-behind-the-scenes-your-computer-vs-anthropics-servers) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 2 | [The four parts](#the-four-parts) |
+| 3 | [1. The loop: look, do, check, repeat](#1-the-loop-look-do-check-repeat) |
+| 4 | [2. The context window: what the model can see right now](#2-the-context-window-what-the-model-can-see-right-now) |
+| 5 | [3. Tools: how Claude Code actually does things](#3-tools-how-claude-code-actually-does-things) |
+| 6 | [4. Permissions: what Claude Code can do without asking](#4-permissions-what-claude-code-can-do-without-asking) |
+| 7 | [5. Behind the scenes: your computer vs. Anthropic's servers](#5-behind-the-scenes-your-computer-vs-anthropics-servers) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
+
+#### In one sentence
+
+Claude Code finishes a task by repeating the same cycle until the job is done: the AI model on Anthropic's servers decides the next step, Claude Code carries out that step on your computer (for example, it opens a file, edits code, or runs your tests), and the model looks at the result before deciding the next step.
 
 #### The loop
 
@@ -78,10 +81,6 @@ Only what Claude Code reads is sent. Files it never opens stay on your computer,
 - **A security team asks what data leaves the computer.** Only what Claude Code read: requests, files it opened, command output, and search results. It depends on what was read, not on project size. Control it with permission settings and by keeping secrets out of likely files. (Governance, Safety & Risk)
 
 ---
-
-### In one sentence
-
-Claude Code works like a helper who doesn't give up after one try: it **looks** at your code, **makes a change**, **checks** if the change worked, and **tries again** if it didn't.
 
 ### The four parts
 

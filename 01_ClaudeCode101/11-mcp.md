@@ -54,7 +54,7 @@ You add a server by running `claude mcp add` in your normal terminal, not inside
 - Some services also offer an older kind of remote connection called SSE (*Server-Sent Events*). Claude Code still accepts it, but SSE is being phased out (*deprecated*), so when a service offers both SSE and HTTP, choose HTTP.
 - Three more terminal commands manage the servers you added: `claude mcp list` lists every server, `claude mcp get linear-server` shows the settings of one server (here, the one named `linear-server`), and `claude mcp remove linear-server` deletes it.
 
-#### When to use what
+#### When to use an MCP server, and which type
 
 - **Use an MCP server** when Claude Code needs a service that it can't reach with a terminal command. For example: your team's issues in Linear, or current library documentation from Context7.
 - **Use the service's command-line tool instead** when one exists, such as `gh` for GitHub, because a command takes no space in the context window until it runs.

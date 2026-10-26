@@ -51,8 +51,15 @@ You add a server by running `claude mcp add` in your normal terminal, not inside
 | **stdio** (local) | As a program on your own computer | `claude mcp add --transport stdio dev-utils -- python C:/Users/you/mcp-server/server.py` |
 
 - In a stdio command, everything after the `--` is the command that starts the server program. Everything before it is an option for Claude Code.
-- From the docs: an older remote type, SSE, is deprecated. Use HTTP where possible.
-- From the docs: `claude mcp list` shows all servers, `claude mcp get <name>` shows one, and `claude mcp remove <name>` deletes one.
+- Some services also offer an older kind of remote connection called SSE (*Server-Sent Events*). Claude Code still accepts it, but SSE is being phased out (*deprecated*), so when a service offers both SSE and HTTP, choose HTTP.
+- Three more terminal commands manage the servers you added: `claude mcp list` lists every server, `claude mcp get linear-server` shows the settings of one server (here, the one named `linear-server`), and `claude mcp remove linear-server` deletes it.
+
+#### When to use what
+
+- **Use an MCP server** when Claude Code needs a service that it can't reach with a terminal command. For example: your team's issues in Linear, or current library documentation from Context7.
+- **Use the service's command-line tool instead** when one exists, such as `gh` for GitHub, because a command takes no space in the context window until it runs.
+- **Use an HTTP server** when the service provider runs the server for you, such as Linear. You only need its web address.
+- **Use a stdio server** when the server is a program on your own computer, such as a Python script you wrote.
 
 #### How to check and manage servers
 
@@ -72,9 +79,11 @@ The scope decides which projects and which people get a server. You choose it wi
 | **User** | Only you, in all your projects | `~/.claude.json` |
 | **Project** | Everyone who works on the repository | A `.mcp.json` file at the root of the repository, committed to Git |
 
-- Use the project scope when the whole team should have the same servers automatically.
-- From the docs: before Claude Code uses servers from a project's `.mcp.json`, it asks you to approve them, because anyone who can change the repository can add a server.
-- From the docs: if the same server name exists in several scopes, local wins over project, and project wins over user.
+- **Use local** (the default) to try a server, or for a server that uses your personal access, in one project.
+- **Use user** for a server you want in every project, such as Context7 for documentation.
+- **Use project** when the whole team should get the same server automatically, such as the team's Linear connection.
+- Before Claude Code uses servers from a project's `.mcp.json`, it asks you to approve them, because anyone who can change the repository can add a server.
+- If the same server name exists in several scopes, local wins over project, and project wins over user.
 - **Warning:** never write passwords or access tokens directly in `.mcp.json`, because the file is shared through Git. The docs let you write `${API_KEY}` instead, and Claude Code fills in the value from your computer's environment variables.
 
 #### How MCP servers use your context window
@@ -197,7 +206,7 @@ The `--` is a divider. Everything before it is for Claude Code. Everything after
 | **HTTP** | The service is online and the provider hosts the server | Linear, Notion, Sentry |
 | **stdio** | The server needs your computer: local files, local databases, or your own script | Your `dev-utils` Python program |
 
-**Extra (from the docs):** an older remote type called SSE is deprecated, so choose HTTP when a provider offers both. `claude mcp list`, `claude mcp get <name>`, and `claude mcp remove <name>` let you check and delete servers from the terminal.
+**Not in the course, from the official Claude Code documentation:** some services also offer an older kind of remote connection called SSE (*Server-Sent Events*). Claude Code still accepts it, but SSE is being phased out (*deprecated*), so when a service offers both SSE and HTTP, choose HTTP. Three more terminal commands manage your servers: `claude mcp list` lists every server, `claude mcp get linear-server` shows the settings of the server named `linear-server`, and `claude mcp remove linear-server` deletes it.
 
 ---
 
@@ -257,7 +266,7 @@ Claude Code creates `shop-app/.mcp.json`:
 
 You commit this file. When a teammate pulls the repository and starts Claude Code, they get `linear-server` automatically. Each teammate still signs in to Linear with their own account in `/mcp`, so nobody shares your login.
 
-**Extras from the docs:**
+**Not in the course, from the official Claude Code documentation:**
 
 - Claude Code asks each person to approve the servers in a project's `.mcp.json` before using them, because anyone who can change the repository could add a server.
 - If the same name exists in more than one scope, local wins over project, and project wins over user.

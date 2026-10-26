@@ -85,11 +85,13 @@ The reviewer only reports; you decide. Don't fix everything: not every finding i
 - Give all decisions in one message: "Fix findings 1 and 3 and show me the test output. Check finding 2 again; line 4 already removes extra spaces. Skip finding 4."
 - Always ask for proof. "I fixed it" is just another report; test output is evidence. If a fix grows large, run `/code-review` again.
 
-#### How much review a change needs
+#### When to use which review tool
 
-- **Small and simple**, such as a typo in a button label: a quick look at the diff is enough.
-- **Large, sensitive** (login, payments, personal data), **hard to undo, or going to a teammate:** read the diff and run `/code-review`.
-- **A problem the reviewer keeps finding:** add a rule to `CLAUDE.md`, such as "Never skip or loosen a test to make it pass."
+- **Use only `/diff`** when the change is small and simple, such as a typo in a button label. A quick look at the before and after is enough.
+- **Use `/diff` and then `/code-review`** when the change is large, touches sensitive code (login, payments, personal data), is hard to undo, or is going to a teammate.
+- **Use `/security-review`** when the change could affect security, such as a new login check or code that handles passwords, because it looks only for security problems.
+- **Use `/rewind`** when the whole change is wrong and you want your files back as they were before a chosen message.
+- **Use a rule in `CLAUDE.md`** when the reviewer keeps finding the same problem, such as "Never skip or loosen a test to make it pass," so Claude Code avoids it from the start.
 
 #### Exam takeaways
 
@@ -241,7 +243,7 @@ A friend who reads your essay once often spots mistakes you missed after five re
 
 It uses your plan or budget like any task, so save it for changes that deserve it (section 5). You can also ask in plain words: "Review the changes you just made. Report problems; don't fix anything yet." If Claude Code just answers in the chat instead of starting a review, type `/code-review` yourself.
 
-**Extra (from the docs):** `/review` is the same command. `--fix` makes it apply its findings; you can set how thorough it is (`low` to `max`) or point it at a pull request. `/security-review` is a separate security check.
+**Not in the course, from the official Claude Code documentation:** `/review` is the same command. `--fix` makes it apply its findings; you can set how thorough it is (`low` to `max`) or point it at a pull request. `/security-review` is a separate security check.
 
 #### What the reviewer sent back
 

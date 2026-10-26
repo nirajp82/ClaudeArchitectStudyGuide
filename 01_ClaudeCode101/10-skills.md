@@ -49,7 +49,7 @@ The `description` field is how Claude Code decides whether a skill fits your req
 2. When you make a request, such as "Review this PR," the model compares the request with every skill description.
 3. When a description matches, Claude Code loads that skill's **full instructions** and follows them.
 
-This means a skill uses almost no space until it is needed. The docs call this *progressive disclosure*. Write the description so it states both what the skill does and when to use it, with the main use case first, because the listing cuts descriptions off after 1,536 characters.
+This means a skill uses almost no space until it is needed. The official Claude Code documentation calls this *progressive disclosure*. Write the description so it states both what the skill does and when to use it, with the main use case first, because the listing cuts descriptions off after 1,536 characters.
 
 #### Where skill files go
 
@@ -57,25 +57,19 @@ This means a skill uses almost no space until it is needed. The docs call this *
 |---|---|---|
 | **Personal** | `~/.claude/skills/<name>/SKILL.md` (Windows: `C:\Users\you\.claude\skills\<name>\SKILL.md`) | Only you, in all your projects |
 | **Project** | `.claude/skills/<name>/SKILL.md` at the root of the repository | Everyone who clones the repository, once it is committed to Git |
-| **Enterprise** (from the docs) | The `.claude/skills/` folder in your organization's managed settings directory | Every user on machines where the organization deploys it |
+| **Enterprise** | The `.claude/skills/` folder in your organization's managed settings directory | Every user on machines where the organization deploys it |
 
-- Personal skills hold your own preferences, such as your commit message style or how you like code explained.
-- Project skills hold team standards, such as brand colors and fonts, or the team's review checklist.
 - If two skills have the same name, enterprise beats personal, and personal beats project. This is the opposite of subagents, where the project file wins.
-- From the docs: new or edited skill files take effect in the current session without a restart. If you create the top-level `skills` folder during a session, run `/reload-skills` once.
+- New or edited skill files take effect in the current session without a restart. If you create the top-level `skills` folder during a session, run `/reload-skills` once.
 
-#### Skills compared with other ways to customize Claude Code
+#### When to use a skill, `CLAUDE.md`, a slash command, or a subagent
 
-| Feature | When it loads | Who starts it |
-|---|---|---|
-| **`CLAUDE.md`** ([lesson 8](08-claude-md-file.md)) | In full, in every conversation | Always on |
-| **Skill** | Name and description always, full instructions only when a request matches | The model, automatically, or you by typing `/skill-name` |
-| **Slash command** | When you type it | Only you |
-| **Subagent** ([lesson 9](09-subagents.md)) | Runs in its own separate context window | The model or you |
-
-- Put rules that apply to every task, such as "always use TypeScript strict mode," in `CLAUDE.md`.
-- Put knowledge for one kind of task, such as a pull request review checklist, in a skill, so it doesn't take up space while you debug.
-- The course says slash commands need typing and skills don't. The docs add that you can also start any skill yourself by typing `/` followed by its name, and that `disable-model-invocation: true` stops the model from starting it automatically.
+- **Use `CLAUDE.md`** ([lesson 8](08-claude-md-file.md)) for a rule that applies to every task. For example: "Always use TypeScript strict mode." Its full text loads in every conversation, so keep only always-true rules there.
+- **Use a skill** for instructions needed only for one kind of task, that Claude Code should apply without being asked. For example: the team's pull request review checklist. Only its name and description load until a request matches, so it takes almost no space while you debug.
+- **Use a slash command** when you want to start something yourself, by typing it. For example: `/compact`. You can also start any skill this way by typing `/` and its name, such as `/pr-review`.
+- **Use a skill with `disable-model-invocation: true`** for risky tasks, such as deploying, that must start only when you type the command and never by the model's choice.
+- **Use a subagent** ([lesson 9](09-subagents.md)) when a task should run in its own separate context window and send back only a summary. For example: searching 15 files to find which service handles refunds.
+- **Use a personal skill** (`~/.claude/skills/`) for your own habits, such as your commit message style, and a **project skill** (`.claude/skills/` in the repository) for team standards, such as the review checklist.
 
 #### Exam takeaways
 
@@ -160,7 +154,7 @@ When reviewing a pull request:
 | The text below | The instructions the model follows once the skill is loaded. |
 | `checklist.md` | An extra file in the same folder. The model reads it only when the instructions point to it, so long reference material costs nothing until needed. |
 
-**Extra (from the docs):** keep `SKILL.md` under 500 lines and move long material into extra files. Two optional settings are worth knowing:
+**Not in the course, from the official Claude Code documentation:** keep `SKILL.md` under 500 lines and move long material into extra files. Two optional settings are worth knowing:
 
 - `disable-model-invocation: true` means only you can start the skill (by typing `/pr-review`). Use it for risky tasks, such as deploying, that should never start by accident.
 - `allowed-tools` lists tools the skill may use without asking you for permission.
@@ -194,7 +188,7 @@ Things to notice:
 
 - If you ask "Why is the refund test failing?", no description matches, so the review checklist never enters the context window.
 - A vague description such as "Helps with code" makes the skill load at the wrong times or never.
-- From the docs: once loaded, the skill's text stays in the conversation.
+- Once loaded, the skill's text stays in the conversation.
 
 > **Remember this:** The description is always there. The instructions arrive only when needed.
 
@@ -217,7 +211,7 @@ A project skill sits in the repository's own `.claude` folder, next to the `agen
 
 ![Code editor file tree of a project's .claude folder: an agents folder, and a skills folder holding commit-message and pr-review, with pr-review containing SKILL.md](images/10-project-skills-folder.png)
 
-**Warning: the name priority is the opposite of subagents.** If a personal skill and a project skill share a name, the personal one wins (from the docs). An enterprise skill, set by your organization, beats both. So give personal skills names that won't clash with team skills, or your teammates' review checklist may be silently replaced on your computer by your own.
+**Warning: the name priority is the opposite of subagents.** If a personal skill and a project skill share a name, the personal one wins. An enterprise skill, set by your organization, beats both. So give personal skills names that won't clash with team skills, or your teammates' review checklist may be silently replaced on your computer by your own.
 
 ---
 
@@ -232,7 +226,7 @@ A project skill sits in the repository's own `.claude` folder, next to the `agen
 
 **Why not put everything in `CLAUDE.md`?** `CLAUDE.md` is loaded in full in every conversation. A 200-line review checklist would take up space while you debug, when it isn't needed. A skill costs one description line until you ask for a review.
 
-**Skills and slash commands overlap.** The course says skills, unlike slash commands, don't need to be typed. The docs add that every skill can also be typed as `/skill-name`, and that older custom commands in `.claude/commands/` still work. A skill adds automatic loading and extra files on top.
+**Skills and slash commands overlap.** The course says skills, unlike slash commands, don't need to be typed. The official Claude Code documentation adds that every skill can also be typed as `/skill-name`, and that older custom commands in `.claude/commands/` still work. A skill adds automatic loading and extra files on top.
 
 #### Common mix-ups
 

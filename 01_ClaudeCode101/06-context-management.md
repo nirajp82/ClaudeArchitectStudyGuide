@@ -68,11 +68,13 @@ A full context window causes three problems:
 - **`/compact`** takes instructions on what to keep, such as `/compact Focus on the failing email tests`. A "Compact instructions" section in `CLAUDE.md` guides every automatic compaction.
 - **`/clear`** doesn't change your files, and `CLAUDE.md` loads again. `/resume` reopens the old conversation. `/reset` and `/new` do the same as `/clear`.
 
-#### When to compact and when to clear
+#### When to use which command
 
-- **Partway through a task, with the window filling up:** use `/compact`, so the history stays in summary form.
-- **Starting an unrelated task:** use `/clear`, so the old task doesn't influence the new one.
-- **Something every future session needs:** put it in `CLAUDE.md`, which loads at every start and after both commands.
+- **Use `/context`** when Claude Code starts to feel slow or forgetful, or before a long task, to see how full the window is and what is using the space.
+- **Use `/compact`** when you are partway through a task and the window is filling up, so Claude Code keeps a summary of the work so far. For example: `/compact Focus on the failing email tests`.
+- **Use `/clear`** when you start an unrelated task, so the old task doesn't mislead the model in the new one. For example, clear after finishing the password reset feature and before fixing a styling bug.
+- **Use `/resume`** when you cleared a conversation and need it back.
+- **Use `CLAUDE.md`** for anything every future session needs, such as the test command, because it loads at every start and again after both `/compact` and `/clear`.
 
 #### How to use less of the context window
 
@@ -182,7 +184,7 @@ So the 64k "used" is 2.9k + 14.6k + 1.3k + the 45k buffer: most of it isn't your
 
 ![Typing /compact in Claude Code; the menu says "Clear conversation history but keep a summary in context"](images/06-compact-command.png)
 
-**Extra (from the docs):** tell it what to keep:
+**Not in the course, from the official Claude Code documentation:** tell it what to keep:
 
 ```text
 /compact Focus on the password reset flow and the failing email tests
@@ -196,7 +198,7 @@ To make **every** automatic compaction keep what you care about, add a "Compact 
 
 - Your **files are not touched.** Only the conversation is emptied.
 - Your **`CLAUDE.md` still loads** in the new conversation.
-- **Extra (from the docs):** the old conversation isn't deleted. Get it back with `/resume`. `/reset` and `/new` do the same as `/clear`.
+- **Not in the course, from the official Claude Code documentation:** the old conversation isn't deleted. Get it back with `/resume`. `/reset` and `/new` do the same as `/clear`.
 
 ---
 
@@ -245,7 +247,7 @@ In the running example:
 
 The course calls this the irony of short prompts: **the smaller prompt uses more context in the long run.**
 
-**MCP servers** are add-ons that give Claude Code extra tools, like reading GitHub issues (lesson 11). At the start, only each tool's name and the server's short instructions load; full details load when needed. (The video said all tools load at once; the written course and docs say this, so I followed them.) Run `/mcp` to switch servers off. For services with a command-line tool, like `gh` for GitHub, using the tool directly takes even less space than an MCP server.
+**MCP servers** are add-ons that give Claude Code extra tools, like reading GitHub issues (lesson 11). At the start, only each tool's name and the server's short instructions load; full details load when needed. (The video said all tools load at once; the written course and the official Claude Code documentation say this, so I followed them.) Run `/mcp` to switch servers off. For services with a command-line tool, like `gh` for GitHub, using the tool directly takes even less space than an MCP server.
 
 A **subagent** is a helper with its own separate context window (lesson 9). It does the searching there and sends back only the answer:
 

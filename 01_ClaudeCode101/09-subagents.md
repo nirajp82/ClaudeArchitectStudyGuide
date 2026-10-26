@@ -37,7 +37,7 @@ A subagent is a second AI helper that your Claude Code conversation starts for o
 A subagent is a helper AI conversation that your Claude Code session starts to do one task, in its own separate context window. Its main benefit is that your main context window stays clean.
 
 - **The problem it solves:** every file Claude Code reads, every search, and every tool result is stored in your conversation's context window (its working memory, [lesson 6](06-context-management.md)). A long investigation can fill that window with material you don't need afterwards.
-- **What the subagent gets at the start:** its own instructions (the *system prompt*, written in the subagent's file) and a task message that your main Claude Code session writes for it. It does not get your conversation history. From the docs: it also gets your `CLAUDE.md` files and the Git status, except the built-in Explore and Plan subagents, which skip both.
+- **What the subagent gets at the start:** its own instructions (the *system prompt*, written in the subagent's file) and a task message that your main Claude Code session writes for it. It does not get your conversation history. It does get your `CLAUDE.md` files and the Git status, except the built-in Explore and Plan subagents, which skip both.
 - **What comes back:** only a short summary of what it found. All the files it read and the searches it ran stay in the subagent's own context window, which is then thrown away.
 - **The trade-off:** your main conversation can't see how the subagent reached its answer. If you need the evidence, ask for file paths and line numbers in the summary.
 - **Example:** to answer "Which service handles refunds?", a subagent might read 15 files and run several searches. Your main conversation receives only the answer, such as "`services/refund-service.ts` handles refunds."
@@ -51,6 +51,15 @@ Claude Code includes subagents you can use straight away, and it chooses one by 
 | **general-purpose** | Yes, it has every tool | Multi-step tasks that need both exploring and acting |
 | **Explore** | No, it is read-only | Fast searching of a codebase |
 | **Plan** | No, it is read-only | Research during plan mode, before Claude Code presents a plan |
+
+#### When to use a subagent, and which one
+
+- **Use your main conversation** for small tasks, and whenever you need to see every file and step yourself. For example: "Fix the typo on line 12 of `cart.ts`."
+- **Use a subagent** when a task needs to read many files but you only need the answer. For example: "Which service handles refunds?"
+- **Use Explore** to find or understand code without changing it.
+- **Use general-purpose** when the task needs both searching and changing files. For example: "Find every place we format dates and switch them to the new helper."
+- **You don't pick Plan.** Claude Code starts it by itself in plan mode.
+- **Create your own subagent** when you repeat the same specialized job with the same rules, such as code review. Save it in the project's `.claude/agents/` folder when the team should share it, or in `~/.claude/agents/` when it is only for you, in all your projects.
 
 #### Creating your own subagent
 
@@ -178,7 +187,7 @@ These come with Claude Code. You don't create them. Claude Code chooses one on i
 | **Explore** | Read-only: it cannot write or edit files | Fast searching of a codebase | "Which service handles refunds?" |
 | **Plan** | Read-only | In plan mode ([lesson 4](04-your-first-prompt.md)), to research the code before Claude Code shows you a plan | Plan mode looking up how payments are tested |
 
-**Extra (from the docs):** Explore and Plan skip your `CLAUDE.md` files to stay fast; other subagents load them. Claude Code also has two small built-in helpers, `statusline-setup` and `claude-code-guide`, for setting up the status bar and answering questions about Claude Code.
+**Not in the course, from the official Claude Code documentation:** Explore and Plan skip your `CLAUDE.md` files to stay fast; other subagents load them. Claude Code also has two small built-in helpers, `statusline-setup` and `claude-code-guide`, for setting up the status bar and answering questions about Claude Code.
 
 ---
 
@@ -242,7 +251,7 @@ Do not change any files.
 | "Use the code-reviewer subagent to check `refund-service.ts`." | You name it, so Claude Code will almost certainly use it. |
 | `@` then pick `code-reviewer (agent)` | Guaranteed to run that subagent. |
 
-**Extra (from the docs):** in current versions, `/agents` only tells you to ask Claude Code or edit the folders directly. Older versions opened a menu for managing subagents.
+**Not in the course, from the official Claude Code documentation:** in current versions, `/agents` only tells you to ask Claude Code or edit the folders directly. Older versions opened a menu for managing subagents.
 
 #### Common mix-ups
 
@@ -263,7 +272,7 @@ Do not change any files.
 | `memory: project` | Gives the subagent a notes folder that survives between conversations. It can write down what it learns and read it next time. Good for a subagent you use often on the same project. | The code reviewer remembers "this team always forgets to check for empty carts." Notes go in `shop-app/.claude/agent-memory/code-reviewer/`. |
 | `skills: [...]` | Loads the listed skills ([lesson 10](10-skills.md)) at the start. | `skills: [security-checklist]` |
 
-From the docs, the three memory options are `user` (`~/.claude/agent-memory/<name>/`, all projects), `project` (`.claude/agent-memory/<name>/`, can be shared through Git), and `local` (`.claude/agent-memory-local/<name>/`, this project, not shared).
+The official Claude Code documentation lists three memory options: `user` (`~/.claude/agent-memory/<name>/`, all projects), `project` (`.claude/agent-memory/<name>/`, can be shared through Git), and `local` (`.claude/agent-memory-local/<name>/`, this project, not shared).
 
 **Warning: skills cost more space in a subagent.** In your main conversation, only a skill's short description loads at the start; the full skill loads only when it is used. In a subagent, the course says the **entire** skill is loaded at the start. So preload only the skills that subagent always needs.
 

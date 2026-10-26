@@ -33,6 +33,15 @@ For any task bigger than a small fix, work in four steps: let Claude Code read t
 
 For any task bigger than a one-sentence change, work in four steps: Claude Code reads the code (**explore**), you agree on an approach (**plan**), Claude Code builds and tests it (**code**), and you review and save it to Git (**commit**). Each step is a prompt you type in the right permission mode, not a button. For a one-sentence change, such as a typo, just ask.
 
+#### When to use what in this workflow
+
+- **Use all four steps** when the task touches several files, the code is unfamiliar to you, or a mistake would be costly. For example: "Save uploaded photos as WebP instead of JPEG."
+- **Skip the workflow and just ask** when the change fits in one sentence. For example: "Fix the typo in the signup button."
+- **Use an explore prompt only, with no plan,** when you just want to understand code, or ask for the Explore subagent so your conversation receives only a summary.
+- **Pick "Yes, clear context and auto-accept edits"** when exploring filled the conversation with material the build no longer needs, so the build starts fresh with only the plan.
+- **Pick "Yes, manually approve edits"** when the code is important and you want to approve each edit as it is made.
+- **Pick "No, keep planning"** when the plan is wrong or incomplete, because fixing a plan costs one sentence and fixing code costs much more.
+
 #### Steps 1 and 2: explore and plan
 
 Do both steps in plan mode, which blocks all file edits. Typing "don't change anything" is only a request; plan mode enforces it.
@@ -269,7 +278,7 @@ Claude Code fixes many problems itself: it runs the tests, sees a failure, reads
 
 ![The Claude in Chrome (Beta) extension page in the Chrome Web Store, published by claude.com with a verified badge](images/05-chrome-extension.png)
 
-**Claude in Chrome** (from the docs): works with Chrome, Edge, and other Chromium browsers like Brave; needs a paid Claude plan (Pro, Max, Team, or Enterprise) signed in with `/login`, not an API key; and you connect it with `claude --chrome` or `/chrome`. It can open pages, fill forms, read **console errors** (error messages the browser prints), and take screenshots. Example prompt:
+**Claude in Chrome** (not in the course, from the official Claude Code documentation): works with Chrome, Edge, and other Chromium browsers like Brave; needs a paid Claude plan (Pro, Max, Team, or Enterprise) signed in with `/login`, not an API key; and you connect it with `claude --chrome` or `/chrome`. It can open pages, fill forms, read **console errors** (error messages the browser prints), and take screenshots. Example prompt:
 
 ```text
 Open localhost:3000, upload tests/fixtures/portrait.jpg, and check that

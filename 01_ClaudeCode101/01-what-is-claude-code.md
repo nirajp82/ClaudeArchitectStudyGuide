@@ -38,6 +38,11 @@ Claude Code is an AI coding tool that does the work instead of only answering qu
 - **Where you can use it:** the terminal (the text window where you type commands), VS Code, JetBrains editors such as IntelliJ and PyCharm, the Claude Desktop app, and the web.
 - **How it differs from Claude.ai:** both use the same model. In Claude.ai, the model sees only what you paste, and you copy its answers back yourself. Claude Code works inside your project folder, so it opens your files and makes the changes itself.
 
+#### When to use Claude Code and when to use Claude.ai
+
+- **Use Claude.ai** when you have a general question, or a short piece of code you can paste in, and nothing in your project needs to change. For example: "What does this regular expression do?"
+- **Use Claude Code** when the work happens inside your project: finding the right files, editing code, and running commands such as tests. For example: "The login test is failing. Fix it."
+
 #### What an AI agent is
 
 An AI agent is a program that takes actions to reach a goal you give it, such as "fix this failing test."
@@ -94,6 +99,7 @@ Both use the same Claude model. The difference is what Claude can reach.
 | What it knows about your code | Only what you paste. | Anything in the codebase it chooses to open. |
 | Who does the work | You copy and paste the answers. | Claude makes the changes. |
 | What it is | A chat assistant. | An AI agent. |
+| **Use it when** | You have a question or a short snippet, and nothing in your project needs to change. | The task needs your project's files changed or commands run, such as fixing a failing test. |
 
 ### What is an AI agent?
 

@@ -65,9 +65,13 @@ Paste the command for your system into the terminal and press Enter.
 - **Claude Desktop:** the "Code" tab works in a folder on your computer, can change permission modes, and can run work on a remote computer in the cloud.
 - **The web:** works only with code stored on GitHub. It can't open a folder on your computer.
 
-#### Choosing where to use it
+#### When to use which install command and which place
 
-The terminal gets new features first. Use VS Code or JetBrains if you spend your day in that editor, Desktop to let Claude Code work in the background, and the web on another computer or to run several sessions at once.
+- **Use the official install command** (the `curl` or `irm` line) unless your company manages software through Homebrew or winget, because only the official command updates Claude Code by itself.
+- **Use the terminal** when you want the newest features first, because new features ship there before anywhere else.
+- **Use VS Code or JetBrains** when you spend your day in that editor and want Claude Code beside your code.
+- **Use the Claude Desktop app** when you want Claude Code to work in the background, or on a remote computer in the cloud, while you do something else.
+- **Use the web** (claude.ai/code) when you are on another computer, or want several sessions running at once, and your code is stored on GitHub.
 
 #### Exam takeaways
 

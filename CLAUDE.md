@@ -52,6 +52,22 @@ Rules:
 - **Course labels are never enough on their own.** If the course says "project file," "user file," "clean context," "reads it cold," explain what the label means in plain words the first time, and say what it does *not* mean if a beginner could misread it.
 - **Explain every tool, command, and code line in the running example**, even ones the course treats as obvious (`it.skip`, `localhost`, `pnpm`, "server actions"). I can't follow an example built on words I don't know.
 
+### Always say when to use what
+
+Whenever a lesson has options to choose between (modes, commands, files, scopes, features), say plainly **when to pick each one**. A table that only describes how the options work ("When it loads," "Who starts it," "Saved in") is not enough: I still can't tell which one to use.
+
+- In the revision summary, add a `#### When to use …` topic (for example, `#### When to use which permission mode`).
+- Write one bullet per option in this format: **Use `CLAUDE.md`** for a rule that applies to every task. For example: "Always use TypeScript strict mode."
+- In the lesson body, a comparison table gets a "Use it when" column or row.
+
+### Never write "from the docs"
+
+"From the docs" and "the docs say" are unclear labels. Never use them.
+
+- In the revision summary, state the fact plainly with no source label.
+- In the lesson body, mark extra facts as **Not in the course, from the official Claude Code documentation:**.
+- Explain every term in those facts too. Don't write "SSE is deprecated." Write "SSE is an older kind of remote connection that is being phased out (*deprecated*), so choose HTTP when a service offers both."
+
 **Before finishing a lesson, do a beginner read-through:** read every paragraph as someone who has never coded. For each sentence ask: *Who is doing this? Which file, and where is it? Do I know every word?* If any answer is "not sure," rewrite the sentence.
 
 ### Keep it short: clear, not long

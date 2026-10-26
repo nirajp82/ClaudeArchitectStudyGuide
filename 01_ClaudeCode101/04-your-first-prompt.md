@@ -42,9 +42,16 @@ A permission mode decides how often Claude Code stops to ask "Can I do this?" be
 | Auto | `⏵⏵ auto mode on` | Without asking | Without asking, but a second AI model blocks dangerous actions |
 
 - **Check the status bar before typing.** Recent versions start new terminal sessions in Auto mode, which appears only if your company allows it.
-- **There is no right or wrong mode.** Manual suits learning and important code, auto-accept everyday work, Auto long tasks, and plan mode big or unfamiliar changes.
+- **There is no right or wrong mode.** The course leaves the choice to you. The next topic says when each mode fits best.
 - **Warning:** in auto-accept mode, a few file commands inside your project run without asking: `mkdir`, `touch`, `mv`, `cp`, `rm`, `rmdir`, and `sed`. `rm` deletes files, and a deleted file never saved to Git is gone, so commit first.
 - **Press Esc** to stop or redirect Claude Code at any time, even after approving a plan.
+
+#### When to use which permission mode
+
+- **Use Manual** when you are learning Claude Code or changing important code, such as payment code, so you approve every edit and every command.
+- **Use Auto-accept** for everyday work in a project you know well, such as fixing a small bug, because edits are easy to see and undo, while most commands still need your approval.
+- **Use Auto** for long, repetitive tasks where clicking "allow" slows you down, such as "add tests for every file in `src/utils/`," and only where a second AI model blocking dangerous actions is enough protection.
+- **Use plan mode** for big, multi-step, or unfamiliar changes, such as "add dark mode across the whole app," so you agree on the plan before any file changes. For a typo, skip plan mode and just ask.
 
 #### Plan mode
 
@@ -89,7 +96,7 @@ Think of a builder in your house. **Manual:** they ask before every job. **Auto-
 |---|---|---|
 | **Manual** | ❌ Asks every time | ❌ Asks every time |
 | **Auto-accept** | ✅ Yes | ❌ Asks (most commands) |
-| **Auto** | ✅ Yes | ✅ Yes. A second AI model (the docs call it the *classifier*) checks each action first and blocks dangerous ones. |
+| **Auto** | ✅ Yes | ✅ Yes. A second AI model (the official Claude Code documentation calls it the *classifier*) checks each action first and blocks dangerous ones. |
 
 The course says **there's no right or wrong mode.** Pick what you're comfortable with.
 
@@ -118,7 +125,7 @@ flowchart LR
 | **Auto** | Long tasks where clicking "allow" slows you down | "Add tests for every file in `src/utils/`." |
 | **Plan mode** | Big, multi-step, or unfamiliar changes | "Add dark mode across the whole app." |
 
-> ⚠️ **Auto-accept doesn't ask about *every* command.** The docs say a few simple file commands inside your project run without asking: `mkdir`, `touch`, `mv`, `cp`, `rm`, `rmdir`, and `sed`. `rm` deletes files. If a deleted file was never saved to Git, it's gone. Commit your work first, or use Manual mode.
+> ⚠️ **Auto-accept doesn't ask about *every* command.** The official Claude Code documentation says a few simple file commands inside your project run without asking: `mkdir`, `touch`, `mv`, `cp`, `rm`, `rmdir`, and `sed`. `rm` deletes files. If a deleted file was never saved to Git, it's gone. Commit your work first, or use Manual mode.
 
 ---
 

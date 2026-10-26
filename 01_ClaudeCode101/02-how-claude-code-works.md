@@ -59,6 +59,13 @@ A permission mode decides what Claude Code may do without asking you. Press Shif
 | Plan mode | Not allowed | Only commands that look around |
 | Auto mode | Without asking | Without asking, but a safety checker blocks dangerous ones |
 
+**When to use which mode:**
+
+- **Use Manual** when you are learning Claude Code or working on important code, such as payment code, so you approve every single action.
+- **Use Auto-accept** for everyday work in a project you know well, because edits are easy to undo and you still approve every command.
+- **Use plan mode** for big, multi-step, or unfamiliar changes, so you agree on a plan before anything changes.
+- **Use Auto mode** for long tasks in a safe test environment, where approving each step slows you down and the safety checker's protection is enough.
+
 - **Auto-accept still asks before commands** because an edit is easy to see and undo, while a command can delete a folder or install software.
 - **Auto mode's checker blocks** actions that can't be undone (deleting a database), that destroy things (wiping a folder), or that reach outside your project (sending files to a website).
 - **Warning:** with the questions turned off, a mistake happens before anyone can stop it, such as deleting files never saved to Git.

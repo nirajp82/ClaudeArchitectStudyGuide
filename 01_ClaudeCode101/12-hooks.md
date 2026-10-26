@@ -40,6 +40,17 @@ A hook is a command that Claude Code runs automatically at a fixed moment, such 
 - **Common uses:** formatting files after every edit, logging every command for compliance, blocking dangerous actions such as changing production files, and sending yourself a notification when Claude Code finishes a task.
 - **The rule of thumb:** if something must happen every time without fail, do not put it in a prompt. Put it in a hook.
 
+#### When to use a hook, and which event
+
+- **Use `CLAUDE.md`** for guidance where an occasional miss is acceptable, such as "prefer short functions."
+- **Use a hook** when something must happen every time, such as formatting every edited file or logging every command.
+- **Use a deny rule in `settings.json`** ([lesson 8](08-claude-md-file.md)) when a simple pattern is enough to block an action, such as never editing `config/production.json`. **Use a `PreToolUse` hook** when the check needs a script, such as reading a command and blocking it if it commits to the `main` branch.
+- **Use `PreToolUse`** to check or block a tool call before it runs.
+- **Use `PostToolUse`** to react after a tool call, such as formatting a file or writing a log line.
+- **Use `UserPromptSubmit`** to check or add to your prompt before the model sees it.
+- **Use `Stop`** to run something when Claude Code finishes its reply, such as a final check.
+- **Use `Notification`** to alert yourself when Claude Code needs your input.
+
 #### How a hook is set up
 
 You write hooks in a `settings.json` file. Each hook has three parts: an event (when it runs), an optional matcher (which tools it applies to), and a command (what runs).
@@ -52,10 +63,10 @@ You write hooks in a `settings.json` file. Each hook has three parts: an event (
 | `Stop` | When Claude Code finishes its reply. |
 | `Notification` | When Claude Code sends you a notification, for example because it needs your input. |
 
-- **There are many more events**, about thirty in total, such as `SessionStart`. The hooks reference in the docs lists them all.
+- **There are many more events**, about thirty in total, such as `SessionStart`. The hooks reference page in the official Claude Code documentation lists them all.
 - **The matcher** compares against the tool name. `"Edit|Write"` means "the Edit tool or the Write tool." Leaving the matcher out, or writing `"*"`, matches every tool. Matchers are case-sensitive, so `"bash"` does not match the `Bash` tool.
 - **The `/hooks` command** inside Claude Code shows a read-only list of your hooks and which file each comes from. You cannot edit hooks there. You edit the `settings.json` file directly.
-- **Where hooks can live:** `~/.claude/settings.json` (Windows: `C:\Users\you\.claude\settings.json`) applies to all your projects. `.claude/settings.json` in a project applies to that project and is shared through Git. `.claude/settings.local.json` applies to that project, only for you, and is not committed. Hooks from all these files add together rather than replace each other.
+- **Which settings file to use:** use `~/.claude/settings.json` (Windows: `C:\Users\you\.claude\settings.json`) for hooks you want in all your projects, such as a desktop pop-up. Use the project's `.claude/settings.json` for hooks the whole team needs, such as formatting, because it is shared through Git. Use `.claude/settings.local.json` for hooks only you need in this project, because it is not committed. Hooks from all these files add together rather than replace each other.
 
 #### How a hook talks to Claude Code
 
@@ -79,7 +90,7 @@ Hooks in the project's `.claude/settings.json` can be committed to Git, so every
 - Keep hook scripts in the project, for example in `.claude/hooks/`, and commit them too.
 - Refer to scripts with the `CLAUDE_PROJECT_DIR` environment variable, which holds the project's root folder. Write `"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-dangerous-commands.sh"` so the script is found even when Claude Code has moved into a subfolder.
 
-#### Extra facts from the docs
+#### Other facts about hooks
 
 - A hook that blocks a tool call works in every permission mode, even when a developer turns off permission questions entirely.
 - An `Edit|Write` hook does not see files changed by a Bash command, such as `sed`. A hook that must catch every change needs to match `Bash` too, or check the files in a `Stop` hook.
@@ -197,7 +208,7 @@ Inside Claude Code, type `/hooks` to see a list of your hooks and which file eac
 | `shop-app/.claude/settings.json` | Everyone on the project | Yes |
 | `shop-app/.claude/settings.local.json` | Only you, in this project | No |
 
-From the docs: hooks from all these files add together. A company can also set hooks for everyone through managed settings, which developers cannot turn off.
+**Not in the course, from the official Claude Code documentation:** hooks from all these files add together. A company can also set hooks for everyone through managed settings, which developers cannot turn off.
 
 ---
 
@@ -253,7 +264,7 @@ Line by line:
 
 Now every time the model edits `refund-service.ts`, Claude Code runs Prettier on it. When the hook works, nothing appears in the conversation. The file is simply formatted.
 
-**Extra (from the docs):** this hook only sees the Edit and Write tools. If the model changes a file with a Bash command instead, the hook does not run. On Windows, command hooks run in Git Bash by default, and `jq` must be installed.
+**Not in the course, from the official Claude Code documentation:** this hook only sees the Edit and Write tools. If the model changes a file with a Bash command instead, the hook does not run. On Windows, command hooks run in Git Bash by default, and `jq` must be installed.
 
 ---
 
@@ -332,7 +343,7 @@ Things to notice:
 - Bash commands that contain `rm -rf`.
 - Commits to the `main` branch.
 
-**Extra (from the docs):** a hook that blocks works in every permission mode, even when permission questions are turned off ([lesson 2](02-how-claude-code-works.md)). That is what makes it a hard rule.
+**Not in the course, from the official Claude Code documentation:** a hook that blocks works in every permission mode, even when permission questions are turned off ([lesson 2](02-how-claude-code-works.md)). That is what makes it a hard rule.
 
 **Warning:** a text check like this catches only what it looks for. The command `rm -r -f dist` does the same thing but does not contain `rm -rf`, so the script above lets it through. Write checks carefully and combine hooks with permission rules.
 
@@ -346,7 +357,7 @@ Hooks in `shop-app/.claude/settings.json` belong to the project. Commit that fil
 
 **Why `CLAUDE_PROJECT_DIR`:** Claude Code sometimes works inside a subfolder, such as `shop-app/services/`. A relative path like `.claude/hooks/format-file.sh` would then point to `shop-app/services/.claude/hooks/format-file.sh`, which does not exist. `CLAUDE_PROJECT_DIR` is an environment variable (a named value that programs can read) holding the project's root folder, such as `C:/Projects/shop-app`. Starting the path with it always finds the script.
 
-**Extra (from the docs):** Claude Code holds back all hooks in a project folder until you accept the "trust this folder" question, so a repository you clone cannot run hooks before you agree.
+**Not in the course, from the official Claude Code documentation:** Claude Code holds back all hooks in a project folder until you accept the "trust this folder" question, so a repository you clone cannot run hooks before you agree.
 
 #### Common mix-ups
 

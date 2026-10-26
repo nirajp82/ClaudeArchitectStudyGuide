@@ -56,7 +56,16 @@ Every Claude Code session (one run, from typing `claude` until you close it or t
 | Company file (*managed policy*) | Windows: `C:\Program Files\ClaudeCode\CLAUDE.md`; Mac: `/Library/Application Support/ClaudeCode/CLAUDE.md` | Everyone; can't be turned off | Installed by IT |
 
 - **The files add up;** none replaces another. If two disagree, the model may follow either, so keep them consistent. Files in folders above the start folder load too, and a subfolder's file loads once Claude Code works there.
-- **To choose a file,** ask: "Would this be true for anyone on this project?" If yes, use the project file; if it's your taste, the user file.
+
+#### When to use which file
+
+To choose, ask: "Would this be true for anyone working on this project?"
+
+- **Use the project file** (`journal-app/CLAUDE.md`) when the rule is true for anyone on this project. For example: "Run tests with `pnpm test`" or "Use server actions instead of API routes."
+- **Use the user file** (`C:\Users\you\.claude\CLAUDE.md`) when the rule is your personal taste and you want it in every project. For example: "Write short code comments in plain English."
+- **Use the local file** (`journal-app/CLAUDE.local.md`) when the note is personal and only about this project, and teammates must not get it. For example: the login you use for testing.
+- **Use the company file** when IT needs a rule for every developer that nobody can turn off. For example: "Never paste customer data into prompts."
+- **Use a deny rule or a hook instead of any `CLAUDE.md`** when an action must be blocked for sure, because `CLAUDE.md` is only advice.
 
 #### Tips for a good `CLAUDE.md`
 
@@ -180,13 +189,13 @@ You: Add a delete button for journal entries.
 
 So the model reads your rules **before** your request, in every session.
 
-> ⚠️ **It's advice, not a lock** (from the docs). The model **tries** to follow `CLAUDE.md`; vague or contradictory rules get followed less. To **block** something for sure, use a **hook**: a script Claude Code runs automatically that can stop an action (lesson 12).
+> ⚠️ **It's advice, not a lock** (this is from the official Claude Code documentation, not the course). The model **tries** to follow `CLAUDE.md`; vague or contradictory rules get followed less. To **block** something for sure, use a **hook**: a script Claude Code runs automatically that can stop an action (lesson 12).
 
 #### Create one with /init
 
 Type `/init` in Claude Code. It reads your project and writes a starting `CLAUDE.md` with the build commands, test commands, and habits it finds. Then delete what you don't need and add what it **couldn't** work out, like "use server actions." If a `CLAUDE.md` exists, `/init` suggests improvements instead of replacing it.
 
-**Extra (from the docs):** the project file can also be `journal-app/.claude/CLAUDE.md`. Type `/context` and look under **Memory files** to see which ones loaded.
+**Not in the course, from the official Claude Code documentation:** the project file can also be `journal-app/.claude/CLAUDE.md`. Type `/context` and look under **Memory files** to see which ones loaded.
 
 ---
 
@@ -264,9 +273,9 @@ C:\Users\you\                          ← your home folder (Mac: /Users/you/)
 
 > 🧠 **Remember this:** **Team rules → the project folder. My habits → my home folder.**
 
-**Extra (from the docs):** two more files.
+**Not in the course, from the official Claude Code documentation:** two more files.
 - **Local file**, `journal-app/CLAUDE.local.md`: only you, only this project, e.g. your test login. Add it to `.gitignore` (the list of files Git ignores) so it's never committed.
-- **Company file** (the docs say *managed policy*), put on your computer by IT (Windows: `C:\Program Files\ClaudeCode\CLAUDE.md`; Mac: `/Library/Application Support/ClaudeCode/CLAUDE.md`): applies to everyone, can't be switched off.
+- **Company file** (the official Claude Code documentation calls it a *managed policy*), put on your computer by IT (Windows: `C:\Program Files\ClaudeCode\CLAUDE.md`; Mac: `/Library/Application Support/ClaudeCode/CLAUDE.md`): applies to everyone, can't be switched off.
 
 All the files **add up**; none replaces another. If two disagree, the model may follow either, so keep them consistent. Claude Code also reads `CLAUDE.md` files in folders **above** where you started, and a `CLAUDE.md` in a **subfolder** (like `journal-app/app/CLAUDE.md`) once it works on files there.
 
@@ -286,7 +295,7 @@ Ok, put in the CLAUDE.md file to only use server actions instead of API routes
 
 Claude Code adds the line to `journal-app/CLAUDE.md`, so every future session starts with it.
 
-**Extra (from the docs): the words matter.**
+**Not in the course, from the official Claude Code documentation: the words matter.**
 
 | You type… | Saved where | Who sees it |
 |---|---|---|

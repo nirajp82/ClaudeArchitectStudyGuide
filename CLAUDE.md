@@ -77,7 +77,16 @@ Clear doesn't mean long. My other common complaint is "the whole page is too lon
 - **Say each thing once.** Don't explain the same point in prose, then a table, then a diagram, then the recap, then the FAQ. Pick the one format that shows it best.
 - **One everyday comparison per main idea**, in 1–3 sentences.
 - **Don't re-teach earlier lessons.** One line plus a link: "(the context window, [lesson 2](02-how-claude-code-works.md))."
-- **Extras from the docs:** only if they matter for the exam or daily use, in 1–2 lines each.
+- **Extras from the docs:** only if they matter for the exam or daily use, in 1–2 lines each. Deeper material goes in "Architect notes" (below).
+
+### Architect notes: required from course 2 onward
+
+From **Building with the Claude API** onward, every lesson has an `### Architect notes` section, placed just before the Recap. It holds what an architect or developer should know that the course leaves out.
+
+- **Cover what applies:** cost (tokens, pricing trade-offs), speed (latency), limits (context size, rate limits, output length), security (API keys, prompt injection, data retention), production pitfalls (errors, retries, timeouts), and design trade-offs (which option to pick and why).
+- **Format:** one `####` heading per topic, 2–5 bullets each. Each bullet says what to do and why, with a concrete example.
+- **Source:** official Claude API documentation only. Check every number, and say that prices and limits change, so look up the current value.
+- **Keep it tight:** 30–60 lines. Add matching exam-angle points to the revision summary and FAQ.
 - **At most 2 diagrams per lesson.** Add "Things to notice" only when the point isn't obvious.
 - **Sizes:** Common mix-ups 4–6 rows. Test yourself 3–4 questions. FAQ 10–13 questions, including the exam-angle ones (see section 5). Recap one short bullet per main idea.
 - **Cut, don't pad:** if a sentence doesn't help me understand or remember, delete it.
@@ -253,6 +262,12 @@ Every lesson file follows this order exactly:
 ---
 
 ### 2. Second main idea …
+
+---
+
+### Architect notes
+
+(Course 2 onward. Cost, speed, limits, security, production pitfalls, design trade-offs. See "Architect notes" in section 2.)
 
 ---
 

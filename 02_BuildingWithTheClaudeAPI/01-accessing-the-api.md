@@ -55,7 +55,7 @@ Your server can call the API through an official **SDK** (a ready-made code libr
 
 | Field | What it is | Example |
 |---|---|---|
-| API key | Proves who is asking. Sent in the `x-api-key` header. | `sk-ant-...` |
+| API key | Proves who is asking. Sent in the `Authorization: Bearer` header, or the older `x-api-key` header, which still works. | `sk-ant-...` |
 | `model` | Which Claude model should answer. | `claude-haiku-4-5` |
 | `messages` | The conversation so far, as a list. The user's text sits in a message with the role `user`. | `[{"role": "user", "content": "What is quantum computing?"}]` |
 | `max_tokens` | The most tokens the model may write in its answer. It is a hard limit. | `1000` |
@@ -98,7 +98,7 @@ The response has three main parts:
 
 #### Exam takeaways
 
-- **A mobile team wants the app to call the Claude API directly to save one network hop.** Refuse: an API key in app code can be extracted. Route requests through your own server, which keeps the key in a secrets store and adds user login and rate limits. (Governance, Safety & Risk Management)
+- **A mobile team wants the app to call the Claude API directly to save one network hop.** Refuse: an API key in app code can be extracted. Route requests through your own server, which keeps the key in a secrets store and adds user login and rate limits. The only exception is an iOS or macOS app using App Attest, which gets short-lived tokens instead of a key. (Governance, Safety & Risk Management)
 - **Users report answers that stop mid-sentence.** Check the response's `stop_reason`. If it says `max_tokens`, raise the limit or ask for shorter answers, and make the app detect cut-off answers instead of showing them as complete. (Integration)
 - **Finance asks how to estimate and track cost per conversation.** Log the `usage` field from every response, then multiply input and output tokens by the model's prices. Output tokens cost more than input tokens, so long answers drive cost. (Solution Design & Architecture)
 
@@ -368,6 +368,7 @@ The answer was cut off because it hit your length limit. It may be incomplete.
 - Keep the key in an environment variable or a secrets store (such as AWS Secrets Manager), never in source code or Git. A key pushed to a public repository can be found by scanners within minutes.
 - Your server endpoint is now a door to your Anthropic account. Require users to log in, and limit how many requests each user can make, or strangers can use your server as a free Claude proxy.
 - Use a separate key for each app and environment (development, production). Then you can revoke one leaked key without breaking everything else.
+- One exception to "always use a server": **App Attest** lets a genuine, registered iOS or macOS app call the API directly with a short-lived token instead of a key ([lesson 2](02-getting-an-api-key.md)). Every other client app still needs a server.
 
 #### Cost
 
@@ -441,7 +442,7 @@ It sets the most tokens the model may write in its answer. The model doesn't pla
 After each token it checks three things: whether it has reached `max_tokens`, whether it wrote its end-of-sequence token (a natural ending), and whether it wrote one of your stop sequences. The response's `stop_reason` tells you which one happened.
 
 **Q11. (Exam angle) A security team asks why the mobile app can't call the Claude API directly to save time. How do you answer?**
-A key inside the app can be extracted and misused, and you pay for every request made with it. Route all calls through your server, store the key in a secrets store, and add user login and per-user rate limits on that server. (Governance, Safety & Risk Management)
+A key inside the app can be extracted and misused, and you pay for every request made with it. Route all calls through your server, store the key in a secrets store, and add user login and per-user rate limits on that server. The one exception is an iOS or macOS app using App Attest, which gets short-lived tokens instead of a key. (Governance, Safety & Risk Management)
 
 **Q12. (Exam angle) Users say some answers stop mid-sentence. How do you find and fix the cause?**
 Check the `stop_reason` of those responses. If it is `max_tokens`, the answer hit your length cap: raise `max_tokens` or ask for shorter answers in the prompt, and make the app treat cut-off answers as incomplete. (Integration)

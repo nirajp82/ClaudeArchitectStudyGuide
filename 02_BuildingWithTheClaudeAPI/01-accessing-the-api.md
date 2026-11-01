@@ -65,9 +65,9 @@ Your server can call the API through an official **SDK** (a ready-made code libr
 The model can only work with numbers, so it turns your words into numbers, works out what you mean, and then guesses its answer one word at a time. It does this in four stages:
 
 1. **Cutting the text into pieces (Tokenization):** the model chops your sentence into small pieces called **tokens**. A token can be a word, part of a word, or a symbol such as "?".
-2. **Putting each piece on a map (Embedding):** every token gets a spot on a giant map of meanings, written as a long list of numbers. Similar words live in the same neighbourhood, so "cat" sits near "kitten." A word with several meanings, such as "quantum," starts between its neighbourhoods.
-3. **Checking the neighbours (Contextualization):** every token looks at the words next to it and moves its spot to match the sentence. "Quantum" sees "computing" beside it, so it moves straight to the technology neighbourhood, just as "bank" means a riverside in "river bank."
-4. **Guessing the next word (Generation):** the model scores every possible next word, such as "Quantum" 30% and "Great" 23%, picks one (usually a high scorer, but not always the top one), adds it to the answer, and repeats. Because of that small randomness, the same question can get a different answer each time.
+2. **Turning each piece into numbers (Embedding):** computers only understand numbers, so each piece becomes a list of numbers that describes what it means. Words with similar meanings get similar numbers, such as "cat" and "kitten." A word with several meanings, such as "quantum," starts with numbers that mix all of them.
+3. **Checking the neighbours (Contextualization):** each word looks at the words next to it and adjusts its numbers to fit the sentence. "Quantum" sees "computing" beside it, so it takes its technology meaning, just as "bank" means a riverside in "river bank."
+4. **Writing the answer one word at a time (Generation):** the model asks "which word most likely comes next?", picks a likely word, adds it to the answer, and asks again until the answer is done. It doesn't always pick the single most likely word, so the same question can get slightly different answers.
 
 #### How the model decides to stop
 
@@ -238,13 +238,13 @@ The model can't read a whole sentence at once, so it chops it into small pieces 
 
 ![The question "What is quantum computing?" cut into five tokens](images/01-tokenization.png)
 
-#### 2. Putting each piece on a map (Embedding)
+#### 2. Turning each piece into numbers (Embedding)
 
-Imagine a giant map of meanings. Every word has a home on it, and words with similar meanings live in the same neighbourhood: "cat" lives next to "kitten," and "car" lives across town.
+Computers only understand numbers, so each piece is turned into a long list of numbers. That list is called an **embedding**. The numbers describe what the word means.
 
-The model gives each token its spot on this map, written as a long list of numbers, like a GPS location. That list of numbers is the token's **embedding**.
+Words with similar meanings get similar numbers. "Cat" and "kitten" get similar numbers. "Car" gets very different ones.
 
-Some words belong to several neighbourhoods. "Quantum" could mean physics, something tiny, or computing. At this stage the model doesn't know which one you mean, so "quantum" starts out somewhere in between.
+Some words have several meanings. "Quantum" can mean something in physics, something very small, or a kind of computing. At this point the model doesn't know which one you mean, so the numbers for "quantum" are a mix of all its meanings.
 
 ![The word "quantum" linked to its four meanings and its Latin root "quantus"](images/01-embedding-quantum.png)
 
@@ -252,23 +252,23 @@ Some words belong to several neighbourhoods. "Quantum" could mean physics, somet
 
 Words can change their meaning depending on the words around them. A "bank" is a place for money in "I paid money into the bank," but the side of a river in "I sat on the river bank."
 
-In this stage, every token looks at its neighbours and shifts its spot on the map to match the current sentence.
+In this stage, every word looks at the words next to it and adjusts its numbers to fit the sentence.
 
-"Quantum" sees "computing" right next to it, so it moves straight to the technology neighbourhood.
+"Quantum" sees "computing" right next to it, so its numbers now point to the technology meaning only.
 
 ![Columns of numbers for each word, with arcs showing words influencing each other](images/01-contextualization.png)
 
-#### 4. Guessing the next word (Generation)
+#### 4. Writing the answer one word at a time (Generation)
 
-Now the model knows what you asked, and it starts writing the answer one word at a time, like your phone's next-word suggestions, only far smarter.
+Now the model knows what you asked. It writes the answer one word at a time, like the word suggestions on your phone keyboard.
 
-It gives every possible next word a score:
+For each word, it asks: "Which word most likely comes next?" It works out a chance for each possible word. For the first word of the answer:
 
-![Scores for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](images/01-generation-probabilities.png)
+![Chances for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](images/01-generation-probabilities.png)
 
-It doesn't always take the top score. It is like rolling a die that is weighted toward the best words: "Quantum" comes up most often, but "Great" sometimes wins. This small randomness makes the writing sound natural, and it is why the same question can get a slightly different answer each time.
+It usually picks a likely word, but not always the most likely one. Here "Quantum" is picked most often, but sometimes "Great" is picked instead. That is why the same question can get slightly different answers.
 
-Then it repeats. The chosen word is added to the answer, and the model guesses the word after it:
+It adds the picked word to the answer, then asks the same question again for the next word:
 
 | Round | Text written so far | Word the model picks next |
 |:---:|---|---|
@@ -278,7 +278,7 @@ Then it repeats. The chosen word is added to the answer, and the model guesses t
 | 4 | Quantum computing is | a |
 | … | … | … until a stop check says "stop" (section 5) |
 
-> **Remember this:** Cut it into pieces, put each piece on the map, check the neighbours, guess the next word, repeat.
+> **Remember this:** Cut it into pieces, turn the pieces into numbers, check the neighbours, write one word at a time.
 
 ---
 
@@ -395,7 +395,7 @@ The answer was cut off because it hit your length limit. It may be incomplete.
 - Every request makes a five-step round trip: app → your server → Claude API → model → back.
 - The API key lives only on your server, because client code is public.
 - A request needs a key, a model, a messages list, and `max_tokens`.
-- The model cuts the text into tokens, turns each into numbers, uses neighbouring words to fix each meaning, then guesses the answer one word at a time with some randomness.
+- The model cuts the text into pieces, turns each piece into numbers, checks the neighbouring words to get the right meaning, then writes the answer one word at a time.
 - It stops at `max_tokens`, at its natural end (`end_turn`), or at a stop sequence.
 - The response gives the answer, token usage, and the stop reason.
 
@@ -428,13 +428,13 @@ The API key, the `model` name, the `messages` list with the user's text, and `ma
 A token is a small piece of text the model reads and writes, such as a word, part of a word, a space, or a symbol. You are billed by tokens, and limits are measured in tokens.
 
 **Q6. What does "embedding" mean?**
-An embedding is a long list of numbers that gives a word a spot on a map of meanings, where similar words sit close together. "Cat" sits near "kitten" and far from "car."
+An embedding is a long list of numbers that describes what a word means. Words with similar meanings get similar numbers, so "cat" and "kitten" get similar numbers and "car" gets very different ones.
 
 **Q7. What does "contextualization" mean?**
 It is the stage where each word uses its neighbouring words to pick the right meaning. "Quantum" next to "computing" shifts toward the computing meaning, just as "bank" means a riverside in "river bank."
 
 **Q8. How does the model choose the words of its answer?**
-It scores every possible next word, picks one (usually a high scorer, but not always the top one), adds it to the answer, and repeats. Because of that small randomness, the same question can get a different answer each time.
+One word at a time. For each word, it asks "which word most likely comes next?", picks a likely word, adds it to the answer, and asks again. It doesn't always pick the single most likely word, so the same question can get slightly different answers.
 
 **Q9. What does "max_tokens" do?**
 It sets the most tokens the model may write in its answer. The model doesn't plan around the limit; if it reaches it, the answer is cut off and the stop reason is `max_tokens`.

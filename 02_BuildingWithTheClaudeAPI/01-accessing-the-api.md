@@ -64,10 +64,10 @@ Your server can call the API through an official **SDK** (a ready-made code libr
 
 The model can only work with numbers, so it turns your words into numbers, works out what you mean, and then guesses its answer one word at a time. It does this in four stages:
 
-1. **Tokenization:** the model cuts your text into small pieces called **tokens**. A token can be a word, part of a word, a space, or a symbol.
-2. **Embedding:** the model swaps each token for a long list of numbers, called an **embedding**. Think of it as a spot on a map of meanings, where words with similar meanings sit close together. A word with several meanings, such as "quantum," starts out somewhere between them.
-3. **Contextualization:** each word looks at its neighbours and shifts its spot toward the meaning that fits. For example, "quantum" next to "computing" moves toward the computing meaning, just as you know "bank" means a riverside in "river bank."
-4. **Generation:** the model gives every possible next word a score, such as "Quantum" 30% and "Great" 23%. It picks one, usually a high scorer but not always, adds it to the answer, and repeats the whole process for the next word. Because the pick has some randomness, the same question can get a different answer each time.
+1. **Cutting the text into pieces (Tokenization):** the model chops your sentence into small pieces called **tokens**. A token can be a word, part of a word, or a symbol such as "?".
+2. **Putting each piece on a map (Embedding):** every token gets a spot on a giant map of meanings, written as a long list of numbers. Similar words live in the same neighbourhood, so "cat" sits near "kitten." A word with several meanings, such as "quantum," starts between its neighbourhoods.
+3. **Checking the neighbours (Contextualization):** every token looks at the words next to it and moves its spot to match the sentence. "Quantum" sees "computing" beside it, so it moves straight to the technology neighbourhood, just as "bank" means a riverside in "river bank."
+4. **Guessing the next word (Generation):** the model scores every possible next word, such as "Quantum" 30% and "Great" 23%, picks one (usually a high scorer, but not always the top one), adds it to the answer, and repeats. Because of that small randomness, the same question can get a different answer each time.
 
 #### How the model decides to stop
 
@@ -228,46 +228,47 @@ Not in the course, from the official Claude API documentation: a plain HTTP requ
 
 ### 4. What happens inside the model
 
-A computer can't understand words. It can only do math on numbers. So the model has to turn "What is quantum computing?" into numbers, work out what the question means, and then build an answer. Here is each stage in plain words.
+A computer can't understand words. It can only do math on numbers. So the model turns "What is quantum computing?" into numbers, works out what the question means, and then builds an answer, in four stages.
 
-#### Stage 1: Tokenization means cutting the text into pieces
+#### 1. Cutting the text into pieces (Tokenization)
 
-The model cuts the question into small pieces called **tokens**: `What`, `is`, `quantum`, `computing`, `?`. The course treats each word as one token to keep it simple. In reality, a long or rare word is often cut into several tokens.
+The model can't read a whole sentence at once, so it chops it into small pieces called **tokens**.
+
+"What is quantum computing?" becomes five tokens: `What`, `is`, `quantum`, `computing`, `?`. The course treats each word as one token to keep it simple. In reality, a long or rare word is often chopped into several tokens.
 
 ![The question "What is quantum computing?" cut into five tokens](images/01-tokenization.png)
 
-#### Stage 2: Embedding means giving each word a spot on a map of meanings
+#### 2. Putting each piece on a map (Embedding)
 
-Imagine a huge map where every word has a spot, and words with similar meanings sit close together. "Cat" sits near "kitten." "Car" sits far away from both. The model describes each word's spot with a long list of numbers, the way a GPS location describes a place with numbers. That list of numbers is the word's **embedding**.
+Imagine a giant map of meanings. Every word has a home on it, and words with similar meanings live in the same neighbourhood: "cat" lives next to "kitten," and "car" lives across town.
 
-Some words have more than one meaning. "Quantum" can mean:
+The model gives each token its spot on this map, written as a long list of numbers, like a GPS location. That list of numbers is the token's **embedding**.
 
-- a tiny fixed amount of energy (physics),
-- quantum mechanics, the science of very small things,
-- something extremely small, or
-- quantum computing.
-
-At this stage the model doesn't know yet which meaning you want. So the first spot for "quantum" sits somewhere between all of them.
+Some words belong to several neighbourhoods. "Quantum" could mean physics, something tiny, or computing. At this stage the model doesn't know which one you mean, so "quantum" starts out somewhere in between.
 
 ![The word "quantum" linked to its four meanings and its Latin root "quantus"](images/01-embedding-quantum.png)
 
-#### Stage 3: Contextualization means using the neighbouring words to pick the right meaning
+#### 3. Checking the neighbours (Contextualization)
 
-You do this all the time without noticing. In "I sat on the river bank," you know "bank" means the side of a river. In "I paid money into the bank," you know it means a place for money. The neighbouring words told you.
+Words can change their meaning depending on the words around them. A "bank" is a place for money in "I paid money into the bank," but the side of a river in "I sat on the river bank."
 
-The model does the same thing with numbers. Each word looks at the words around it and moves its spot on the map. "Quantum" sees "computing" right next to it, so it moves toward the computing meaning and away from the physics and "tiny" meanings. After this stage, every word's numbers mean "this word, *in this sentence*."
+In this stage, every token looks at its neighbours and shifts its spot on the map to match the current sentence.
+
+"Quantum" sees "computing" right next to it, so it moves straight to the technology neighbourhood.
 
 ![Columns of numbers for each word, with arcs showing words influencing each other](images/01-contextualization.png)
 
-#### Stage 4: Generation means guessing the answer one word at a time
+#### 4. Guessing the next word (Generation)
 
-Now the model knows what you asked. It writes the answer like your phone's next-word suggestions, only far smarter. It gives every possible next word a score:
+Now the model knows what you asked, and it starts writing the answer one word at a time, like your phone's next-word suggestions, only far smarter.
+
+It gives every possible next word a score:
 
 ![Scores for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](images/01-generation-probabilities.png)
 
-The model then picks one word. It usually picks a high scorer, but not always the top one. It is like rolling a die that is weighted toward the best words. This *controlled randomness* makes the writing sound natural, and it is why the same question can get a slightly different answer each time.
+It doesn't always take the top score. It is like rolling a die that is weighted toward the best words: "Quantum" comes up most often, but "Great" sometimes wins. This small randomness makes the writing sound natural, and it is why the same question can get a slightly different answer each time.
 
-Then it repeats. The chosen word is added to the text, and the model runs all four stages again to guess the word after it:
+Then it repeats. The chosen word is added to the answer, and the model guesses the word after it:
 
 | Round | Text written so far | Word the model picks next |
 |:---:|---|---|
@@ -277,7 +278,7 @@ Then it repeats. The chosen word is added to the text, and the model runs all fo
 | 4 | Quantum computing is | a |
 | … | … | … until a stop check says "stop" (section 5) |
 
-> **Remember this:** Cut the text into pieces, turn each piece into numbers, let neighbours fix the meaning, then guess the next word and repeat.
+> **Remember this:** Cut it into pieces, put each piece on the map, check the neighbours, guess the next word, repeat.
 
 ---
 

@@ -12,7 +12,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 |---|---|---|---|---|
 | 1 | Accessing Claude with the API | Accessing the API | [01-accessing-the-api.md](01-accessing-the-api.md) | ✅ Done |
 | 2 | Accessing Claude with the API | Getting an API key | [02-getting-an-api-key.md](02-getting-an-api-key.md) | ✅ Done |
-| 3 | Accessing Claude with the API | Making a request | `03-making-a-request.md` | ⬜ |
+| 3 | Accessing Claude with the API | Making a request | [03-making-a-request.md](03-making-a-request.md) | ✅ Done |
 | 4 | Accessing Claude with the API | Multi-Turn conversations | `04-multi-turn-conversations.md` | ⬜ |
 | 5 | Accessing Claude with the API | System prompts | `05-system-prompts.md` | ⬜ |
 | 6 | Accessing Claude with the API | Temperature | `06-temperature.md` | ⬜ |

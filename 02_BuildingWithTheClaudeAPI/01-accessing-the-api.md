@@ -244,7 +244,21 @@ Computers only understand numbers, so each piece is turned into a long list of n
 
 Words with similar meanings get similar numbers. "Cat" and "kitten" get similar numbers. "Car" gets very different ones.
 
-Some words have several meanings. "Quantum" can mean something in physics, something very small, or a kind of computing. At this point the model doesn't know which one you mean, so the numbers for "quantum" are a mix of all its meanings.
+Here is a made-up, simplified example. Imagine each word gets just three numbers, one for each idea: money, water, and animals. Each number runs from 0 (not related) to 1 (strongly related).
+
+| Word | Money | Water | Animals |
+|---|:---:|:---:|:---:|
+| cash | 0.9 | 0.0 | 0.0 |
+| river | 0.0 | 0.9 | 0.1 |
+| cat | 0.0 | 0.0 | 0.9 |
+| kitten | 0.0 | 0.0 | 0.9 |
+| **bank** | **0.5** | **0.5** | **0.0** |
+
+"Cat" and "kitten" have almost the same numbers, so the model treats them as close in meaning. "Bank" has 0.5 for money and 0.5 for water, because on its own it could mean either.
+
+Real embeddings work the same way, but each list has thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`, and the columns have no names. The model learned these numbers from huge amounts of text.
+
+"Quantum" is like "bank." It can mean something in physics, something very small, or a kind of computing. At this point the model doesn't know which one you mean, so the numbers for "quantum" are a mix of all its meanings.
 
 ![The word "quantum" linked to its four meanings and its Latin root "quantus"](images/01-embedding-quantum.png)
 
@@ -252,7 +266,13 @@ Some words have several meanings. "Quantum" can mean something in physics, somet
 
 Words can change their meaning depending on the words around them. A "bank" is a place for money in "I paid money into the bank," but the side of a river in "I sat on the river bank."
 
-In this stage, every word looks at the words next to it and adjusts its numbers to fit the sentence.
+In this stage, every word looks at the words next to it and adjusts its numbers to fit the sentence. Here are the same made-up "bank" numbers from stage 2:
+
+| Sentence | Money | Water |
+|---|:---:|:---:|
+| "bank" on its own | 0.5 | 0.5 |
+| "I sat on the river **bank**" | 0.1 | 0.9 |
+| "I paid money into the **bank**" | 0.9 | 0.1 |
 
 "Quantum" sees "computing" right next to it, so its numbers now point to the technology meaning only.
 
@@ -428,7 +448,7 @@ The API key, the `model` name, the `messages` list with the user's text, and `ma
 A token is a small piece of text the model reads and writes, such as a word, part of a word, a space, or a symbol. You are billed by tokens, and limits are measured in tokens.
 
 **Q6. What does "embedding" mean?**
-An embedding is a long list of numbers that describes what a word means. Words with similar meanings get similar numbers, so "cat" and "kitten" get similar numbers and "car" gets very different ones.
+An embedding is a long list of numbers that describes what a word means. Words with similar meanings get similar numbers, so "cat" and "kitten" get similar numbers and "car" gets very different ones. A word with two meanings, such as "bank," starts as a mix: half money, half water.
 
 **Q7. What does "contextualization" mean?**
 It is the stage where each word uses its neighbouring words to pick the right meaning. "Quantum" next to "computing" shifts toward the computing meaning, just as "bank" means a riverside in "river bank."

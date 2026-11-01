@@ -65,7 +65,7 @@ Your server can call the API through an official **SDK** (a ready-made code libr
 The model can only work with numbers, so it turns your words into numbers, works out what you mean, and then guesses its answer one word at a time. It does this in four stages:
 
 1. **Cutting the text into pieces (Tokenization):** the model chops your sentence into small pieces called **tokens**. A token can be a word, part of a word, or a symbol such as "?".
-2. **Turning each piece into numbers (Embedding):** computers only understand numbers, so each piece becomes a list of numbers that describes what it means. Words with similar meanings get similar numbers, such as "cat" and "kitten." A word with several meanings, such as "quantum," starts with numbers that mix all of them.
+2. **Turning each piece into numbers (Embedding):** computers only understand numbers, so the model looks up each token's ID number, then uses that ID to fetch the token's row in a big table. That row, called the **embedding**, is a list of numbers that scores the token on the same set of traits (kinds of meaning) as every other token. Words with similar meanings get similar numbers, such as "cat" and "kitten." A word with several meanings, such as "quantum," starts with numbers that mix all of them.
 3. **Checking the neighbours (Contextualization):** each word looks at the words next to it and adjusts its numbers to fit the sentence. "Quantum" sees "computing" beside it, so it takes its technology meaning, just as "bank" means a riverside in "river bank."
 4. **Writing the answer one word at a time (Generation):** the model asks "which word most likely comes next?", picks a likely word, adds it to the answer, and asks again until the answer is done. It doesn't always pick the single most likely word, so the same question can get slightly different answers.
 
@@ -240,25 +240,39 @@ The model can't read a whole sentence at once, so it chops it into small pieces 
 
 #### 2. Turning each piece into numbers (Embedding)
 
-Computers only understand numbers, so each piece is turned into a long list of numbers. That list is called an **embedding**. The numbers describe what the word means.
+Computers can't read words. They can only do math on numbers. So the model turns each token into numbers in two lookups:
 
-Words with similar meanings get similar numbers. "Cat" and "kitten" get similar numbers. "Car" gets very different ones.
+1. **Token ID:** the model looks the token up in its word list (its *vocabulary*) and gets the token's ID number. Every token has its own fixed ID, like a product barcode.
+2. **Embedding:** the model uses that ID to find the token's row in a big table and reads the row of numbers stored there. That row of numbers is the token's **embedding**. Each number scores the token on one trait (one kind of meaning).
 
-Here is a made-up, simplified example. Imagine each word gets just three numbers, one for each idea: money, water, and animals. Each number runs from 0 (not related) to 1 (strongly related).
+Think of the big table as one score sheet that every token fills in the same way:
 
-| Word | Money | Water | Animals |
-|---|:---:|:---:|:---:|
-| cash | 0.9 | 0.0 | 0.0 |
-| river | 0.0 | 0.9 | 0.1 |
-| cat | 0.0 | 0.0 | 0.9 |
-| kitten | 0.0 | 0.0 | 0.9 |
-| **bank** | **0.5** | **0.5** | **0.0** |
+- **Rows go down:** one row per token, found by its token ID.
+- **Columns go across:** one column per trait. Every token is scored on the exact same traits, so any two rows can be compared.
 
-"Cat" and "kitten" have almost the same numbers, so the model treats them as close in meaning. "Bank" has 0.5 for money and 0.5 for water, because on its own it could mean either.
+Here is a made-up, simplified table with five tokens and three traits. Each score runs from 0 (not related) to 1 (strongly related). The ID numbers are made up too.
 
-Real embeddings work the same way, but each list has thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`, and the columns have no names. The model learned these numbers from huge amounts of text.
+| Token ID | Token | Money | Water | Animals |
+|---|---|:---:|:---:|:---:|
+| #1042 | cash | 0.9 | 0.0 | 0.0 |
+| #3891 | river | 0.0 | 0.9 | 0.1 |
+| #2207 | cat | 0.0 | 0.0 | 0.9 |
+| #6634 | kitten | 0.0 | 0.0 | 0.9 |
+| #5120 | **bank** | **0.5** | **0.5** | **0.0** |
 
-"Quantum" is like "bank." It can mean something in physics, something very small, or a kind of computing. At this point the model doesn't know which one you mean, so the numbers for "quantum" are a mix of all its meanings.
+How to read the table:
+
+- **Similar words get similar rows.** "Cat" and "kitten" have the same scores, so the model treats them as close in meaning. "Cash" and "cat" share no high score, so they are far apart.
+- **A word with two meanings splits its scores.** "Bank" gets 0.5 for money and 0.5 for water, because on its own it could mean a money bank or a river bank. The model can't tell which yet.
+
+For the prompt "river bank," the model looks up `river` (#3891) and gets `[0.0, 0.9, 0.1]`, then looks up `bank` (#5120) and gets `[0.5, 0.5, 0.0]`. Both rows score on water, so the model can already see the two words are linked. Stage 3 uses that link to settle what "bank" means.
+
+Real embeddings work the same way, with two differences:
+
+1. **Thousands of traits, not three.** Each row holds thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`.
+2. **Nobody names the columns.** No person wrote "Money" or "Water" at the top. The model learned all the numbers by itself while it was trained on huge amounts of text, by noticing which words tend to appear together.
+
+"Quantum" is like "bank." It has its own token ID, and its row mixes several meanings: something in physics, something very small, and a kind of computing. At this point the model doesn't know which one you mean.
 
 ![The word "quantum" linked to its four meanings and its Latin root "quantus"](images/01-embedding-quantum.png)
 
@@ -448,7 +462,7 @@ The API key, the `model` name, the `messages` list with the user's text, and `ma
 A token is a small piece of text the model reads and writes, such as a word, part of a word, a space, or a symbol. You are billed by tokens, and limits are measured in tokens.
 
 **Q6. What does "embedding" mean?**
-An embedding is a long list of numbers that describes what a word means. Words with similar meanings get similar numbers, so "cat" and "kitten" get similar numbers and "car" gets very different ones. A word with two meanings, such as "bank," starts as a mix: half money, half water.
+An embedding is a long list of numbers that describes what a token means. The model finds it by looking up the token's ID number in a big table where every token is scored on the same traits. Words with similar meanings get similar numbers, so "cat" and "kitten" get similar numbers and "car" gets very different ones. A word with two meanings, such as "bank," starts as a mix: half money, half water.
 
 **Q7. What does "contextualization" mean?**
 It is the stage where each word uses its neighbouring words to pick the right meaning. "Quantum" next to "computing" shifts toward the computing meaning, just as "bank" means a riverside in "river bank."

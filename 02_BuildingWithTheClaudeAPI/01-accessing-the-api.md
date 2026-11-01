@@ -62,12 +62,20 @@ Your server can call the API through an official **SDK** (a ready-made code libr
 
 #### What happens inside the model
 
-The model can only work with numbers, so it turns your words into numbers, works out what you mean, and then guesses its answer one word at a time. It does this in four stages:
+The model can only work with numbers. It uses three fixed things that were built in advance, during training, and then runs four stages on every request.
 
-1. **Cutting the text into pieces (Tokenization):** the model chops your sentence into small pieces called **tokens**. A token can be a word, part of a word, or a symbol such as "?".
-2. **Turning each piece into numbers (Embedding):** computers only understand numbers, so the model looks up each token's ID number, then uses that ID to fetch the token's row in a big table. That row, called the **embedding**, is a list of numbers that scores the token on the same set of traits (kinds of meaning) as every other token. Words with similar meanings get similar numbers, such as "cat" and "kitten." A word with several meanings, such as "quantum," starts with numbers that mix all of them.
-3. **Checking the neighbours (Contextualization):** each word looks at the words next to it and adjusts its numbers to fit the sentence. "Quantum" sees "computing" beside it, so it takes its technology meaning, just as "bank" means a riverside in "river bank."
-4. **Writing the answer one word at a time (Generation):** the model asks "which word most likely comes next?", picks a likely word, adds it to the answer, and asks again until the answer is done. It doesn't always pick the single most likely word, so the same question can get slightly different answers.
+The three things built in advance never change while you use the model:
+
+- **Vocabulary:** a list of every token the model knows, each with its own fixed ID number.
+- **Embedding table:** a table with one row of numbers per token ID, where each row describes what that token means. It is not a database that the model searches. The model goes straight to the row for each ID, and "bank" gets the same row in every request.
+- **Weights:** all the other numbers the model learned in training, used in stages 3 and 4.
+
+The four stages run every time you send a request:
+
+1. **Cutting the text into pieces (Tokenization):** the model chops your text into small pieces called **tokens** and swaps each one for its ID number from the vocabulary. A token can be a word, part of a word, or a symbol such as "?".
+2. **Turning each piece into numbers (Embedding):** for each ID, the model copies out that row of the embedding table. The row is the token's **embedding**. Every row gives a number for the same traits (kinds of meaning), so the model can compare them: similar words such as "cat" and "kitten" have similar rows. A word with several meanings, such as "bank" or "quantum," has a row that mixes all of them.
+3. **Checking the neighbours (Contextualization):** each token looks back at all the tokens before it and adjusts its numbers to fit this sentence. In "river bank," "bank" takes the riverside meaning. In "quantum computing," "computing" looks back at "quantum," so the pair means the technology. The embedding table itself does not change.
+4. **Writing the answer one piece at a time (Generation):** the model works out a chance for every token in its vocabulary, picks a likely one, and adds it to the answer. The new token goes through stages 2 and 3, and the model picks the next one, until a stop check says stop. It doesn't always pick the single most likely token, so the same question can get slightly different answers.
 
 #### How the model decides to stop
 
@@ -228,31 +236,45 @@ Not in the course, from the official Claude API documentation: a plain HTTP requ
 
 ### 4. What happens inside the model
 
-A computer can't understand words. It can only do math on numbers. So the model turns "What is quantum computing?" into numbers, works out what the question means, and then builds an answer, in four stages.
+A computer can't understand words. It can only do math on numbers. So the model turns "What is quantum computing?" into numbers, works out what the question means, and then writes an answer.
+
+To follow how, you need two things: what the model already has **before** you send anything, and the four stages it runs **every time** you send a request.
+
+#### What the model already has before your request
+
+The model is made in a long process called **training**, in which it reads huge amounts of text from books and websites. Training happens once, long before you use the model. It leaves behind three fixed things, saved inside the model on Anthropic's servers:
+
+| Built in advance | What it is | Used in stage |
+|---|---|:---:|
+| **Vocabulary** | A list of every token the model knows, each with its own fixed ID number. For example, `bank` might be #5120. It is made from a large sample of text just before training starts. | 1 |
+| **Embedding table** | A big table with one row per token ID. Each row is a list of numbers that describes what that token means. The model learns these numbers during training. | 2 |
+| **Weights** | All the other numbers the model learns during training. They hold what it knows about how words affect each other and which word tends to come next. | 3 and 4 |
+
+The embedding table is not a database that the model searches. Nothing is searched, and nothing is looked up on the internet. The model goes straight to the row for a token's ID number, the way you turn straight to a page number in a book. The table also never changes while you use the model: "bank" gets the exact same row in every request, from every user. Only a new round of training can change it.
 
 #### 1. Cutting the text into pieces (Tokenization)
 
-The model can't read a whole sentence at once, so it chops it into small pieces called **tokens**.
+The model can't read a whole sentence at once, so it chops it into small pieces called **tokens**. Then it swaps each token for that token's ID number from the vocabulary.
 
-"What is quantum computing?" becomes five tokens: `What`, `is`, `quantum`, `computing`, `?`. The course treats each word as one token to keep it simple. In reality, a long or rare word is often chopped into several tokens.
+"What is quantum computing?" becomes five tokens. The ID numbers here are made up:
+
+| Token | `What` | `is` | `quantum` | `computing` | `?` |
+|---|:---:|:---:|:---:|:---:|:---:|
+| ID number | #2061 | #374 | #4211 | #9876 | #30 |
+
+The course treats each word as one token to keep it simple. In reality, a long or rare word is often chopped into several tokens.
 
 ![The question "What is quantum computing?" cut into five tokens](images/01-tokenization.png)
 
 #### 2. Turning each piece into numbers (Embedding)
 
-Computers can't read words. They can only do math on numbers. So the model turns each token into numbers in two lookups:
+For each ID number, the model goes to that row of the embedding table and copies out the list of numbers stored there. That list is the token's **embedding**. It describes what the token means.
 
-1. **Token ID:** the model looks the token up in its word list (its *vocabulary*) and gets the token's ID number. Every token has its own fixed ID, like a product barcode.
-2. **Embedding:** the model uses that ID to find the token's row in a big table and reads the row of numbers stored there. That row of numbers is the token's **embedding**. Each number scores the token on one trait (one kind of meaning).
+Every row has the same columns. Each column stands for one **trait**, meaning one kind of meaning, such as "has to do with money." So every token gets a number for the same traits, and the model can compare any two tokens number by number.
 
-Think of the big table as one score sheet that every token fills in the same way:
+Here is a made-up, simplified embedding table with five rows and three traits. Each number runs from 0 (not related) to 1 (strongly related).
 
-- **Rows go down:** one row per token, found by its token ID.
-- **Columns go across:** one column per trait. Every token is scored on the exact same traits, so any two rows can be compared.
-
-Here is a made-up, simplified table with five tokens and three traits. Each score runs from 0 (not related) to 1 (strongly related). The ID numbers are made up too.
-
-| Token ID | Token | Money | Water | Animals |
+| ID number | Token | Money | Water | Animals |
 |---|---|:---:|:---:|:---:|
 | #1042 | cash | 0.9 | 0.0 | 0.0 |
 | #3891 | river | 0.0 | 0.9 | 0.1 |
@@ -262,49 +284,47 @@ Here is a made-up, simplified table with five tokens and three traits. Each scor
 
 How to read the table:
 
-- **Similar words get similar rows.** "Cat" and "kitten" have the same scores, so the model treats them as close in meaning. "Cash" and "cat" share no high score, so they are far apart.
-- **A word with two meanings splits its scores.** "Bank" gets 0.5 for money and 0.5 for water, because on its own it could mean a money bank or a river bank. The model can't tell which yet.
+- **Similar words have similar rows.** "Cat" and "kitten" have the same numbers, so the model treats them as close in meaning. "Cash" and "cat" share no high number, so they are far apart.
+- **A word with two meanings has a row that mixes them.** "Bank" has 0.5 for money and 0.5 for water. Its row is the same in every sentence, so it can't yet say which bank you mean.
 
-For the prompt "river bank," the model looks up `river` (#3891) and gets `[0.0, 0.9, 0.1]`, then looks up `bank` (#5120) and gets `[0.5, 0.5, 0.0]`. Both rows score on water, so the model can already see the two words are linked. Stage 3 uses that link to settle what "bank" means.
+A real embedding table works the same way, with two differences:
 
-Real embeddings work the same way, with two differences:
+1. **It has thousands of columns, not three.** Each row is a list such as `[-0.34, 0.87, 0.12, …]` with thousands of numbers.
+2. **Nobody names the columns.** No person wrote "Money" or "Water" at the top. The model set all the numbers itself during training, by noticing which words appear in similar sentences. Words used in similar ways end up with similar rows.
 
-1. **Thousands of traits, not three.** Each row holds thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`.
-2. **Nobody names the columns.** No person wrote "Money" or "Water" at the top. The model learned all the numbers by itself while it was trained on huge amounts of text, by noticing which words tend to appear together.
-
-"Quantum" is like "bank." It has its own token ID, and its row mixes several meanings: something in physics, something very small, and a kind of computing. At this point the model doesn't know which one you mean.
+"Quantum" is like "bank." Its row mixes several meanings: something in physics, something very small, and a kind of computing.
 
 ![The word "quantum" linked to its four meanings and its Latin root "quantus"](images/01-embedding-quantum.png)
 
 #### 3. Checking the neighbours (Contextualization)
 
-Words can change their meaning depending on the words around them. A "bank" is a place for money in "I paid money into the bank," but the side of a river in "I sat on the river bank."
-
-In this stage, every word looks at the words next to it and adjusts its numbers to fit the sentence. Here are the same made-up "bank" numbers from stage 2:
+The rows from stage 2 are the same in every sentence, so they can't tell a money "bank" from a river "bank." This stage fixes that. Each token looks at the other tokens in your text and adjusts its own numbers to fit the sentence. Here are the made-up "bank" numbers again:
 
 | Sentence | Money | Water |
 |---|:---:|:---:|
-| "bank" on its own | 0.5 | 0.5 |
+| "bank" on its own (the row from the table) | 0.5 | 0.5 |
 | "I sat on the river **bank**" | 0.1 | 0.9 |
 | "I paid money into the **bank**" | 0.9 | 0.1 |
 
-"Quantum" sees "computing" right next to it, so its numbers now point to the technology meaning only.
+These adjusted numbers are new copies made only for your sentence. The embedding table itself does not change.
+
+Not in the course, from how models like Claude work: a token looks at **all** the tokens before it, not only the one next to it. It can't look at tokens that come after it, because the model reads and writes from left to right. So in "What is quantum computing?", it is "computing" that looks back, sees "quantum", and takes on the technology meaning of the pair. The course says it the other way round ("quantum" sees "computing"), but the result is the same: the model now knows you mean quantum computing. The model also repeats this checking many times in a row (each round is called a *layer*), and each round makes the meaning sharper.
 
 ![Columns of numbers for each word, with arcs showing words influencing each other](images/01-contextualization.png)
 
-#### 4. Writing the answer one word at a time (Generation)
+#### 4. Writing the answer one piece at a time (Generation)
 
-Now the model knows what you asked. It writes the answer one word at a time, like the word suggestions on your phone keyboard.
+Now the model knows what you asked. It writes the answer one token at a time, like the word suggestions on your phone keyboard. The course says "one word at a time" to keep it simple.
 
-For each word, it asks: "Which word most likely comes next?" It works out a chance for each possible word. For the first word of the answer:
+For each new token, it asks: "Which token most likely comes next?" It works out a chance for every token in its vocabulary. For the first token of the answer:
 
 ![Chances for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](images/01-generation-probabilities.png)
 
-It usually picks a likely word, but not always the most likely one. Here "Quantum" is picked most often, but sometimes "Great" is picked instead. That is why the same question can get slightly different answers.
+It usually picks a likely token, but not always the most likely one. Here "Quantum" is picked most often, but sometimes "Great" is picked instead. That is why the same question can get slightly different answers. A setting called *temperature* controls how often it picks a less likely token ([lesson 6](06-temperature.md)).
 
-It adds the picked word to the answer, then asks the same question again for the next word:
+The picked token is added to the text. It then goes through stages 2 and 3 like every other token: it gets its row from the embedding table and looks back at everything before it, including your question. Then the model asks the same question again for the next token:
 
-| Round | Text written so far | Word the model picks next |
+| Round | Text written so far | Token the model picks next |
 |:---:|---|---|
 | 1 | *(nothing yet)* | Quantum |
 | 2 | Quantum | computing |
@@ -312,7 +332,7 @@ It adds the picked word to the answer, then asks the same question again for the
 | 4 | Quantum computing is | a |
 | … | … | … until a stop check says "stop" (section 5) |
 
-> **Remember this:** Cut it into pieces, turn the pieces into numbers, check the neighbours, write one word at a time.
+> **Remember this:** The vocabulary and the embedding table are built in advance and never change. On every request, the model cuts your text into pieces, swaps each piece for its row of numbers, adjusts the numbers using the words before it, and writes one piece at a time.
 
 ---
 
@@ -366,6 +386,7 @@ Your server takes the text from `content` and sends it to the app, which shows i
 | "`max_tokens` makes the model write a shorter answer." | The model doesn't plan around it. It writes until it hits the limit and is cut off. |
 | "One word is always one token." | That is the course's simplification. Long or rare words are often split into several tokens. |
 | "The same question always gets the same answer." | Generation includes controlled randomness, so answers can differ. |
+| "The model searches a database to find what each word means." | The embedding table is a fixed table inside the model, built during training. The model goes straight to the row for each token ID. Nothing is searched, and nothing changes during your request. |
 | "I only pay for the answer." | You pay for input tokens (your request) and output tokens (the answer). |
 
 #### Test yourself
@@ -385,7 +406,7 @@ The API key, the `model`, the `messages` list, and `max_tokens`.
 <details>
 <summary>3. In "What is quantum computing?", how does the model know "quantum" is about computers and not physics?</summary>
 
-In the contextualization stage, "quantum" looks at its neighbour "computing" and shifts its numbers toward the computing meaning, the same way you read "bank" differently in "river bank" and "bank account."
+In the contextualization stage. "Computing" looks back at "quantum", and the numbers for the pair shift toward the technology meaning, the same way "bank" takes the riverside meaning in "river bank." The row for "quantum" in the embedding table stays the same.
 </details>
 
 <details>
@@ -429,7 +450,7 @@ The answer was cut off because it hit your length limit. It may be incomplete.
 - Every request makes a five-step round trip: app → your server → Claude API → model → back.
 - The API key lives only on your server, because client code is public.
 - A request needs a key, a model, a messages list, and `max_tokens`.
-- The model cuts the text into pieces, turns each piece into numbers, checks the neighbouring words to get the right meaning, then writes the answer one word at a time.
+- The vocabulary and the embedding table are built during training and never change. On each request, the model cuts the text into tokens, copies each token's row of numbers, adjusts the numbers using the words before it, then writes the answer one token at a time.
 - It stops at `max_tokens`, at its natural end (`end_turn`), or at a stop sequence.
 - The response gives the answer, token usage, and the stop reason.
 
@@ -462,13 +483,13 @@ The API key, the `model` name, the `messages` list with the user's text, and `ma
 A token is a small piece of text the model reads and writes, such as a word, part of a word, a space, or a symbol. You are billed by tokens, and limits are measured in tokens.
 
 **Q6. What does "embedding" mean?**
-An embedding is a long list of numbers that describes what a token means. The model finds it by looking up the token's ID number in a big table where every token is scored on the same traits. Words with similar meanings get similar numbers, so "cat" and "kitten" get similar numbers and "car" gets very different ones. A word with two meanings, such as "bank," starts as a mix: half money, half water.
+An embedding is the list of numbers that describes what a token means. The model copies it from a fixed table built during training, going straight to the row for the token's ID number; it does not search a database. Similar words such as "cat" and "kitten" have similar rows, and a word with two meanings, such as "bank," has a row that mixes them: half money, half water.
 
 **Q7. What does "contextualization" mean?**
-It is the stage where each word uses its neighbouring words to pick the right meaning. "Quantum" next to "computing" shifts toward the computing meaning, just as "bank" means a riverside in "river bank."
+It is the stage where each token looks back at the tokens before it and adjusts its numbers to fit the sentence. In "river bank," "bank" shifts to the riverside meaning, and in "quantum computing," the pair takes on the technology meaning.
 
 **Q8. How does the model choose the words of its answer?**
-One word at a time. For each word, it asks "which word most likely comes next?", picks a likely word, adds it to the answer, and asks again. It doesn't always pick the single most likely word, so the same question can get slightly different answers.
+One token at a time (the course says "one word" to keep it simple). For each token, it asks "which token most likely comes next?", picks a likely one, adds it to the answer, and asks again. It doesn't always pick the single most likely token, so the same question can get slightly different answers.
 
 **Q9. What does "max_tokens" do?**
 It sets the most tokens the model may write in its answer. The model doesn't plan around the limit; if it reaches it, the answer is cut off and the stop reason is `max_tokens`.

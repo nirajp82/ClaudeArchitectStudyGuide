@@ -66,14 +66,14 @@ The model can only work with numbers. It uses three fixed things that were built
 
 The three things built in advance never change while you use the model:
 
-- **Vocabulary:** a list of every token the model knows, each with its own fixed ID number.
-- **Embedding table:** a table with one row of numbers per token ID, where each row describes what that token means. It is not a database that the model searches. The model goes straight to the row for each ID, and "bank" gets the same row in every request.
+- **Vocabulary:** a list of every token the model knows. Each token has its own fixed number, called its **token ID**. For example, the token `bank` might have token ID 5120.
+- **Embedding table:** a table with one row of numbers for each token ID, where each row describes what that token means. It is not a database that the model searches. The model goes straight to the row with the token ID it needs, so the token `bank` (token ID 5120) gets the same row in every request.
 - **Weights:** all the other numbers the model learned in training, used in stages 3 and 4.
 
 The four stages run every time you send a request:
 
-1. **Cutting the text into pieces (Tokenization):** the model chops your text into small pieces called **tokens** and swaps each one for its ID number from the vocabulary. A token can be a word, part of a word, or a symbol such as "?".
-2. **Turning each piece into numbers (Embedding):** for each ID, the model copies out that row of the embedding table. The row is the token's **embedding**. Every row gives a number for the same traits (kinds of meaning), so the model can compare them: similar words such as "cat" and "kitten" have similar rows. A word with several meanings, such as "bank" or "quantum," has a row that mixes all of them.
+1. **Cutting the text into pieces (Tokenization):** the model chops your text into small pieces called **tokens**, then looks up each token in the vocabulary and swaps it for its token ID. A token can be a word, part of a word, or a symbol such as "?".
+2. **Turning each piece into numbers (Embedding):** for each token ID from stage 1, the model goes to the row of the embedding table with that token ID and copies out its numbers. For example, for `bank` it copies the row for token ID 5120. That row of numbers is the token's **embedding**. Every row gives a number for the same traits (kinds of meaning), so the model can compare them: similar words such as "cat" and "kitten" have similar rows. A word with several meanings, such as "bank" or "quantum," has a row that mixes all of them.
 3. **Checking the neighbours (Contextualization):** each token looks back at all the tokens before it and adjusts its numbers to fit this sentence. In "river bank," "bank" takes the riverside meaning. In "quantum computing," "computing" looks back at "quantum," so the pair means the technology. The embedding table itself does not change.
 4. **Writing the answer one piece at a time (Generation):** the model works out a chance for every token in its vocabulary, picks a likely one, and adds it to the answer. The new token goes through stages 2 and 3, and the model picks the next one, until a stop check says stop. It doesn't always pick the single most likely token, so the same question can get slightly different answers.
 
@@ -246,21 +246,21 @@ The model is made in a long process called **training**, in which it reads huge 
 
 | Built in advance | What it is | Used in stage |
 |---|---|:---:|
-| **Vocabulary** | A list of every token the model knows, each with its own fixed ID number. For example, `bank` might be #5120. It is made from a large sample of text just before training starts. | 1 |
-| **Embedding table** | A big table with one row per token ID. Each row is a list of numbers that describes what that token means. The model learns these numbers during training. | 2 |
+| **Vocabulary** | A list of every token the model knows. Each token has its own fixed number, called its **token ID**. For example, the token `bank` might have token ID 5120. The vocabulary is made from a large sample of text just before training starts. | 1 |
+| **Embedding table** | A big table with one row for each token ID. Each row is a list of numbers that describes what that token means. The model learns these numbers during training. | 2 |
 | **Weights** | All the other numbers the model learns during training. They hold what it knows about how words affect each other and which word tends to come next. | 3 and 4 |
 
-The embedding table is not a database that the model searches. Nothing is searched, and nothing is looked up on the internet. The model goes straight to the row for a token's ID number, the way you turn straight to a page number in a book. The table also never changes while you use the model: "bank" gets the exact same row in every request, from every user. Only a new round of training can change it.
+The embedding table is not a database that the model searches. Nothing is searched, and nothing is looked up on the internet. The model goes straight to the row with the token ID it needs, the way you turn straight to a page number in a book. The table also never changes while you use the model: the token `bank` (token ID 5120) gets the exact same row in every request, from every user. Only a new round of training can change it.
 
 #### 1. Cutting the text into pieces (Tokenization)
 
-The model can't read a whole sentence at once, so it chops it into small pieces called **tokens**. Then it swaps each token for that token's ID number from the vocabulary.
+The model can't read a whole sentence at once, so it chops it into small pieces called **tokens**. Then it looks up each token in the vocabulary and swaps the token for its token ID. From here on, the model works with token IDs, not with letters.
 
-"What is quantum computing?" becomes five tokens. The ID numbers here are made up:
+"What is quantum computing?" becomes five tokens and five token IDs. The token IDs here are made up:
 
 | Token | `What` | `is` | `quantum` | `computing` | `?` |
 |---|:---:|:---:|:---:|:---:|:---:|
-| ID number | #2061 | #374 | #4211 | #9876 | #30 |
+| Token ID | 2061 | 374 | 4211 | 9876 | 30 |
 
 The course treats each word as one token to keep it simple. In reality, a long or rare word is often chopped into several tokens.
 
@@ -268,19 +268,19 @@ The course treats each word as one token to keep it simple. In reality, a long o
 
 #### 2. Turning each piece into numbers (Embedding)
 
-For each ID number, the model goes to that row of the embedding table and copies out the list of numbers stored there. That list is the token's **embedding**. It describes what the token means.
+Each row of the embedding table is labelled with a token ID. For each token ID from stage 1, the model goes to the row with that token ID and copies out the list of numbers stored there. For example, for the token `quantum` (token ID 4211), it copies row 4211. That list of numbers is the token's **embedding**. It describes what the token means.
 
 Every row has the same columns. Each column stands for one **trait**, meaning one kind of meaning, such as "has to do with money." So every token gets a number for the same traits, and the model can compare any two tokens number by number.
 
 Here is a made-up, simplified embedding table with five rows and three traits. Each number runs from 0 (not related) to 1 (strongly related).
 
-| ID number | Token | Money | Water | Animals |
+| Token ID | Token | Money | Water | Animals |
 |---|---|:---:|:---:|:---:|
-| #1042 | cash | 0.9 | 0.0 | 0.0 |
-| #3891 | river | 0.0 | 0.9 | 0.1 |
-| #2207 | cat | 0.0 | 0.0 | 0.9 |
-| #6634 | kitten | 0.0 | 0.0 | 0.9 |
-| #5120 | **bank** | **0.5** | **0.5** | **0.0** |
+| 1042 | cash | 0.9 | 0.0 | 0.0 |
+| 3891 | river | 0.0 | 0.9 | 0.1 |
+| 2207 | cat | 0.0 | 0.0 | 0.9 |
+| 6634 | kitten | 0.0 | 0.0 | 0.9 |
+| 5120 | **bank** | **0.5** | **0.5** | **0.0** |
 
 How to read the table:
 
@@ -322,7 +322,7 @@ For each new token, it asks: "Which token most likely comes next?" It works out 
 
 It usually picks a likely token, but not always the most likely one. Here "Quantum" is picked most often, but sometimes "Great" is picked instead. That is why the same question can get slightly different answers. A setting called *temperature* controls how often it picks a less likely token ([lesson 6](06-temperature.md)).
 
-The picked token is added to the text. It then goes through stages 2 and 3 like every other token: it gets its row from the embedding table and looks back at everything before it, including your question. Then the model asks the same question again for the next token:
+The picked token is added to the text. It then goes through stages 2 and 3 like every other token: the model copies the row for its token ID from the embedding table and looks back at everything before it, including your question. Then the model asks the same question again for the next token:
 
 | Round | Text written so far | Token the model picks next |
 |:---:|---|---|
@@ -386,7 +386,7 @@ Your server takes the text from `content` and sends it to the app, which shows i
 | "`max_tokens` makes the model write a shorter answer." | The model doesn't plan around it. It writes until it hits the limit and is cut off. |
 | "One word is always one token." | That is the course's simplification. Long or rare words are often split into several tokens. |
 | "The same question always gets the same answer." | Generation includes controlled randomness, so answers can differ. |
-| "The model searches a database to find what each word means." | The embedding table is a fixed table inside the model, built during training. The model goes straight to the row for each token ID. Nothing is searched, and nothing changes during your request. |
+| "The model searches a database to find what each word means." | The embedding table is a fixed table inside the model, built during training. The model goes straight to the row with each token's token ID. Nothing is searched, and nothing changes during your request. |
 | "I only pay for the answer." | You pay for input tokens (your request) and output tokens (the answer). |
 
 #### Test yourself
@@ -483,7 +483,7 @@ The API key, the `model` name, the `messages` list with the user's text, and `ma
 A token is a small piece of text the model reads and writes, such as a word, part of a word, a space, or a symbol. You are billed by tokens, and limits are measured in tokens.
 
 **Q6. What does "embedding" mean?**
-An embedding is the list of numbers that describes what a token means. The model copies it from a fixed table built during training, going straight to the row for the token's ID number; it does not search a database. Similar words such as "cat" and "kitten" have similar rows, and a word with two meanings, such as "bank," has a row that mixes them: half money, half water.
+An embedding is the list of numbers that describes what a token means. The model copies it from a fixed table built during training, going straight to the row labelled with the token's token ID (its fixed number in the vocabulary); it does not search a database. Similar words such as "cat" and "kitten" have similar rows, and a word with two meanings, such as "bank," has a row that mixes them: half money, half water.
 
 **Q7. What does "contextualization" mean?**
 It is the stage where each token looks back at the tokens before it and adjusts its numbers to fit the sentence. In "river bank," "bank" shifts to the riverside meaning, and in "quantum computing," the pair takes on the technology meaning.

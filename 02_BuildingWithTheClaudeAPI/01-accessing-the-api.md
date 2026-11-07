@@ -62,12 +62,30 @@ Your server can call the API through an official **SDK** (a ready-made code libr
 
 #### What happens inside the model
 
-The model can only do math on numbers. Long before your request, a process called **training** built three things and saved them inside the model. Your request never changes them:
+The model can only works with numbers, not words directly. Long before request, a process called **training** has already built three things and saved them inside the model. Request never changes them:
 
-- **Vocabulary:** the list of every token the model knows. A **token** is a small piece of text, such as a word, part of a word, or a symbol such as "?". Each token has a fixed number called its **token ID**. For example, the token `bank` might have token ID 5120.
-- **Embedding table:** a table with one saved row of numbers for each token ID. Each row describes the usual meaning of its token.
-- **Weights:** all the other numbers the model learned in training. Stages 3 and 4 below use them.
+- **Vocabulary:** A list of all the tokens the model can recognize. A **token** is a small piece of text, such as a word, part of a word, or a symbol such as "?". Each token has a its own number called its **token ID**. For example, the token `bank` might have token ID 5120.
+- Embedding table: A table of numbers with one row for each token ID. These numbers help the model represent what each token means and how it relates to other tokens.
 
+For example, if the token bank has token ID 5120, the model looks up its row in the embedding table:
+
+| Token ID | Token | Number 1 | Number 2 | Number 3 |
+| --- | --- | --- | --- | --- |
+| 5120 | bank | 0.25 | 0.81 | 0.42 |
+
+- Weights: All the other numbers the model learned during training. They help the model process the embedding numbers and generate responses. Stages 3 and 4 below use these numbers.
+
+For example, the model uses its weights to perform mathematical operations on the embedding numbers:
+
+|  | Number 1 | Number 2 | Number 3 |
+| --- | --- | --- | --- |
+| Embedding numbers | 0.25 | 0.81 | 0.42 |
+| Example weights | 0.50 | 0.20 | 0.80 |
+| Multiplication result | 0.125 | 0.162 | 0.336 |
+
+The results are then combined and processed through more mathematical operations to help the model predict what tokens should come next.
+
+Note: All numbers are made up for illustration. Real models use much larger tables, vectors, and more complex mathematical operations.
 On every request, the model runs four stages:
 
 1. **Cutting the text into pieces (Tokenization):** the model cuts your text into tokens. Then it looks up each token in the vocabulary and replaces it with its token ID.

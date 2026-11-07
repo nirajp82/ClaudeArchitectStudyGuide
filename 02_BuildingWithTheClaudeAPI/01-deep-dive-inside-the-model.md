@@ -29,16 +29,17 @@ Below, you can follow every step of that arithmetic with numbers small enough to
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [The big picture](#the-big-picture) |
-| 3 | [Part 1. What is saved inside the model](#part-1-what-is-saved-inside-the-model) |
-| 4 | [Part 2. How the model answers your message](#part-2-how-the-model-answers-your-message) |
-| 5 | [Part 3. How the model learned its numbers (training)](#part-3-how-the-model-learned-its-numbers-training) |
-| 6 | [Common mix-ups](#common-mix-ups) |
-| 7 | [Test yourself](#test-yourself) |
-| 8 | [Architect notes: what this means for your work](#architect-notes-what-this-means-for-your-work) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 2 | [What a model is](#what-a-model-is) |
+| 3 | [The big picture](#the-big-picture) |
+| 4 | [Part 1. What is saved inside the model](#part-1-what-is-saved-inside-the-model) |
+| 5 | [Part 2. How the model answers your message](#part-2-how-the-model-answers-your-message) |
+| 6 | [Part 3. How the model learned its numbers (training)](#part-3-how-the-model-learned-its-numbers-training) |
+| 7 | [Common mix-ups](#common-mix-ups) |
+| 8 | [Test yourself](#test-yourself) |
+| 9 | [Architect notes: what this means for your work](#architect-notes-what-this-means-for-your-work) |
+| 10 | [Recap](#recap) |
+| 11 | [My notes / practice](#my-notes--practice) |
+| 12 | [FAQ](#faq) |
 
 ---
 
@@ -48,6 +49,25 @@ Below, you can follow every step of that arithmetic with numbers small enough to
 <summary><b>Click to open the revision summary</b></summary>
 
 The model is a huge set of numbers that training tuned by hiding the next word in billions of sentences and correcting the model's guesses; when you send a message, the model only reads those numbers to guess your answer one word at a time.
+
+#### What a model is, and how models differ
+
+A model is a large file of numbers plus a fixed set of calculations, and it does only one thing: given some text, it works out the chance of every possible next token, picks one, and repeats.
+
+- Everything a model does, such as answering questions, writing code, or summarizing a document, is that one skill repeated many times.
+- Saved inside the model are its vocabulary, its embedding table, and its weights. Your past conversations, a copy of the internet, and anything newer than its training cutoff date are **not** saved inside it.
+- **Training** is how the model gets its numbers. It happens in two stages: **pre-training**, where the model practises guessing the next word on a huge amount of text, and **later training**, where examples, human feedback, and written principles (Constitutional AI) teach it to follow instructions, be helpful, and decline harmful requests.
+- Training runs on thousands of specialised chips for weeks or months, so it is very expensive and happens once for each model version. After release the numbers are fixed, and a newer model means a new training run.
+- A model's **size** is how many learned numbers (**parameters**) it has. The people who build it set the size by choosing how many columns each row has, how many layers it has, and how wide each layer is.
+- A larger model has more room to store patterns, so it is usually more capable, but every token must pass through all of its numbers, so it is slower and costs more to run.
+- Models also differ in their training text and cutoff date, in their later training, and in choices made when they were built, such as the size of the context window.
+
+#### When to use a smaller or a larger model
+
+- **Use a smaller, faster model** (in Claude's family, Haiku) for simple, high-volume tasks where speed and cost matter most. For example: "Sort 10,000 support emails into five categories."
+- **Use a larger, more capable model** (in Claude's family, Opus) for hard tasks that need careful reasoning. For example: "Review this design and find the security risks."
+- **Use a middle model** (Sonnet) when you need a balance of quality, speed, and cost, which covers most everyday work.
+- Whichever you start with, test the smallest model that passes your evaluation set before paying for a larger one.
 
 #### What is saved inside the model
 
@@ -97,6 +117,71 @@ Every number started as a small random value, and training slowly adjusted them 
 - **A product manager asks why long prompts cost more and run slower.** Every input token goes through every layer, and each token's attention looks back at all the tokens before it, so the work grows as the prompt grows. Send only the text the model needs, and put fixed text such as instructions at the start so prompt caching can reuse the work. (Solution Design & Architecture)
 
 </details>
+
+---
+
+### What a model is
+
+#### What a model is and what it does
+
+A model is a large file of numbers, often billions of them, plus a fixed set of calculations that use those numbers. Anthropic's models run on Anthropic's servers, and your app reaches them through the API.
+
+A model does only one thing: you give it some text, it works out the chance of every possible next token, picks one, adds it to the text, and repeats. Answering a question, writing code, and summarizing a document are all that one skill repeated many times, because an answer is just the text that most likely comes next after your question.
+
+#### What is saved inside a model, and what is not
+
+| Saved inside the model | Not saved inside the model |
+|---|---|
+| The **vocabulary**: every token the model knows, each with its token ID | Your past conversations, so the model doesn't remember you |
+| The **embedding table**: one row of numbers that describes each token | A copy of the internet or a database of facts that it can look things up in |
+| The **weights**: all the other numbers it learned during training | Anything that happened after its training cutoff date |
+
+Part 1 explains each of the three saved things in detail.
+
+#### What training is
+
+Training is how a model gets its numbers. Before training, the model already has its shape, meaning its vocabulary, how many columns each row has, and how many layers it has, but every number is random, so it writes nonsense. Training is a long run of practice that adjusts those numbers until the model writes useful text.
+
+Anthropic trains each model on thousands of specialised computer chips running for weeks or months. Because that is very expensive, it happens once for each model version: after the model is released its numbers are fixed, and a newer model, such as a newer version of Sonnet, comes from a new training run.
+
+Training happens in two stages:
+
+1. **Pre-training:** the model practises guessing the next word on a huge amount of text from books, websites, and other sources. This gives it knowledge of language and of the world, but at this point it can only continue text, so it doesn't yet answer questions the way an assistant does.
+2. **Later training:** the model is trained further on examples of good answers and on feedback from people, and Anthropic also uses a written set of principles called *Constitutional AI*. This stage teaches the model to follow instructions, be helpful, and decline harmful requests.
+
+#### What training does to the model
+
+| | Before training | After training |
+|---|---|---|
+| The numbers | Random | Tuned by billions of small corrections |
+| The rows for "cat" and "kitten" | Unrelated | Similar, because the two words appear in similar sentences |
+| Given "The cat sat on the" | Guesses a random token | Gives "mat" a high chance |
+| Given an instruction such as "Summarize this email" | Just continues the text | Follows the instruction, after the later-training stage |
+
+Part 3 shows exactly how one of those small corrections works, with real numbers.
+
+#### Why some models are larger than others
+
+A model's **size** is how many learned numbers (*parameters*) it has. The people who build the model set the size before training starts, by choosing how many columns each embedding row has, how many layers the model has, and how wide each layer is; more of each means more numbers.
+
+A larger model has more room to store patterns and facts, so it can usually handle harder tasks, such as long chains of reasoning or tricky code. But every token you send and every token it writes has to pass through all of its numbers, so a larger model does more arithmetic per token, which makes it slower and more expensive to run. A larger model also costs much more to train.
+
+That is why providers offer a family of models instead of one. Anthropic doesn't publish the sizes of its models, but it describes Haiku as its fastest and lowest-cost tier, Opus as its most capable tier, and Sonnet as the balance between them.
+
+| | Smaller model (for example, Haiku) | Larger model (for example, Opus) |
+|---|---|---|
+| Speed | Faster | Slower |
+| Cost per token | Lower | Higher |
+| Ability on hard tasks | Lower | Higher |
+| Use it when | The task is simple and high-volume, such as sorting 10,000 support emails into five categories | The task is hard and mistakes are costly, such as reviewing a system design for security risks |
+
+#### Other ways models differ
+
+| Difference | What it changes for you |
+|---|---|
+| Training text and cutoff date | What the model knows and how recent that knowledge is |
+| Later training | How well it follows your instructions and when it declines a request |
+| Choices made when it was built, such as the context window size | How much text one request can hold |
 
 ---
 
@@ -768,8 +853,8 @@ No. The numbers describe the token itself; for example, `[0.30, 0.70, 0.50]` des
 **Q3. What do the columns of the embedding table mean?**
 No single column has a name or one clear meaning, because training fills the columns in and spreads each meaning across many of them. That is why you compare two tokens by their whole rows, never by one column.
 
-**Q4. Does a large weight mean the model picks that number?**
-No. Each result of a weight matrix is a sum that uses all the input numbers, and a large weight only makes its input count more toward that sum.
+**Q4. Why are some models larger than others, and when should I use a smaller one?**
+A larger model has more learned numbers, so it can store more patterns and handle harder tasks, but every token passes through all of those numbers, so it is slower and costs more. Use a smaller model such as Haiku for simple, high-volume work and a larger one such as Opus for hard reasoning, and test the smallest model that passes your evaluation set first.
 
 **Q5. Does every token have its own Wq, Wk, and Wv?**
 No. All tokens in one layer share the same three matrices, and each layer has its own set, but each token still gets its own Query, Key, and Value because it starts from its own row.

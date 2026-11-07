@@ -27,8 +27,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 Each Claude Code conversation has a limited working memory (the context window) that fills up with everything Claude Code reads, runs, and writes, and the model works worse as it fills, so you check how full it is with /context, shrink it into a short summary with /compact, or empty it completely with /clear.
 
 #### What the context window is

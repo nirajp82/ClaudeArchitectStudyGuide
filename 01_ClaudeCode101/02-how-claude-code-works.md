@@ -27,8 +27,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 Claude Code finishes a task by repeating the same cycle until the job is done: the AI model on Anthropic's servers decides the next step, Claude Code carries out that step on your computer (for example, it opens a file, edits code, or runs your tests), and the model looks at the result before deciding the next step.
 
 #### The loop

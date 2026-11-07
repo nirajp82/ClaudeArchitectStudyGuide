@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 When Claude Code says a task is finished, do not rely on its own report: read the code changes yourself with /diff, ask a separate AI reviewer to check them with /code-review, and then decide yourself which of the reported problems to fix.
 
 #### Why you review Claude Code's work

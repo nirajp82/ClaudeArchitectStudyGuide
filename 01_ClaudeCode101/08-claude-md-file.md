@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 CLAUDE.md is a plain text file in your project where you write the facts and rules Claude Code needs to know, such as the command that runs your tests, and Claude Code reads that file automatically at the start of every conversation, so you never have to explain those things again.
 
 #### What `CLAUDE.md` is and why you need it

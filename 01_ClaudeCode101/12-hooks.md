@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 A hook is a command that you list in a settings file and that Claude Code runs automatically at a fixed moment, such as right after every file edit or right before every terminal command, so the action happens every single time instead of depending on the model remembering an instruction.
 
 #### What a hook is and why it is different

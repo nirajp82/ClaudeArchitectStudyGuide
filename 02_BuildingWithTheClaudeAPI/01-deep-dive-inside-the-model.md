@@ -33,9 +33,7 @@
 
 ### Revision summary
 
-#### In one sentence
-
-A model is a big set of numbers that learned to guess the next word.
+The model is a huge set of numbers that training tuned by hiding the next word in billions of sentences and correcting the model's guesses; when you send a message, the model only reads those numbers to guess your answer one word at a time.
 
 #### What is saved inside the model
 

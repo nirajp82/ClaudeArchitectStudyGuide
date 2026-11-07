@@ -25,8 +25,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 For any task bigger than a small fix, work in four steps: let Claude Code read the code involved, agree on a written plan with it, let it write and test the code, and then check the changes yourself before you save them to Git as a commit.
 
 #### The workflow

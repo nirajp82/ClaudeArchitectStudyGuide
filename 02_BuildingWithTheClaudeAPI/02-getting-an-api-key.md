@@ -27,8 +27,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 To let your code use Claude, you log in to the Claude Console (Anthropic's website for developers at `platform.claude.com`), create an API key, which is a long secret password such as `sk-ant-api03-...`, copy it straight away because it is shown only once, and store it outside your code, for example in an environment variable called `ANTHROPIC_API_KEY`.
 
 #### How to create a key

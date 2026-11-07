@@ -26,8 +26,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 Before you give Claude Code a task, you choose how often it must ask for your permission before it acts (you switch between these permission modes with Shift+Tab), and for a large task you turn on plan mode, so that Claude Code only reads your code and writes a plan, and changes nothing until you approve that plan.
 
 #### Permission modes

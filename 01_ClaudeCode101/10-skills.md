@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 A skill is a file of step-by-step instructions for one kind of task, such as reviewing a pull request, that you write once and save in a skills folder, and whenever you ask for that kind of task, Claude Code opens the file and follows its steps without you having to type them again.
 
 #### What a skill is and why it helps

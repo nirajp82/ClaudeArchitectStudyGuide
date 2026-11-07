@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 A subagent is a second AI helper that your Claude Code conversation starts for one job, such as searching the code for where refunds are handled: the helper reads files in its own separate memory and sends back only a short answer, so your main conversation does not fill up with everything the helper read.
 
 #### What a subagent is and why it helps

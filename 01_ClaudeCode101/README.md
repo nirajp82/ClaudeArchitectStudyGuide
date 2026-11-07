@@ -30,7 +30,7 @@ Files are created as each lesson is completed. Paste the transcript after each l
 ## To-do
 
 - [ ] **Bring lessons 1 and 3 up to lesson 2's standard** (see `CLAUDE.md`). They're accurate but were written before the style rules. Each needs:
-  - an "In one sentence" opener, everyday comparisons, and one running example
+  - a one-sentence opener, everyday comparisons, and one running example
   - Mermaid diagrams where a flow helps
   - concrete examples (exact commands and output), "Common mix-ups" and "Test yourself"
   - an FAQ in lesson 2's style

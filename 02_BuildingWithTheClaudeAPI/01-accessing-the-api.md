@@ -29,8 +29,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 When a person types a question such as "What is quantum computing?" into your chat app, the app sends the question to your own server, your server adds your secret API key and sends it on to Anthropic's servers, the model there writes an answer one small piece of text (a *token*) at a time until it decides to stop, and the answer travels back the same way to the person's screen.
 
 #### The five steps of every request

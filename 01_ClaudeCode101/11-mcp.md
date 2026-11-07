@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 MCP (Model Context Protocol) is a standard way to connect Claude Code to services outside your project, such as your team's issue tracker or a library's latest documentation, so that the model can read from and use those services by itself whenever your request needs them.
 
 #### What MCP is and why it helps

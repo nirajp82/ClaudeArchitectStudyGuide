@@ -28,8 +28,6 @@
 
 ### Revision summary
 
-#### In one sentence
-
 To get your first answer from Claude in Python, you install Anthropic's `anthropic` library, put your API key in a `.env` file, create a client object, call `client.messages.create()` with a model name such as `claude-haiku-4-5`, a `max_tokens` limit such as 1000, and a list holding one user message such as "What is quantum computing? Answer in one sentence", and then read the answer's text from `message.content[0].text`.
 
 #### How to set up the project

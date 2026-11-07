@@ -97,7 +97,7 @@ Files are created as each lesson is completed. Paste the transcript or course te
 
 1. [ ] Take each chapter quiz and the final assessment. Record every missed or guessed question, and the correct reasoning, in `68-course-quiz-review.md`.
 2. [ ] Collect the **completion badge**.
-3. [ ] Practice: build capstone v1 and v2 (document Q&A with citations, prompt caching, and the first 10–20 eval questions). See the [course sequence](../readme.md#course-sequence-what-to-do-when-you-finish-each-course).
+3. [ ] Practice: build capstone v1 and v2 (document Q&A with citations, prompt caching, and the first 10–20 eval questions). See the [capstone plan](../Capstone/README.md#the-milestones).
 4. [ ] Mark this course as done in the study plan.
 
 ## Folder layout

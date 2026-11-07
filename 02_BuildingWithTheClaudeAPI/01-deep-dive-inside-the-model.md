@@ -1,10 +1,26 @@
-# Deep dive — How a language model learns and thinks
+# Deep dive — How does Claude know what to say next?
 
 **Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Extra reading for Lesson 1** &nbsp;·&nbsp; **Written:** November 7, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|
 | [← Accessing the API](01-accessing-the-api.md) | [📚 Course index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
+
+---
+
+Give a model the words below and ask it to continue:
+
+```text
+The cat sat on the mat because it ...
+```
+
+It continues with "was". It doesn't look that word up, and no rule tells it to write "was". Instead, it does arithmetic on billions of saved numbers and works out a chance for every word it knows. In the small example on this page, the chances come out like this:
+
+| Next word | was | is | sat | cat | mat |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Chance | **51.3%** | 18.2% | 14.9% | 8.2% | 7.5% |
+
+Below, you can follow every step of that arithmetic with numbers small enough to check by hand, and then see how training found those numbers in the first place.
 
 ---
 
@@ -27,6 +43,9 @@
 ---
 
 ### Revision summary
+
+<details>
+<summary><b>Click to open the revision summary</b></summary>
 
 The model is a huge set of numbers that training tuned by hiding the next word in billions of sentences and correcting the model's guesses; when you send a message, the model only reads those numbers to guess your answer one word at a time.
 
@@ -77,13 +96,13 @@ Every number started as a small random value, and training slowly adjusted them 
 - **A team sees different answers to the same prompt and wants consistent output.** The model picks each token from a set of chances, so some variety is normal. Lower the temperature, give clear instructions and examples, and check the output in code; this makes answers more consistent, but it does not guarantee identical answers. (Claude Models, Prompting & Context Engineering)
 - **A product manager asks why long prompts cost more and run slower.** Every input token goes through every layer, and each token's attention looks back at all the tokens before it, so the work grows as the prompt grows. Send only the text the model needs, and put fixed text such as instructions at the start so prompt caching can reuse the work. (Solution Design & Architecture)
 
+</details>
+
 ---
 
 ### The big picture
 
-#### The question this page answers
-
-When you type "What is quantum computing?" and Claude replies, what actually happens inside the model, and why should an architect care?
+#### Why this matters to you
 
 You need this for the exam and for real projects, because many decisions you will make come straight from how the model works inside. You pay per token because every token is processed separately. Long prompts are slow because each token looks back at every earlier token. Answers vary because the model picks each word from a set of chances. And you can tell a customer that chatting with the model doesn't change it, because answering only reads its numbers.
 

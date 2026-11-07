@@ -24,8 +24,8 @@
 The Claude Cookbook is a free GitHub repository from Anthropic with about 110 Jupyter notebooks. Each notebook is a working code example for one technique, such as prompt caching or tool use. "Building along" means you run a notebook, change it until you understand it, and then write your own version of the technique inside your capstone project.
 
 - **When:** after each chapter of *Building with the Claude API*, do the matching phase below. The plan follows the course chapters, not calendar dates, so it still works if you fall behind or move ahead.
-- **How much:** about 20 notebooks in 8 phases, roughly 22 hours in total. These hours come out of the 30-hour capstone budget in the study plan, so the plan adds no new weekly time.
-- **What you end up with:** a working capstone (the knowledge and support assistant in section 6 of the study plan) where every feature is backed by a Cookbook technique you have run and changed yourself.
+- **How much:** about 20 notebooks in 8 phases, roughly 22 hours in total. These hours are part of the 5 hours a week set aside for the capstone, so the plan adds no new weekly time.
+- **What you end up with:** a working capstone (the support assistant in the [capstone plan](Capstone/README.md)) where every feature is backed by a Cookbook technique you have run and changed yourself.
 
 > **Remember this:** The course tells you what a technique is. The notebook shows it working. The capstone proves you can do it without help.
 
@@ -45,7 +45,7 @@ Building along is **not** copying code into your project. Copying gives you work
 | The Cookbook | `C:\Projects\Personal\claude-cookbooks\` (a copy you download) | Gives you example code to run and study | `misc\prompt_caching.ipynb` |
 | VS Code with the Jupyter extension | Your computer | Opens notebooks and runs their cells | You press Shift+Enter to run a cell |
 | The Claude API | Anthropic's servers | Receives each request from a cell, runs the model, and sends back the answer | A cell sends a question and prints the reply |
-| Your capstone repository | `C:\Projects\Personal\claude-capstone\` (layout in section 5 of the study plan) | Holds your own version of each technique | `app\tools.py` with your ticket lookup tool |
+| Your capstone repository | `C:\Projects\Personal\claude-capstone\` (layout in the [capstone plan](Capstone/README.md#where-the-files-go)) | Holds your own version of each technique | `app\tools.py` with your ticket lookup tool |
 | Claude Code | Your terminal, opened in either folder | Acts as a tutor: explains a cell you don't understand and reviews your capstone code | "Explain what `cache_control` does in cell 6" |
 
 #### Where the folders sit
@@ -134,13 +134,13 @@ flowchart LR
 4. **Break it on purpose.** Remove a required field, send a bad input, or make a tool raise an error. Read the exact error message. The exam asks what happens when things fail, and this step is how you learn it.
 5. **Rebuild the technique in the capstone, from memory.** Close the notebook. Write your own version in the capstone file named in the phase. Look back at the notebook only when you are stuck, and write down what you had to look up.
 6. **Test it.** Add at least one case to `evaluations\cases.jsonl` (the capstone's test questions) that checks the new feature.
-7. **Log it.** Add one entry to `study\decision-journal.md` with three lines: what you tried, what you expected, and what happened. Then tick the notebook in section 8.
+7. **Log it.** Add one entry to `docs\decision-journal.md` in the capstone folder with three lines: what you tried, what you expected, and what happened. Then tick the notebook in section 8.
 
 ---
 
 ### The plan, phase by phase
 
-Do each phase after you finish the matching course chapter. File names in the "Build in the capstone" rows match the capstone layout in section 5 of the study plan.
+Do each phase after you finish the matching course chapter. File names in the "Build in the capstone" rows match the file layout in the [capstone plan](Capstone/README.md#where-the-files-go).
 
 | Phase | Do it after | Notebooks | Hours | Capstone result |
 |:---:|---|---:|---:|---|
@@ -154,12 +154,12 @@ Do each phase after you finish the matching course chapter. File names in the "B
 | 7 | Chapter 9, Agents and workflows | 3 | 3 | A workflow pattern and a safety filter |
 | 8 | Cloud course and ADR week | 3 | 2 | Cost, latency, and batch measurements |
 
-Chapters 7 (MCP) and 8 (Anthropic apps) have no Cookbook phase, because the Cookbook has no matching notebooks. Use the MCP documentation reading in section 3 of the study plan instead.
+Chapters 7 (MCP) and 8 (Anthropic apps) have no Cookbook phase, because the Cookbook has no matching notebooks. Use the MCP documentation pages listed in the MCP course row of the [study plan](readme.md) instead.
 
 #### Phase 0: setup (now)
 
 - Do the one-time setup above.
-- Create the capstone folder `C:\Projects\Personal\claude-capstone\` with the layout from section 5 of the study plan. You can ask Claude Code to create the empty folders and files for you.
+- Create the capstone folder by following "Start here: your first session" in the [capstone plan](Capstone/README.md#start-here-your-first-session).
 - **Done when:** the JSON mode notebook returns a reply, and `claude-capstone` is a Git repository with a `.gitignore` that lists `.env`.
 
 #### Phase 1: calling the API and getting structured output
@@ -260,7 +260,7 @@ A **tool** is a function in your code that the model can ask your app to run, su
 
 | Folder | Why skip it for now |
 |---|---|
-| `claude_agent_sdk/`, `managed_agents/`, `skills/` | Advanced agent building; matches the courses already deferred in the study plan |
+| `claude_agent_sdk/`, `managed_agents/`, `skills/` | Advanced agent building, which the exam needs little of |
 | `third_party/` | Other companies' products (Pinecone, LlamaIndex, MongoDB); the exam is about Claude |
 | `multimodal/`, `finetuning/` | Images and fine-tuning are not part of the capstone |
 | `observability/usage_cost_api.ipynb` | Needs an organization admin key; read it, don't run it |

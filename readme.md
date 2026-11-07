@@ -1,6 +1,6 @@
 # Claude Architect Professional — Study and Expertise Roadmap
 
-> Last reviewed: October 17, 2026. Links verified on that date. Recheck official pages on November 17 and December 7, 2026.
+> Last reviewed: October 17, 2026. Links verified on that date. Cookbook plan and MCP reading added November 7, 2026. Recheck official pages on November 17 and December 7, 2026.
 
 ## Key dates at a glance
 
@@ -129,9 +129,9 @@ The table above lists *what* to study. This one shows the *order*. Work down the
 |---|---|---|---|
 | 1 | **Claude Code 101** (in progress) | Take the course quiz and log missed questions in `ClaudeCode101/05-quiz/`. Use Claude Code to create the capstone repository (Section 5). | Step 2 |
 | 2 | Claude Platform 101 | Make your first API call with error handling. Write a one-page explanation of the request-response flow. | Step 3 |
-| 3 | Building with the Claude API | Build capstone v1 and v2: document Q&A with citations, prompt caching, and the first 10–20 eval questions. | Step 4 |
+| 3 | Building with the Claude API | Build capstone v1 and v2: document Q&A with citations, prompt caching, and the first 10–20 eval questions. After each chapter, do the matching phase of the [Cookbook build-along plan](cookbook-build-along.md). | Step 4 |
 | 4 | AI capabilities and limitations | Add unanswerable and misuse questions to the eval set. Note the model limits that affect your design. | Step 5 |
-| 5 | Introduction to Model Context Protocol | Expose the ticket lookup as an MCP tool, and add the approval gate on the write action. | Step 6 |
+| 5 | Introduction to Model Context Protocol | Read the MCP documentation pages listed under "Hands-on and reference material". Expose the ticket lookup as an MCP tool, and add the approval gate on the write action. | Step 6 |
 | 6 | One cloud course (Bedrock **or** Vertex AI) | Write ADRs on model choice and deployment platform. Measure cost and latency. | Step 7 |
 | 7 | Claude Code in action | Use what you learned to add tests and a `CLAUDE.md` to the capstone repo. | Practice sets (Section 7, Dec 5 onward) |
 | ∥ | Official CCAR-P prep path (parallel) | Lesson 1 in weeks 1–5, lesson 2 in week 6, lesson 3 in week 7, lessons 4–5 in week 8. After each lesson, update the objective tracker. | — |
@@ -147,6 +147,11 @@ The exam tests operational and cost trade-offs specific to Anthropic's platform.
 - **XML formatting and context engineering:** using semantic tags (`<documents>`, `<instructions>`, `<context>`) to separate untrusted content from instructions. This *reduces* prompt-injection risk but does not eliminate it, so pair it with permission controls and output validation.
 - **Structured outputs and tool-calling resiliency:** JSON-schema validation of tool inputs, low temperature for more consistent routing (lower variance, not a guarantee of determinism), multi-turn tool-use loops, and graceful recovery when external tools fail.
 - **Enterprise security architecture:** the first-party Anthropic API (including data-retention options such as Zero Data Retention agreements) compared with cloud platforms (AWS Bedrock with IAM and PrivateLink; Google Vertex AI with VPC Service Controls).
+
+### Hands-on and reference material alongside the courses
+
+- **Claude Cookbook (build along).** The [Claude Cookbook](https://github.com/anthropics/claude-cookbooks) is Anthropic's free repository of runnable code examples (Jupyter notebooks). After each chapter of *Building with the Claude API*, run the matching notebooks and rebuild each technique in the capstone. The full step-by-step plan, including Windows setup, is in [cookbook-build-along.md](cookbook-build-along.md). Its hours come out of the 30-hour capstone budget.
+- **MCP documentation.** While taking *Introduction to Model Context Protocol*, also read these pages of the official MCP documentation, because the course does not go deep on them and Integration is the largest exam domain: [Architecture overview](https://modelcontextprotocol.io/docs/learn/architecture), the transports and [tools](https://modelcontextprotocol.io/specification/latest/server/tools) sections of the [specification](https://modelcontextprotocol.io/specification/latest), [Authorization](https://modelcontextprotocol.io/specification/latest/basic/authorization), and [Security best practices](https://modelcontextprotocol.io/specification/latest/basic/security_best_practices). Budget about 2 hours.
 
 ### Official prep path modules
 
@@ -245,7 +250,7 @@ On November 17, replace the provisional domain list with the official objectives
 
 ### Project: knowledge and support assistant
 
-Build one application incrementally. It should:
+Build one application incrementally, using the [Cookbook build-along plan](cookbook-build-along.md) to learn each feature before you build it. It should:
 
 1. Answer questions from fictional company documents (RAG) and cite its sources.
 2. Say when the documents do not support an answer.

@@ -1,11 +1,12 @@
 # Claude Architect Professional (CCAR-P) Study Plan
 
-Goal: pass the CCAR-P exam in the December 28–30, 2026 window, studying about 10 hours a week. Last updated November 7, 2026.
+Goal: pass the CCAR-P exam in the December 28–30, 2026 window and build one working Claude app (the capstone project), studying about 10 hours a week. Last updated November 7, 2026.
 
 | # | Dates (2026) | Course or milestone | Status | Notes |
 |:---:|:---|:---|:---|:---|
 | 1 | Oct 17 – Oct 25 | [Claude Code 101](https://academy.claude.com/courses/claude-code-101) | Done | [My notes](01_ClaudeCode101/README.md) |
 | 2 | Nov 1 – Nov 26 | [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) | In progress (3 of 67 lessons) | [My notes](02_BuildingWithTheClaudeAPI/README.md). After each chapter, do the matching step of the [Cookbook build-along plan](cookbook-build-along.md). |
+| Ongoing | Nov 1 – Dec 14 | Capstone project: a support assistant | Not started | One app built up alongside the courses, about 3 hours a week. It answers questions from made-up company documents and cites them, looks up a support ticket through an MCP tool, and asks a person before creating a ticket. It also uses prompt caching and has about 25 test questions. Finish with three short design-decision notes, a one-page risk review, and a one-page summary for managers. |
 | 3 | Nov 17 – Dec 14 | [Official CCAR-P prep path](https://anthropic-partners.skilljar.com/path/claude-certified-architect-professional) | Not started | About 12 hours. Do one lesson a week alongside the other courses. |
 | — | Nov 17 | New official exam guide released | Not started | Download it from the [partner certifications page](https://anthropic-partners.skilljar.com/page/partner-certifications) and study from it. |
 | — | Nov 20 | Book the exam | Not started | $175 on the [exam page](https://anthropic-partners.skilljar.com/claude-certified-architect-professional-certification), then schedule with Pearson VUE. |

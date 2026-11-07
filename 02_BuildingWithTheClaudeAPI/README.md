@@ -11,6 +11,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | # | Chapter | Lesson | Notes | Status |
 |---|---|---|---|---|
 | 1 | Accessing Claude with the API | Accessing the API | [01-accessing-the-api.md](01-accessing-the-api.md) | ✅ Done |
+| — | Accessing Claude with the API | Deep dive: how a language model learns and thinks (extra reading) | [01-deep-dive-inside-the-model.md](01-deep-dive-inside-the-model.md) | ✅ Done |
 | 2 | Accessing Claude with the API | Getting an API key | [02-getting-an-api-key.md](02-getting-an-api-key.md) | ✅ Done |
 | 3 | Accessing Claude with the API | Making a request | [03-making-a-request.md](03-making-a-request.md) | ✅ Done |
 | 4 | Accessing Claude with the API | Multi-Turn conversations | `04-multi-turn-conversations.md` | ⬜ |

@@ -85,7 +85,8 @@ For example, the model uses its weights to perform mathematical operations on th
 
 The results are then combined and processed through more mathematical operations to help the model predict what tokens should come next.
 
-Note: All numbers are made up for illustration. Real models use much larger tables, vectors, and more complex mathematical operations.
+Note: All numbers are made up for illustration. Real models use much larger tables, vectors, and more complex mathematical operations. In a real model, each result mixes all the embedding numbers, not one number per weight. The [deep dive](01-deep-dive-inside-the-model.md) works through this, plus training and attention, step by step.
+
 On every request, the model runs four stages:
 
 1. **Cutting the text into pieces (Tokenization):** the model cuts your text into tokens. Then it looks up each token in the vocabulary and replaces it with its token ID.
@@ -371,6 +372,8 @@ After each pick, the new token goes through stages 2 and 3 like every other toke
 The course says the model writes "one word at a time" to keep things simple. In reality, it writes one token at a time.
 
 > **Remember this:** Training saved the vocabulary and the embedding table inside the model. On every request, the model cuts your text into tokens, looks up each token's saved row, adjusts a copy of the numbers to fit your sentence, and writes the answer one token at a time.
+
+For how training sets these numbers, how attention works with real numbers, and how the next token is picked, read the [deep dive: how a language model learns and thinks](01-deep-dive-inside-the-model.md).
 
 ---
 

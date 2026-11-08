@@ -29,8 +29,8 @@ This page walks through that math with numbers small enough to check by hand. Th
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [What a model is](#what-a-model-is) |
-| 3 | [The big picture](#the-big-picture) |
+| 2 | [The big picture](#the-big-picture) |
+| 3 | [What a model is](#what-a-model-is) |
 | 4 | [Part 1. What is saved inside the model](#part-1-what-is-saved-inside-the-model) |
 | 5 | [Part 2. How the model answers your message](#part-2-how-the-model-answers-your-message) |
 | 6 | [Part 3. How the model learned its numbers (training)](#part-3-how-the-model-learned-its-numbers-training) |
@@ -71,7 +71,7 @@ Training saves these three things. Every request reads them, but no request chan
 |:---:|---|---|---|---|
 | 1 | **Vocabulary** | The list of every **token** (a word, part of a word, or a symbol) the model knows. Each token has a fixed **token ID**. | An `enum`, or a primary key | `cat` = 2207 |
 | 2 | **Embedding table** | One row of numbers for each token ID. That token's row (its **embedding**) describes what the token usually means. | `Dictionary<int, double[]>` | 2207 → `[0.30, 0.70, 0.50]` |
-| 3 | **Weights** | All the other learned numbers, stored as grids called **matrices**. Each layer has its own set. | The business logic. The embeddings are the data. | Wq, Wk, Wv, Wo, feed-forward, output matrix |
+| 3 | **Weights** | All the other learned numbers, stored as grids called **matrices**. Each layer has its own set. | The business logic. The embeddings are the data. | The attention weights in every layer |
 
 Key facts:
 
@@ -89,7 +89,7 @@ A **layer** is one round of work that every token's row goes through. It adds a 
 
 | Fact | Detail |
 |---|---|
-| Each layer has its own weights | Its own attention matrices (Wq, Wk, Wv, Wo) and feed-forward matrices |
+| Each layer has its own weights | Its own attention weights and its own feed-forward weights (both explained in the next table) |
 | Fixed after training | They change only if the model is trained again, which makes a new model version |
 | The number of layers | Chosen by the builders before training. It never changes. |
 | Why many layers | Each layer adds meaning only once. For "it" in "The cat sat on the mat because it was comfortable", early layers look at nearby words, middle layers link "it" to the mat or the cat, and late layers expect a verb like "was". |
@@ -100,16 +100,16 @@ A **layer** is one round of work that every token's row goes through. It adds a 
 | Step | What happens | Key term |
 |:---:|---|---|
 | 1 | Cut the text into tokens, and find each token ID | Tokenization |
-| 2 | Look up each token's row in the embedding table, and mix in its position | Embedding |
+| 2 | Look up each token's row in the embedding table. Add each token's position (1st word, 2nd word, …) so word order isn't lost. | Embedding |
 | 3 | Each token borrows meaning from earlier tokens | **Attention** |
-| 3a | Each token makes a Query (what it looks for), a Key (what it offers), and a Value (what it hands over), using shared matrices Wq, Wk, Wv | Query, Key, Value |
-| 3b | Multiply a Query with each earlier Key, number by number, and add | **Dot product** (match score) |
+| 3a | Each token makes a **Query** (what it looks for), a **Key** (what it offers), and a **Value** (what it hands over). It uses three weight matrices, Wq, Wk, and Wv, which all tokens in a layer share. | Query, Key, Value |
+| 3b | Multiply a Query with each earlier Key, number by number, and add. A bigger result means a better match. | **Dot product** |
 | 3c | Turn the match scores into percentages that add up to 100% | **Softmax** |
-| 3d | Add up the Values, weighted by those percentages, and add the blend to the token's row | Residual connection |
-| 4 | Many attentions side by side, joined by Wo, then a feed-forward network. Repeated in dozens of layers. | Multi-head attention |
-| 5 | Turn the last token's row into a score for every token, then into chances, then pick one | **Logits**, softmax, **temperature** |
-| 6 | Add the picked token and repeat. Stop at an end token, `max_tokens`, or a stop sequence. | — |
-| 7 | Turn the token IDs back into text. Your app gets the text, `stop_reason`, and `usage`. | — |
+| 3d | Add up the earlier tokens' Values, weighted by those percentages. Add this blend to the token's own row, so it keeps its own meaning too. | Residual connection |
+| 4 | Many attentions run side by side, and one more matrix (Wo) joins their results (*multi-head attention*). Then each token's row is worked on by itself (the **feed-forward** step). All of this repeats in dozens of layers. | Multi-head attention, feed-forward |
+| 5 | Turn the last token's row into a score for every token in the vocabulary. Turn the scores into chances, and pick one. | **Logits**, softmax, **temperature** |
+| 6 | Add the picked token and repeat. Stop at a special end token, at `max_tokens` (the most tokens you allow in the answer), or at a stop sequence (text you choose that makes the model stop). | — |
+| 7 | Turn the token IDs back into text. Your app gets the text, the `stop_reason`, and the `usage` token counts. | — |
 
 Two rules to remember:
 
@@ -137,12 +137,12 @@ Key facts:
 | Learning rate | A small number, such as 0.1, that keeps each change small |
 | Embedding rows | Trained the same way. Only the rows of tokens in the sentence change in that step. |
 | One wrong sentence | Changes almost nothing. Wrong text repeated many times can be learned. |
-| Two stages | **Pre-training** (guess the next word on huge amounts of text), then **later training** (examples, human feedback, and Constitutional AI teach it to follow instructions and stay safe) |
+| Two stages | **Pre-training** (guess the next word on huge amounts of text), then **later training** (examples, feedback from people, and Constitutional AI teach it to follow instructions and stay safe) |
 | Cost | Thousands of special chips for weeks or months, once per model version |
 
 #### Model size, and when to use which
 
-A model's **size** is how many learned numbers (**parameters**) it has. The builders set it by choosing the columns per token's row, the number of layers, and each layer's width.
+A model's **size** is how many learned numbers (**parameters**) it has. The builders set it before training by choosing how many columns each token's row has, how many layers there are, and how wide each layer is (how many numbers it works with inside).
 
 | | Smaller model (Haiku) | Middle model (Sonnet) | Larger model (Opus) |
 |---|---|---|---|
@@ -157,7 +157,9 @@ Before paying for a bigger model, test whether the smallest one passes your test
 | | Training | Normal use (*inference*) |
 |---|---|---|
 | When | Once, before release | On every request |
-| Do the numbers change? | Yes, after every batch | **No. They are only read.** |
+| Where the text comes from | Books, websites, and other text | Your request |
+| The next token is | Hidden, so the guess can be checked | Unknown, so the model picks it |
+| Do the numbers change? | Yes, after every batch of sentences | **No. They are only read.** |
 | Does the model remember you? | — | No. It is stateless, so your app must resend earlier messages. |
 
 #### Exam takeaways
@@ -170,175 +172,13 @@ Before paying for a bigger model, test whether the smallest one passes your test
 
 ---
 
-### What a model is
-
-#### What a model is and what it does
-
-A model is a big file of numbers, often billions of them, plus a fixed set of calculations that use those numbers. Claude models run only on Anthropic's servers. You can't download them, and your app reaches them through the API.
-
-A model does one thing, over and over:
-
-1. Take the text so far.
-2. Give every possible next token a chance.
-3. Pick one token, using those chances.
-4. Add it to the text, and go back to step 1.
-
-Answering a question, writing code, and summarizing a document are all this one loop. An answer is simply the text most likely to come after your question.
-
-```csharp
-// A sketch of the idea, not real model code
-var tokens = Tokenize("The cat sat on the mat because it");
-while (tokens.Count < maxTokens)
-{
-    double[] chances = model.ScoreNextToken(tokens);  // a chance for every token in the vocabulary
-    int next = Pick(chances, temperature);            // pick one at random, using the chances
-    if (next == EndToken) break;                      // the model decided the answer is done
-    tokens.Add(next);                                 // add it, then loop again
-}
-```
-
-#### What is saved inside a model, and what is not
-
-| Saved inside the model | Not saved inside the model |
-|---|---|
-| The **vocabulary**: every token the model knows, each with its token ID | Your past chats. The model is stateless, so it doesn't remember you. |
-| The **embedding table**: one row of numbers that describes each token | A copy of the internet, or a database it can look facts up in |
-| The **weights**: all the other numbers it learned in training | Anything that happened after its training cutoff date |
-
-Part 1 explains each of the three saved things in detail.
-
-#### What a layer is
-
-A **layer** is one round of work that every token's row of numbers goes through.
-
-```text
-In:   every token's row, from the layer before
-Work: attention (each token borrows meaning from earlier tokens),
-      then feed-forward (each token's row is worked on by itself)
-Out:  every token's row, now holding a bit more meaning, sent to the next layer
-```
-
-- Each layer has its own weights: its own attention matrices (Wq, Wk, and Wv) and its own feed-forward matrices.
-- All layers do the same kind of work. But each has different numbers, so each one adds something different.
-- The model uses the rows that come out of the last layer to score the next token.
-
-A layer is like one piece of ASP.NET Core middleware. Each piece takes the request, changes it, and hands it to the next piece. In a model, the "request" is the set of token rows:
-
-```csharp
-// A sketch: the layers as a pipeline
-foreach (var layer in model.Layers)   // dozens of layers, each with its own fixed weights
-    rows = layer.Process(rows);       // attention, then feed-forward
-```
-
-| | What it means |
-|---|---|
-| How many layers a model has | The builders choose this before training, and it never changes. GPT-2, a small public model, has 12. Today's large models have many more. |
-| What more layers give you | More rounds to combine meaning, and more weights to store patterns. So the model is usually smarter. |
-| What more layers cost you | Every token goes through every layer. Each extra layer adds math for every token, so the model gets slower and more expensive. |
-
-#### Example: what the layers do for "it"
-
-The model has read "The cat sat on the mat because it" and must guess the next word. The row for "it" starts as a copy of its saved row in the embedding table. That saved row is the same in every sentence, so by itself it says nothing about this sentence. Each layer adds a little more:
-
-| After… | What the row of "it" now holds (simplified) |
-|---|---|
-| The embedding lookup | Only the usual meaning of "it": a word that stands for a thing |
-| The early layers | Facts about nearby words. For example, "it" comes right after "because", so a reason is starting. |
-| The middle layers | Links to earlier words. For example, "it" probably means the mat or the cat. |
-| The late layers | What should come next. For example, after "because it", a verb like "was" or "is" is likely. |
-| The last layer | A row for "it" that is ready to be scored, and that gives "was" the highest chance |
-
-> [!NOTE]
-> Nobody gives each layer a job. Training decides what each layer does, so the table above is a simplified picture. The point is that one layer combines meaning only once, and understanding a sentence takes many rounds.
-
-> [!WARNING]
-> Every token goes through the same layers, but each token can only use the tokens before it. "Cat" is the second word, so it can only look at "The" and itself. It never sees "mat" or "it", because those words come later.
-
-#### What is fixed and what changes
-
-| Part of the model | When it is decided | Does it change when you send a request? |
-|---|---|---|
-| The vocabulary and every token ID | Before training | No |
-| How many columns each token's row in the embedding table has | Before training | No |
-| How many layers the model has | Before training | No |
-| The embedding table | Learned in training | No |
-| Each layer's own Wq, Wk, Wv, Wo, and feed-forward matrices | Learned in training, separately for each layer | No. They change only if the model is trained again, which makes a new model version. |
-| The working copy of each token's row, as it moves through the layers | Made fresh for every request | Yes. It is made for your request and thrown away after. |
-
-#### What training is
-
-Training is how a model gets its numbers.
-
-```text
-Before training:  the shape is set (vocabulary, columns per row, number of layers),
-                  but every number is random, so the model writes nonsense
-Training:         a long run of practice that adjusts every number a little at a time
-After training:   the numbers are fixed, and the model writes useful text
-```
-
-- Anthropic trains each model on thousands of special computer chips for weeks or months.
-- This is very expensive, so it happens once for each model version. A newer model, such as a newer Sonnet, comes from a new training run.
-
-Training has two stages:
-
-| Stage | What the model practises | What it learns |
-|---|---|---|
-| 1. **Pre-training** | Guessing the next word on a huge amount of text from books, websites, and other sources | Language and facts about the world. At this stage it can only continue text, not answer like an assistant. |
-| 2. **Later training** | Examples of good answers, feedback from people, and a written set of rules called *Constitutional AI* | To follow instructions, be helpful, and refuse harmful requests |
-
-#### What training does to the model
-
-| | Before training | After training |
-|---|---|---|
-| The numbers | Random | Tuned by billions of small fixes |
-| The rows for "cat" and "kitten" in the embedding table | Unrelated | Similar, because both words appear in similar sentences |
-| Given "The cat sat on the" | Guesses a random token | Gives "mat" a high chance |
-| Given "Summarize this email" | Just keeps writing more text | Writes a summary, after later training |
-
-Part 3 shows exactly how one of those small fixes works, with real numbers.
-
-#### Why some models are larger than others
-
-A model's **size** is how many learned numbers (*parameters*) it has. The builders set the size before training by choosing three things:
-
-1. How many columns each token's row in the embedding table has.
-2. How many layers the model has.
-3. How wide each layer is.
-
-More of each means more numbers.
-
-| A larger model… | Because… |
-|---|---|
-| Is usually smarter on hard tasks, such as long reasoning or tricky code | It has more room to store patterns and facts |
-| Is slower and costs more per token | Every token has to pass through all of its numbers |
-| Costs much more to train | There are more numbers to adjust, on more text |
-
-That is why providers offer a family of models. Anthropic doesn't publish its model sizes. It describes Haiku as its fastest and cheapest model, Opus as its smartest, and Sonnet as the balance between them.
-
-| | Smaller model (for example, Haiku) | Larger model (for example, Opus) |
-|---|---|---|
-| Speed | Faster | Slower |
-| Cost per token | Lower | Higher |
-| Skill on hard tasks | Lower | Higher |
-| Use it when | The task is simple and you run it many times, such as sorting 10,000 support emails into five categories | The task is hard and mistakes are costly, such as finding security risks in a system design |
-
-#### Other ways models differ
-
-| Difference | What it changes for you |
-|---|---|
-| Training text and cutoff date | What the model knows, and how recent that knowledge is |
-| Later training | How well it follows your instructions, and when it refuses |
-| Settings chosen when it was built, such as the context window size | How much text one request can hold |
-
----
-
 ### The big picture
 
 #### Why this matters to you
 
 As an architect, you'll get these five questions. Each answer comes from one part of how the model works inside.
 
-1. **Why do I pay per token, not per message?** The model reads your text one token at a time and writes its answer one token at a time. Every token goes through all of the model's layers. So a longer prompt or a longer answer means more work, and more cost. See [Part 2, step 1](#step-1-cut-the-text-into-tokens-tokenization).
+1. **Why do I pay per token, not per message?** The model processes every token of your prompt, then writes its answer one token at a time. Every token goes through all of the model's layers. So a longer prompt or a longer answer means more work, and more cost. See [Part 2, step 1](#step-1-cut-the-text-into-tokens-tokenization).
 2. **Why are long prompts slow?** Before the model writes anything, each token in your prompt looks back at every token before it. A long prompt means a lot of looking back. Prompt caching helps when many requests start with the same text, such as the same instructions. The model saves its work on that shared start and reuses it next time. See [Part 2, step 3](#step-3-borrow-meaning-from-earlier-words-attention).
 3. **Why does the same question get different answers?** For each next word, the model works out a list of possible words, each with a chance. Then it picks one at random, using those chances. A setting called temperature controls how often it picks a less likely word. See [Part 2, step 5](#step-5-score-every-word-and-pick-one).
 4. **Does chatting with the model change it, or make it remember me?** No. Answering only reads the model's saved numbers and never changes them. If the model needs earlier messages, your app must send them again. See [Architect notes](#architect-notes-what-this-means-for-your-work).
@@ -375,20 +215,17 @@ Things to notice:
 - The loop runs once for every token in the answer. A 300-token answer means 300 trips through all the layers.
 - Everything inside the box only reads the saved numbers. Your question never changes the model.
 
-#### The route through this page
-
-First you see what is stored. Then you watch the model use it on one sentence. Then you learn how training produced those numbers. Last, you see what it all means for the systems you design.
-
 #### The example used throughout
 
 ```text
 The cat sat on the mat because it was comfortable.
 ```
 
-- In Part 2, the model has read "The cat sat on the mat because it" and must guess the next token. The right answer is "was".
-- In Part 3, training uses the same sentence to improve that guess.
-- Real models have thousands of numbers per token, which is too many to follow by hand. So the example uses only three.
-- The numbers are made up, but each result is calculated from the ones before it. You can redo any step on a calculator.
+| Where | What the example does |
+|---|---|
+| Part 2 | The model has read "The cat sat on the mat because it" and must guess the next token. The right answer is "was". |
+| Part 3 | Training uses the same sentence to improve that guess. |
+| The numbers | Real models have thousands of numbers per token, so the example uses only three. The numbers are made up, but each result is calculated from the ones before it, so you can redo any step on a calculator. |
 
 #### Who's who
 
@@ -401,13 +238,89 @@ The cat sat on the mat because it was comfortable.
 
 ---
 
+### What a model is
+
+#### What a model is and what it does
+
+A model is a big file of numbers, often billions of them, plus a fixed set of calculations that use those numbers. Claude models run only on Anthropic's servers. You can't download them, and your app reaches them through the API.
+
+A model does one thing, over and over:
+
+1. Take the text so far.
+2. Give every possible next token a chance.
+3. Pick one token, using those chances.
+4. Add it to the text, and go back to step 1.
+
+Answering a question, writing code, and summarizing a document are all this one loop. An answer is simply the text most likely to come after your question.
+
+```csharp
+// A sketch of the idea, not real model code
+var tokens = Tokenize("The cat sat on the mat because it");
+while (tokens.Count < maxTokens)
+{
+    double[] chances = model.ScoreNextToken(tokens);  // a chance for every token in the vocabulary
+    int next = Pick(chances, temperature);            // pick one at random, using the chances
+    if (next == EndToken) break;                      // the model decided the answer is done
+    tokens.Add(next);                                 // add it, then loop again
+}
+```
+
+Part 1 shows what is saved inside the model. Part 2 shows what happens inside `ScoreNextToken` and `Pick`. Part 3 shows how training produced the numbers.
+
+#### Why some models are larger than others
+
+A model's **size** is how many learned numbers (*parameters*) it has. The builders set the size before training by choosing three things:
+
+| Choice | What it means |
+|---|---|
+| Columns per token's row | How many numbers each token's row in the embedding table has |
+| Number of layers | How many rounds of work every token goes through (Part 2, step 4) |
+| Width of each layer | How many numbers a layer works with inside. For example, the feed-forward step makes each token's row about four times wider for a moment. |
+
+More of each means more numbers.
+
+| A larger model… | Because… |
+|---|---|
+| Is usually smarter on hard tasks, such as long reasoning or tricky code | It has more room to store patterns and facts |
+| Is slower and costs more per token | Every token has to pass through all of its numbers |
+| Costs much more to train | There are more numbers to adjust, on more text |
+
+That is why providers offer a family of models. Anthropic doesn't publish its model sizes. It describes Haiku as its fastest and cheapest model, Opus as its smartest, and Sonnet as the balance between them.
+
+| | Smaller model (Haiku) | Middle model (Sonnet) | Larger model (Opus) |
+|---|---|---|---|
+| Speed and cost | Fastest, cheapest | Balanced | Slowest, most expensive |
+| Skill on hard tasks | Lowest | Good | Highest |
+| Use it when | A simple task runs many times, such as sorting 10,000 support emails into five categories | Most everyday work | A hard task where mistakes are costly, such as finding security risks in a system design |
+
+> [!TIP]
+> **Why you care:** before paying for a bigger model, test whether the smallest one passes your test questions.
+
+#### Other ways models differ
+
+| Difference | What it changes for you |
+|---|---|
+| Training text and cutoff date | What the model knows, and how recent that knowledge is |
+| Later training | How well it follows your instructions, and when it refuses |
+| Settings chosen when it was built, such as the context window size | How much text one request can hold |
+
+---
+
 ### Part 1. What is saved inside the model
 
 *A computer can only do math on numbers, so the model needs a way to turn "cat" into numbers. Training saves three things for this.*
 
+| # | Thing | What it is | In .NET terms | Example |
+|:---:|---|---|---|---|
+| 1 | **Vocabulary** | Every token the model knows, each with a token ID | An `enum`, or a primary key | `cat` = 2207 |
+| 2 | **Embedding table** | One row of numbers for each token ID | `Dictionary<int, double[]>` | 2207 → `[0.30, 0.70, 0.50]` |
+| 3 | **Weights** | All the other learned numbers, in many matrices | The business logic that works on the data | Wq, Wk, Wv in every layer (Part 2) |
+
+Every request reads these three things, but no request changes them.
+
 #### The vocabulary: from text to a token ID
 
-A fixed list of every token the model knows, each with its own token ID. The IDs below are made up.
+A fixed list of every token the model knows, each with its own token ID. A **token** is a small piece of text, such as a word, part of a word, or a symbol like "?". The IDs below are made up.
 
 | Token | The | cat | sat | on | the | mat | because | it | was |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -440,7 +353,7 @@ An embedding table works the same way, with two differences:
 
 #### The embedding table: from a token ID to a row of numbers
 
-A table with one row for every token ID. Each token's row is a list of numbers that describes what that token usually means. Here each token's row has three numbers:
+A table with one row for every token ID. Each token's row is a list of numbers that describes what that token usually means. That row is called the token's **embedding**. Here each token's row has three numbers:
 
 | Token ID | Token | Number 1 | Number 2 | Number 3 |
 |---|---|:---:|:---:|:---:|
@@ -464,10 +377,12 @@ Dictionary<int, double[]> embedding = LoadEmbeddingTable();   // saved inside th
 double[] catRow = embedding[2207];                            // { 0.30, 0.70, 0.50 }
 ```
 
-- Each token has its own row, and every token's row has the same number of columns. The builders choose that number before training, and it never changes.
-- Real models use hundreds or thousands of columns. The public model GPT-2 has 50,257 tokens with 768 columns each, which is about 38.6 million numbers in its embedding table alone. Anthropic doesn't publish Claude's sizes.
-- No single column means "animal" or "grammar". A meaning is spread over many columns, so you compare two tokens by their whole rows, never by one column.
-- One row of numbers is called a **vector**. A whole grid of numbers is called a **matrix**.
+| Fact | Detail |
+|---|---|
+| Same columns for every token | Each token has its own row, and every token's row has the same number of columns. The builders choose that number before training, and it never changes. |
+| Real sizes | Hundreds or thousands of columns. The public model GPT-2 has 50,257 tokens with 768 columns each, about 38.6 million numbers in its embedding table alone. Anthropic doesn't publish Claude's sizes. |
+| What a column means | No single column means "animal" or "grammar". A meaning is spread over many columns, so you compare two tokens by their whole rows, never by one column. |
+| Words to know | One row of numbers is a **vector**. A whole grid of numbers is a **matrix**. |
 
 > [!WARNING]
 > The numbers in a token's row are **not** the IDs of other tokens. They describe this token and don't point anywhere else.
@@ -502,9 +417,19 @@ result 1 = (number 1 × weight A) + (number 2 × weight B) + (number 3 × weight
 result 2 = (number 1 × weight D) + (number 2 × weight E) + (number 3 × weight F)
 ```
 
-- A big weight makes its input count more in that result.
-- A negative weight makes its input count against the result.
-- No weight "picks" a number. Every result mixes every input, so the model can combine information from all the columns.
+| Weight | Effect |
+|---|---|
+| A big weight | Makes its input count more in that result |
+| A negative weight | Makes its input count against the result |
+| Any weight | Never "picks" a number. Every result mixes every input, so the model can combine information from all the columns. |
+
+#### What is saved, and what is not
+
+| Saved inside the model | Not saved inside the model |
+|---|---|
+| The vocabulary | Your past chats. The model is stateless, so it doesn't remember you. |
+| The embedding table | A copy of the internet, or a database it can look facts up in |
+| The weights | Anything that happened after its training cutoff date |
 
 > **Remember this:** The vocabulary gives the token ID. The embedding table gives that token's row of numbers. The weights mix the numbers until the model can score the next token.
 
@@ -544,7 +469,7 @@ Out:  int[] ids = { 101, 2207, 310, 415, 102, 520, 845, 340 };   // 8 token IDs
 double[] itRow = embedding[340];   // "it" → { 0.40, 0.30, 0.70 }, a working copy of its saved row
 ```
 
-The model also mixes each token's position into its numbers. Without this, word order would be lost:
+The model also adds each token's position (1st word, 2nd word, and so on) into its numbers. Without this, word order would be lost:
 
 ```text
 "dog bites man"  vs  "man bites dog"
@@ -666,7 +591,7 @@ Out:  one match score per earlier token. Bigger means a better match.
 ```
 
 > [!NOTE]
-> The model then divides each score by the square root of the Key's length. Here that is √2, about 1.414. This stops the scores from getting too big when rows have thousands of numbers.
+> The model then divides each score by the square root of how many numbers each Key has. Here each Key has 2 numbers, so it divides by √2, about 1.414. This stops the scores from getting too big when Keys have thousands of numbers.
 
 ##### 3d. Turn scores into percentages (softmax)
 
@@ -749,17 +674,53 @@ blend          = [0.455, 0.322, 0.444]
 
 1 Tokens → 2 Rows → 3 Attention → **[4 Rest of the layer]** → 5 Score & pick → 6 Repeat → 7 Text out
 
-*One attention is only a small part of one layer. These parts also run on every token's working row.*
+*Attention is only part of one layer, and a model has dozens of layers.*
+
+A **layer** is one round of work that every token's row goes through:
+
+```text
+In:   every token's row, from the layer before
+Work: attention (step 3), then the feed-forward step (below)
+Out:  every token's row, now holding a bit more meaning, sent to the next layer
+```
+
+The parts of one layer:
 
 | Part | What happens | Why it is there |
 |---|---|---|
 | **Many heads** (*multi-head attention*) | Each layer runs many attentions side by side, each with its own Wq, Wk, and Wv. One more matrix, **Wo**, joins their results back into one row per token. | Different heads can track different links, such as what "it" refers to, or which word is the verb. Training decides what each head does. |
-| **Feed-forward network** | Each token's row is made wider (often about four times), passed through a simple bend that cuts or squashes negative numbers, then made narrow again. | Attention moves information between tokens. This step works on what each token now holds. Much of the model's knowledge is stored here. |
+| **Feed-forward** | Each token's row is made wider (often about four times), passed through a simple rule that turns negative numbers into zero (or close to zero), then made narrow again. | Attention moves information between tokens. This step works on what each token now holds. Much of the model's knowledge is stored here. |
 | **Normalization** | The model rescales each token's working row so its numbers stay in a steady range. | Without it, the numbers could grow or shrink too much over many layers. |
-| **Many layers** | The whole block repeats dozens of times. Each layer has its own weights. | Each layer sharpens the meaning a little more. |
+
+The layers run one after another, like ASP.NET Core middleware. Each piece takes the request, changes it, and hands it to the next piece:
+
+```csharp
+// A sketch: the layers as a pipeline
+foreach (var layer in model.Layers)   // dozens of layers, each with its own fixed weights
+    rows = layer.Process(rows);       // attention, then feed-forward
+```
+
+What the layers do for "it", in a simplified picture:
+
+| After… | What the row of "it" now holds (simplified) |
+|---|---|
+| The embedding lookup | Only the usual meaning of "it": a word that stands for a thing |
+| The early layers | Facts about nearby words. For example, "it" comes right after "because", so a reason is starting. |
+| The middle layers | Links to earlier words. For example, "it" probably means the mat or the cat. |
+| The late layers | What should come next. For example, after "because it", a verb like "was" or "is" is likely. |
+| The last layer | A row for "it" that is ready to be scored, and that gives "was" the highest chance |
 
 > [!NOTE]
-> For a sense of size, GPT-2, a small public model from 2019, has 12 layers, 12 heads per layer, and about 124 million weights. Large models today have billions.
+> Nobody gives each layer a job. Training decides what each layer does, so the table above is a simplified picture. The point is that one layer combines meaning only once, and understanding a sentence takes many rounds.
+
+> [!WARNING]
+> Every token goes through the same layers, but each token can only use the tokens before it. "Cat" is the second word, so it can only look at "The" and itself. It never sees "mat" or "it", because those words come later.
+
+| | What it means |
+|---|---|
+| How many layers a model has | The builders choose this before training, and it never changes. GPT-2, a small public model from 2019, has 12 layers with 12 heads each and about 124 million weights. Today's large models have many more. |
+| What more layers give you | More rounds to combine meaning, and more weights to store patterns. So the model is usually smarter. |
+| What more layers cost you | Every token goes through every layer. Each extra layer adds math for every token, so the model gets slower and more expensive. |
 
 #### Step 5: score every word and pick one
 
@@ -839,8 +800,13 @@ Round 3:  "...it was comfortable"   → picks "."
 Round 4:  "...comfortable."         → picks the end token, so it stops
 ```
 
-- Each new token goes through steps 2 to 5, looking back at everything before it.
-- The model stops at a special end token, at your `max_tokens` limit, or at one of your stop sequences.
+| When the model stops | What it means |
+|---|---|
+| It picks a special end token | The model decided the answer is complete |
+| It reaches `max_tokens` | The most tokens you allowed in the answer. The answer may be cut off. |
+| It writes a stop sequence | Text you chose in the request that makes the model stop |
+
+Each new token goes through steps 2 to 5, looking back at everything before it.
 
 > [!TIP]
 > **Why you care:** the model saves the Keys and Values it already made for earlier tokens, so each round it only makes them for the new token. This saved work is called the *KV cache*. Prompt caching builds on the same idea across requests.
@@ -857,8 +823,22 @@ Work: look each ID up in the same vocabulary
 Out:  " was comfortable."
 ```
 
-- The API can send tokens to your app as they are made, so the user sees the answer appear word by word. This is called streaming ([lesson 7](07-response-streaming.md)).
-- With the text, your app also receives the `stop_reason` (why the model stopped) and the `usage` token counts ([lesson 1](01-accessing-the-api.md#5-when-the-model-stops-and-what-comes-back)).
+| Your app receives | What it is |
+|---|---|
+| The text | Sent as it is made if you use streaming, so the user sees the answer appear word by word ([lesson 7](07-response-streaming.md)) |
+| `stop_reason` | Why the model stopped: end token, `max_tokens`, or a stop sequence ([lesson 1](01-accessing-the-api.md#5-when-the-model-stops-and-what-comes-back)) |
+| `usage` | How many input and output tokens were used, which is what you pay for |
+
+#### What changed during this request
+
+| Part of the model | When it is decided | Did your request change it? |
+|---|---|---|
+| The vocabulary and every token ID | Before training | No |
+| How many columns each token's row in the embedding table has | Before training | No |
+| How many layers the model has | Before training | No |
+| The embedding table | Learned in training | No |
+| Each layer's own Wq, Wk, Wv, Wo, and feed-forward matrices | Learned in training, separately for each layer | No. They change only if the model is trained again, which makes a new model version. |
+| The working copy of each token's row, as it moves through the layers | Made fresh for every request | Yes. It was made for your request and is thrown away after. |
 
 ---
 
@@ -866,7 +846,36 @@ Out:  " was comfortable."
 
 *Part 2 used numbers like Wq, Wk, and the output weight 1.5 as if they were just there. This part shows where they came from.*
 
-The training loop:
+#### What training is
+
+Training is how a model gets its numbers.
+
+```text
+Before training:  the shape is set (vocabulary, columns per row, number of layers),
+                  but every number is random, so the model writes nonsense
+Training:         a long run of practice that adjusts every number a little at a time
+After training:   the numbers are fixed, and the model writes useful text
+```
+
+Anthropic trains each model on thousands of special computer chips for weeks or months. This is very expensive, so it happens once for each model version. A newer model, such as a newer Sonnet, comes from a new training run.
+
+Training has two stages:
+
+| Stage | What the model practises | What it learns |
+|---|---|---|
+| 1. **Pre-training** | Guessing the next word on a huge amount of text from books, websites, and other sources | Language and facts about the world. At this stage it can only continue text, not answer like an assistant. |
+| 2. **Later training** | Examples of good answers, feedback from people, and a written set of rules called *Constitutional AI* | To follow instructions, be helpful, and refuse harmful requests |
+
+What training does to the model:
+
+| | Before training | After training |
+|---|---|---|
+| The numbers | Random | Tuned by billions of small fixes |
+| The rows for "cat" and "kitten" in the embedding table | Unrelated | Similar, because both words appear in similar sentences |
+| Given "The cat sat on the" | Guesses a random token | Gives "mat" a high chance |
+| Given "Summarize this email" | Just keeps writing more text | Writes a summary, after later training |
+
+The steps below show exactly how one of those small fixes works, with real numbers. The training loop:
 
 ```text
 1 Start random → 2 Hide a word → 3 Loss → 4 Gradient → 5 Backpropagation → 6 Update → back to 2
@@ -882,9 +891,11 @@ cat  [ 0.25, −0.31,  0.42]
 mat  [−0.15,  0.75, −0.21]
 ```
 
-- The starting numbers can be negative, and they don't have to be between 0 and 1.
-- At this point "cat" is no closer to "kitten" than to "refrigerator". The tokens' rows don't mean anything yet.
-- Ask an untrained model to continue "The cat sat on the mat because it", and it might say "refrigerator".
+| Fact | Detail |
+|---|---|
+| Range | The starting numbers can be negative, and they don't have to be between 0 and 1 |
+| Meaning | None yet. "Cat" is no closer to "kitten" than to "refrigerator". |
+| Output | Ask an untrained model to continue "The cat sat on the mat because it", and it might say "refrigerator" |
 
 #### Step 2: practise with a hidden word
 
@@ -1036,7 +1047,7 @@ Tokens not in the sentence ("refrigerator"):     their rows stay exactly the sam
 | One sentence, then an update | Many sentences at once (a *batch*), gradients averaged, then an update. This smooths out any one odd sentence. |
 | The plain update rule | Improved versions of gradient descent, such as *Adam*, which pick a step size for each number |
 | One update | A very long run of steps. Most text is read once or a few times. One full pass over all the text is an *epoch*. |
-| Next-word practice only | Followed by later training, which teaches the model to follow instructions and stay safe (feedback from people and *Constitutional AI*) |
+| Next-word practice only | Followed by later training, which teaches the model to follow instructions and stay safe |
 
 #### Can one wrong sentence spoil what the model learned?
 
@@ -1090,68 +1101,47 @@ The model picks each token at random using its chances, so a different token can
 
 ### Architect notes: what this means for your work
 
-#### Training compared with normal use
+The short version: **more tokens = more work for the model = more cost.** Training compared with normal use is summarized in the revision summary and in [What changed during this request](#what-changed-during-this-request).
 
-| | Training | Normal use (inference) |
+| Concern | Why it happens inside the model | What you do |
 |---|---|---|
-| When | Once, before release | On every request |
-| Where the text comes from | Books, websites, and other text | Your request |
-| The next token is | Hidden, so the guess can be checked | Unknown, so the model picks it |
-| Loss and gradients | Yes, for every batch | No |
-| The numbers change | Yes, after every batch | **No. They are only read.** |
-| Remembers you next time | — | No. Your app must resend earlier messages. |
+| **Cost of input** | You pay per token, and every input token goes through every layer. Long documents cost money even when the answer is short. | Find and send only the passages that match the question (called retrieval, lessons 32–38) |
+| **Cost of output** | Each output token needs a full trip through the model. That is one reason output tokens cost more than input tokens. | Ask for only the length you need. Check current prices on Anthropic's pricing page. |
+| **Speed** | Each token looks back at every earlier token. The attention work grows with the square of the prompt length: twice as many tokens means about four times as much attention work. | Keep prompts lean, especially when the user waits for the first word |
+| **Repeated prompts** | The work on an unchanged start of a prompt can be saved and reused | Use prompt caching (lessons 43–45). Put fixed text, such as instructions and reference documents, at the start. |
+| **Context window** | The model can only use what is in one request, up to a limit counting input and answer | Look up each model's limit, and trim or summarize long histories |
+| **Out-of-date knowledge** | The model only knows its training text, up to a cutoff date | Put new facts in the prompt, or give the model a search tool |
+| **No memory** | Answering never changes the numbers, so the model is stateless | Your app stores the chat history and resends it every time (sketch below). Store it securely. |
+| **Varied answers** | Each token is picked at random from a set of chances | For tasks that need the same answer, lower the temperature, give examples, and check the output in code. Don't promise identical answers. |
+| **Model choice** | Smaller models have fewer weights, so each token needs less math | Test the smallest model that passes your test questions first |
+| **Data terms** | Your requests never change the model. Keeping or training on data is a policy question. | Check Anthropic's current terms and data-retention options for each customer |
 
-The short version: **context = compute = cost.** Every token you send or receive is work the model does, and you pay for it.
+```csharp
+// A sketch: your app keeps the history, not the model
+var history = new List<Message> { new("user", "What is quantum computing?") };
+string reply = await claude.SendAsync(history);   // send the whole history
+history.Add(new("assistant", reply));
+history.Add(new("user", "Explain it more simply."));
+reply = await claude.SendAsync(history);          // send everything again
+```
 
-#### Cost
-
-- You pay per token, and every input token goes through every layer. So long documents cost money even when the answer is short. Send only the passages needed, for example with retrieval (lessons 32–38).
-- Each output token needs a full trip through the model. That is one reason output tokens cost more than input tokens. Ask for only the length you need, and check current prices on Anthropic's pricing page.
-
-#### Speed
-
-- Each new token looks back at every earlier token. The attention part of the work grows with the square of the prompt length: twice as many tokens means about four times as much attention work. So long prompts are slower, especially before the first word of the answer.
-- Prompt caching (lessons 43–45) saves the work done on an unchanged start of a prompt. Later requests that start the same way are faster and cheaper. Put fixed text, such as instructions and reference documents, at the start.
-
-#### Limits
-
-- The **context window** is the most tokens one request can hold, counting your input and the answer. The model can only use what is in that request. Look up each model's limit.
-- The model only knows its training text, up to a cutoff date. For newer facts, put them in the prompt or give the model a search tool.
-
-#### Security and data
-
-- The model is stateless. Your app must store the chat history and send it again on every request:
-
-  ```csharp
-  // A sketch: your app keeps the history, not the model
-  var history = new List<Message> { new("user", "What is quantum computing?") };
-  string reply = await claude.SendAsync(history);   // send the whole history
-  history.Add(new("assistant", reply));
-  history.Add(new("user", "Explain it more simply."));
-  reply = await claude.SendAsync(history);          // send everything again
-  ```
-
-  Store that history securely, because your app is now responsible for it.
-- Attention treats all text in the prompt the same way. There is no wall between your instructions and text from a document. It is like building a SQL query by pasting user input into the string: hidden text in a document can act as an instruction. This is called *prompt injection*. Tag untrusted text, limit which tools the model can use, and check its output.
-- Whether Anthropic keeps or trains on your data is set by its terms and your contract. Your requests don't change that. Check the current terms for each customer.
-
-#### Design trade-offs
-
-- Answers vary because tokens are picked from chances. For tasks that need the same answer, such as sorting into categories, lower the temperature, give examples, and check the output in code. Don't promise a customer identical answers.
-- Smaller models have fewer weights, so each token needs less math. They are faster and cheaper, but usually less smart. Test the smallest model that passes your test questions first.
+> [!WARNING]
+> **Prompt injection.** Attention treats all text in the prompt the same way. There is no wall between your instructions and text from a document. It is like building a SQL query by pasting user input into the string: hidden text in a document can act as an instruction. Tag untrusted text, limit which tools the model can use, and check its output.
 
 ---
 
 ### Recap
 
-- **Saved inside:** the vocabulary turns text into token IDs. The embedding table turns each ID into a row of numbers (the data). The weights mix those numbers (the business logic).
-- **Weights mix:** each result adds up all the inputs, each times its own weight.
-- **Layers:** every token's row passes through dozens of layers. Each layer has its own fixed weights and adds a little more meaning.
-- **Answering:** cut into tokens, look up rows and add position, borrow meaning through attention, repeat over many layers, score every token, pick one, repeat, and turn the token IDs back into text.
-- **Attention:** Query, Key, and Value from shared matrices. A dot product scores each match, softmax makes percentages, and the Values are blended in.
-- **Picking:** softmax turns scores into chances. Temperature controls how spread out they are, but even temperature 0 doesn't guarantee identical answers.
-- **Training:** every number starts random. The model guesses a hidden token, the loss measures the error, backpropagation finds every gradient, and gradient descent moves every number a little.
-- **Normal use:** answering only reads the numbers. The model is stateless, never learns from your chat, and doesn't remember you.
+| Idea | Takeaway |
+|---|---|
+| Saved inside | The vocabulary turns text into token IDs. The embedding table turns each ID into a row of numbers (the data). The weights mix those numbers (the business logic). |
+| Weights mix | Each result adds up all the inputs, each times its own weight |
+| Layers | Every token's row passes through dozens of layers. Each layer has its own fixed weights and adds a little more meaning. |
+| Answering | Cut into tokens, look up rows and add position, borrow meaning through attention, repeat over many layers, score every token, pick one, repeat, and turn the token IDs back into text |
+| Attention | Query, Key, and Value from shared matrices. A dot product scores each match, softmax makes percentages, and the Values are blended in. |
+| Picking | Softmax turns scores into chances. Temperature controls how spread out they are, but even temperature 0 doesn't guarantee identical answers. |
+| Training | Every number starts random. The model guesses a hidden token, the loss measures the error, backpropagation finds every gradient, and gradient descent moves every number a little. |
+| Normal use | Answering only reads the numbers. The model is stateless, never learns from your chat, and doesn't remember you. |
 
 ---
 

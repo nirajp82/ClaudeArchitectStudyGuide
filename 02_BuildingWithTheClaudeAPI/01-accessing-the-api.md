@@ -94,12 +94,12 @@ On every request, the model runs four stages:
 
 #### What the numbers in the embedding table mean
 
-Each number in a row scores the token on one **trait**, which is one kind of meaning, such as "has to do with money." These facts explain why the rows are useful:
+Each number in a token's row of the embedding table scores that token on one **trait**, which is one kind of meaning, such as "has to do with money." These facts explain why the tokens' rows are useful:
 
-- Every row has a number for the same traits, so any two rows can be compared.
+- Every token's row has a number for the same traits, so the rows of any two tokens can be compared.
 - Similar words have similar rows. For example, "cat" and "kitten" have almost the same numbers.
 - A word with several meanings, such as "bank" or "quantum," has a row that mixes all of them, because the same row is used in every sentence. Stage 3 settles which meaning you mean.
-- A real row has thousands of numbers. Nobody names the traits. The model worked out all the numbers itself during training, by noticing which words appear in similar sentences.
+- In a real model, each token's row has thousands of numbers. Nobody names the traits. The model worked out all the numbers itself during training, by noticing which words appear in similar sentences.
 
 #### How the model decides to stop
 
@@ -301,7 +301,7 @@ The course treats each word as one token to keep things simple. In reality, a lo
 
 The model doesn't search for the row, and it doesn't change it. It goes straight to the row with that token ID, the way you turn straight to a page number in a book. So the token `bank` gets the same row in every sentence, in every request, from every user.
 
-**What the saved numbers mean:** each column of the table is one **trait**, which is one kind of meaning, such as "has to do with money." Each number in a row scores the token on that trait. Here is a made-up table with five rows and three traits, where 0 means "not related" and 1 means "strongly related":
+**What the saved numbers mean:** each column of the table is one **trait**, which is one kind of meaning, such as "has to do with money." Each number in a token's row scores that token on that trait. Here is a made-up table with five tokens' rows and three traits, where 0 means "not related" and 1 means "strongly related":
 
 | Token ID | Token | Money | Water | Animals |
 |---|---|:---:|:---:|:---:|
@@ -313,13 +313,13 @@ The model doesn't search for the row, and it doesn't change it. It goes straight
 
 How to read the table:
 
-- **Every row has a number for the same traits.** That is what lets the model compare any two tokens later.
+- **Every token's row has a number for the same traits.** That is what lets the model compare any two tokens later.
 - **Similar words have similar rows.** "Cat" and "kitten" have the same numbers. "Cash" and "cat" have no high number in common.
 - **A word with several meanings has a row that mixes them.** "Bank" scores 0.5 for money and 0.5 for water, because the same row must work in every sentence. Stage 3 settles which bank you mean.
 
 A real embedding table is different in two ways:
 
-1. **It has thousands of columns, not three.** Each row is a list of thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`.
+1. **It has thousands of columns, not three.** Each token's row is a list of thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`.
 2. **Nobody names the columns.** No person wrote "Money" or "Water" at the top. The model worked out all the numbers itself during training, by noticing which words appear in similar sentences. Words used in similar ways end up with similar rows.
 
 "Quantum" is like "bank." Its saved row mixes several meanings: something in physics, something very small, and a kind of computing.
@@ -357,7 +357,7 @@ Not in the course:
 
 The model usually picks a likely token, but not always the most likely one. Here it picks "Quantum" most often, but sometimes it picks "Great." That is why the same question can get slightly different answers. A setting called *temperature* controls how often it picks a less likely token ([lesson 6](06-temperature.md)).
 
-After each pick, the new token goes through stages 2 and 3 like every other token. The model reads its saved row, and the new token looks back at everything before it, including your question. Then the model picks the next token:
+After each pick, the new token goes through stages 2 and 3 like every other token. The model reads the new token's saved row in the embedding table, and the new token looks back at everything before it, including your question. Then the model picks the next token:
 
 | Round | Answer written so far | Token the model picks next |
 |:---:|---|---|

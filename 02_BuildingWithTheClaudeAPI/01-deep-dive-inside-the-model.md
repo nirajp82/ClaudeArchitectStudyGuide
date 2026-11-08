@@ -57,6 +57,8 @@ A model is a large file of numbers plus a fixed set of calculations, and it does
 - Everything a model does, such as answering questions, writing code, or summarizing a document, is that one skill repeated many times.
 - Saved inside the model are its vocabulary, its embedding table, and its weights. Your past conversations, a copy of the internet, and anything newer than its training cutoff date are **not** saved inside it.
 - A **layer** is one round of processing that every token's row goes through. Each layer has its own weights, takes the rows from the layer before it, adds a little more meaning from the surrounding words, and passes them on. The builders choose how many layers a model has before training, and more layers usually mean a more capable but slower and more expensive model.
+- Each layer has its own attention matrices (Wq, Wk, and Wv) and its own feed-forward matrices. Like the vocabulary and the embedding table, they are fixed once training ends and change only if the model is trained again, which produces a new model version. Only the working copy of each token's row changes, and it is made fresh for every request and then thrown away.
+- Many layers are needed because each layer combines meaning only once. For the word "it" in "The cat sat on the mat because it was comfortable", early layers notice nearby words, middle layers link "it" to the mat or the cat, and late layers work out that a verb such as "was" should come next.
 - **Training** is how the model gets its numbers. It happens in two stages: **pre-training**, where the model practises guessing the next word on a huge amount of text, and **later training**, where examples, human feedback, and written principles (Constitutional AI) teach it to follow instructions, be helpful, and decline harmful requests.
 - Training runs on thousands of specialised chips for weeks or months, so it is very expensive and happens once for each model version. After release the numbers are fixed, and a newer model means a new training run.
 - A model's **size** is how many learned numbers (**parameters**) it has. The people who build it set the size by choosing how many columns each row has, how many layers it has, and how wide each layer is.
@@ -153,6 +155,33 @@ If you know ASP.NET Core, a layer works like one piece of middleware in a pipeli
 | What more layers give you | More rounds to combine meaning, and more weights to store patterns, so the model is usually more capable |
 | What more layers cost you | Every token must pass through every layer, so each extra layer adds arithmetic for every token, which makes the model slower and more expensive to run |
 
+#### Example: what the layers do for "it"
+
+Take the sentence "The cat sat on the mat because it was comfortable", at the moment the model has read up to "it" and must guess the next word. The row for "it" starts as the same saved row it has in every sentence, so on its own it says nothing about this sentence. Each layer then adds a little more, building on what the layer before it found. Real layers don't have neat jobs that anyone assigned, because training shapes what each layer does, so the table below is a simplified picture of the kind of meaning the row gathers as it moves up through the layers:
+
+| After… | What the working row of "it" now carries (simplified) |
+|---|---|
+| The embedding lookup | Only the usual meaning of "it": a word that stands for some thing |
+| The early layers | Simple facts about nearby words, for example that "it" comes right after "because", so a reason is starting |
+| The middle layers | Links to earlier words, for example that "it" probably refers to the mat or the cat, which were mentioned before |
+| The late layers | What should come next, for example that after "because it" a verb such as "was" or "is" is very likely |
+| The last layer | A row ready to be turned into a score for every token, which gives "was" the highest chance |
+
+That is why a model needs many layers: one round can only combine meaning once, and understanding a sentence takes many rounds that each build on the one before.
+
+Every other token goes through the same layers at the same time, but it can only gather meaning from the tokens before it. "Cat" is the second word, so in every layer it can look only at "The" and itself; it learns that it is the subject of the sentence, but it can never see "mat" or "it", because those words come later.
+
+#### What is fixed and what changes
+
+| Part of the model | When it is decided | Does it change when you send a request? |
+|---|---|---|
+| The vocabulary and every token ID | Before training starts | No |
+| How many columns each row has | Before training starts | No |
+| How many layers the model has | Before training starts | No |
+| The embedding table | Learned during training | No |
+| Each layer's own Wq, Wk, and Wv, and its own feed-forward matrices | Learned during training, separately for every layer | No. They change only if the model is trained again, which produces a new model version |
+| The working copy of each token's row as it moves through the layers | Calculated fresh on every request | Yes. It is made for your request and thrown away afterward |
+
 Part 2, step 4 shows what happens inside each layer.
 
 #### What training is
@@ -227,14 +256,29 @@ You need this for the exam and for real projects, because many decisions you wil
 | The numbers are only read, never changed, when answering | Chats don't change the model, and the model doesn't remember users between requests | Architect notes |
 | Training learns whatever patterns are common in its text | The model can be wrong or out of date, so check facts and give it current information | Part 3 |
 
-#### The route through this page
+#### From your question to the answer
 
 ```mermaid
-flowchart LR
-    P1[Part 1<br/>What is saved<br/>inside the model] --> P2[Part 2<br/>How it answers<br/>your message]
-    P2 --> P3[Part 3<br/>How it learned<br/>those numbers]
-    P3 --> P4[Architect notes<br/>What it means<br/>for your work]
+flowchart TD
+    Q[You ask a question in your app] --> API[Your server sends it to the Claude API]
+    subgraph Model["Inside the model, on Anthropic's servers"]
+        T[1. Cut the text into tokens<br/>and look up each token ID] --> E[2. Look up each token's row<br/>in the embedding table]
+        E --> L1[Layer 1<br/>its own attention and feed-forward weights]
+        L1 --> L2[Layer 2<br/>its own weights]
+        L2 --> LN[... dozens more layers,<br/>each with its own weights ...]
+        LN --> S[3. Score every token in the vocabulary<br/>and pick one]
+        S -->|answer not finished:<br/>add the picked token and run again| E
+    end
+    API --> T
+    S -->|answer finished| A[The answer text goes back<br/>through the API to your app]
 ```
+
+Things to notice:
+
+- The loop runs once for every token in the answer, so a 300-token answer means 300 trips through all the layers.
+- Everything inside the box only reads the model's saved numbers, so your question never changes the model.
+
+#### The route through this page
 
 You first see what is stored, then watch the model use it on one sentence, then learn how training produced those exact numbers, and finally see what all of it means for the systems you design.
 

@@ -247,12 +247,13 @@ That is why providers offer a family of models. Anthropic doesn't publish its mo
 
 #### Why this matters to you
 
-Many choices you make as an architect come from how the model works inside:
+As an architect, you'll get these five questions. Each answer comes from one part of how the model works inside.
 
-- You pay per token, because the model processes every token.
-- Long prompts are slow, because each token looks back at every earlier token.
-- Answers vary, because the model picks each word from a set of chances.
-- You can tell a customer that chatting doesn't change the model, because answering only reads its numbers.
+1. **Why do I pay per token, not per message?** The model reads your text one token at a time and writes its answer one token at a time. Every token goes through all of the model's layers. So a longer prompt or a longer answer means more work, and more cost. See [Part 2, step 1](#step-1-cut-the-text-into-tokens-tokenization).
+2. **Why are long prompts slow?** Before the model writes anything, each token in your prompt looks back at every token before it. A long prompt means a lot of looking back. Prompt caching helps when many requests start with the same text, such as the same instructions. The model saves its work on that shared start and reuses it next time. See [Part 2, step 3](#step-3-borrow-meaning-from-earlier-words-attention).
+3. **Why does the same question get different answers?** For each next word, the model works out a list of possible words, each with a chance. Then it picks one at random, using those chances. A setting called temperature controls how often it picks a less likely word. See [Part 2, step 5](#step-5-score-every-word-and-pick-one).
+4. **Does chatting with the model change it, or make it remember me?** No. Answering only reads the model's saved numbers and never changes them. If the model needs earlier messages, your app must send them again. See [Architect notes](#architect-notes-what-this-means-for-your-work).
+5. **Why can the model be wrong or out of date?** The model learned from patterns in its training text, and that text stops at a cutoff date. It has no built-in way to check facts. So give it current information in the prompt, and check important answers. See [Part 3](#part-3-how-the-model-learned-its-numbers-training).
 
 #### The whole story, before any details
 
@@ -262,16 +263,6 @@ Many choices you make as an architect come from how the model works inside:
 4. The model gives every word it knows a chance of coming next. It picks one, adds it to the answer, and repeats until the answer is done.
 5. None of this changes the numbers. The numbers were set earlier, in training.
 6. Training set them by showing the model billions of sentences with the next word hidden. After each guess, it nudged all the numbers a little toward a better guess.
-
-#### Why each part matters to you
-
-| What happens inside | What it means for your work | More in |
-|---|---|---|
-| Text is cut into tokens, and each token is processed | You pay per token, so long prompts and long answers cost more | Part 2, Architect notes |
-| Each token looks back at all earlier tokens | Long prompts are slower. Prompt caching can reuse work on a fixed start of a prompt. | Part 2, step 3 |
-| The next token is picked from a set of chances | Answers vary. Temperature controls how much. | Part 2, step 5 |
-| Answering only reads the numbers | Chats don't change the model, and it doesn't remember users | Architect notes |
-| Training learns whatever is common in its text | The model can be wrong or out of date, so check facts and give it current information | Part 3 |
 
 #### From your question to the answer
 

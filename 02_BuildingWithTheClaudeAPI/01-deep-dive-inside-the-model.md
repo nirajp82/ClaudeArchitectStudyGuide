@@ -48,7 +48,7 @@ This page walks through that math with numbers small enough to check by hand. Th
 <details>
 <summary><b>Click to open the revision summary</b></summary>
 
-The model is a huge set of numbers that training tuned by hiding the next word in billions of sentences and correcting the model's guesses; when you send a message, the model only reads those numbers to guess your answer one word at a time.
+The model is a huge set of numbers that training tuned by playing millions of fill-in-the-blank games, and correcting the model's guesses; when you send a message, the model only reads those numbers to guess your answer one word at a time.
 
 #### What a model is, and how models differ
 

@@ -52,10 +52,11 @@ The model is a huge set of numbers that training tuned by hiding the next word i
 
 #### What a model is, and how models differ
 
-A model is a large file of numbers plus a fixed set of calculations, and it does only one thing: given some text, it works out the chance of every possible next token, picks one, and repeats.
+A model is a large file of numbers plus a fixed set of calculations, and it does only one thing: given some text, it works out the chance of every possible next token, picks one, and repeats. The full explanation is in [What a model is](#what-a-model-is).
 
 - Everything a model does, such as answering questions, writing code, or summarizing a document, is that one skill repeated many times.
 - Saved inside the model are its vocabulary, its embedding table, and its weights. Your past conversations, a copy of the internet, and anything newer than its training cutoff date are **not** saved inside it.
+- A **layer** is one round of processing that every token's row goes through. Each layer has its own weights, takes the rows from the layer before it, adds a little more meaning from the surrounding words, and passes them on. The builders choose how many layers a model has before training, and more layers usually mean a more capable but slower and more expensive model.
 - **Training** is how the model gets its numbers. It happens in two stages: **pre-training**, where the model practises guessing the next word on a huge amount of text, and **later training**, where examples, human feedback, and written principles (Constitutional AI) teach it to follow instructions, be helpful, and decline harmful requests.
 - Training runs on thousands of specialised chips for weeks or months, so it is very expensive and happens once for each model version. After release the numbers are fixed, and a newer model means a new training run.
 - A model's **size** is how many learned numbers (**parameters**) it has. The people who build it set the size by choosing how many columns each row has, how many layers it has, and how wide each layer is.
@@ -137,6 +138,22 @@ A model does only one thing: you give it some text, it works out the chance of e
 | The **weights**: all the other numbers it learned during training | Anything that happened after its training cutoff date |
 
 Part 1 explains each of the three saved things in detail.
+
+#### What a layer is
+
+A **layer** is one round of processing that every token's row of numbers goes through. Each layer takes the rows that the layer before it produced, updates each row so it carries a little more meaning from the surrounding words, and passes the updated rows on to the next layer. The rows coming out of the last layer are what the model uses to score the next token.
+
+Each layer has its own set of weights: its own attention matrices (Wq, Wk, and Wv), which let each token borrow meaning from earlier tokens, and its own feed-forward matrices, which process each token's row on its own. The layers all do the same kind of work, but because each has different numbers, each one adds something different.
+
+If you know ASP.NET Core, a layer works like one piece of middleware in a pipeline: each piece receives the request, changes it, and hands it to the next piece, and the response is only ready after the last one. In a model, the "request" is the set of token rows, and the pipeline has dozens of layers.
+
+| | What it means |
+|---|---|
+| How many layers a model has | Chosen by the people who build the model, before training, and fixed after that. GPT-2, a small public model, has 12 layers; today's large models have many more. |
+| What more layers give you | More rounds to combine meaning, and more weights to store patterns, so the model is usually more capable |
+| What more layers cost you | Every token must pass through every layer, so each extra layer adds arithmetic for every token, which makes the model slower and more expensive to run |
+
+Part 2, step 4 shows what happens inside each layer.
 
 #### What training is
 

@@ -4,6 +4,15 @@
 
 **Paused on purpose.** This course is an exam revision course, and it assumes I already know tool use and agents. I learn those first in [Building with the Claude API](../02_BuildingWithTheClaudeAPI/README.md) (tool use in lessons 20–30, agents in lessons 61–67), then come back here on December 14, as the [study plan](../readme.md) schedules.
 
+## How I use this course (December 14–24)
+
+My Anthropic courses already teach most of the exam. [Claude Code 101](../01_ClaudeCode101/README.md) covers Claude Code configuration. [Building with the Claude API](../02_BuildingWithTheClaudeAPI/README.md) covers prompting, tool use, MCP, context, and the basics of agents. So I don't watch this course from start to end. I use it for the two things my other courses don't give me.
+
+1. **Watch fully: sections 3, 4, and 5.** They cover task planning, multi-agent systems, and reliability with human oversight. These are the deeper parts of domain 1, the biggest domain (27%), and the API course barely covers them.
+2. **Skim the other sections.** Watch a lecture only when its topic feels new. Write notes only for what my earlier notes don't already cover.
+3. **Take every practice exam.** The exam asks scenario questions ("A team has this problem; what do you do?"), and my Academy quizzes don't train that. Record every missed or guessed question in the practice exam review file.
+4. **Check the official exam guide.** Before the exam, read the CCAR-F exam guide on the [partner certifications page](https://anthropic-partners.skilljar.com/page/partner-certifications). It is the real list of what is tested. If it differs from this course, follow the guide.
+
 **Exam relevance:** This course prepares me for the Foundations exam (CCAR-F), which I take on December 28–30, 2026. I take it before the Professional exam (CCAR-P). See the [study plan](../readme.md).
 
 ## The 5 Foundations domains

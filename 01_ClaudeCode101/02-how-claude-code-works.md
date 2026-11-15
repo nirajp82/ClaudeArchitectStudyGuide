@@ -134,6 +134,8 @@ Claude: Fixed. The password check was comparing the wrong field.
 
 **Why this matters:** a normal chatbot gives one answer and never finds out if it worked. Claude Code checks its own work and keeps going until it does.
 
+**Also covered in:** [CCAR-F Exam Prep, lesson 3: Agents, workflows, and chatbots](../03_CCARFExamPrep/03-agents-workflows-and-chatbots.md), which explains the same loop for agents in general.
+
 ---
 
 ### 2. The context window: what the model can see right now

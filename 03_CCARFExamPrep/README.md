@@ -1,6 +1,6 @@
 # Claude Certified Architect (CCAR-F) 2026 Exam Prep — Study Notes
 
-**Course:** [Claude Certified Architect (CCAR-F) 2026 Exam Prep](https://www.udemy.com/course/certified-claude-architect-masterclass-2026/) (Udemy, about 15 hours, with full practice exams at the end) &nbsp;·&nbsp; **Started:** Not started yet
+**Course:** [Claude Certified Architect (CCAR-F) 2026 Exam Prep](https://www.udemy.com/course/certified-claude-architect-masterclass-2026/) (Udemy, about 15 hours, with full practice exams at the end) &nbsp;·&nbsp; **Started:** November 15, 2026
 
 **Exam relevance:** This course prepares me for the Foundations exam (CCAR-F), which I take on December 28–30, 2026. I take it before the Professional exam (CCAR-P). See the [study plan](../readme.md).
 
@@ -28,11 +28,12 @@ An exam **domain** is one subject area of the exam. Its **weight** is the share 
 
 ## Progress
 
-The table is built from the Udemy curriculum once I paste it.
+The table grows lesson by lesson. The full table is built from the Udemy curriculum once I paste it.
 
 | # | Domain | Section | Notes | Status |
 |---|---|---|---|---|
-| — | — | Waiting for the curriculum | — | ⬜ |
+| 3 | 1. Agentic Architecture & Orchestration | Agents, Workflows, and Chatbots: What's Actually Different | [03-agents-workflows-and-chatbots.md](03-agents-workflows-and-chatbots.md) | ✅ Done |
+| — | — | Rest of the curriculum (waiting for the list) | — | ⬜ |
 
 ## To-do
 

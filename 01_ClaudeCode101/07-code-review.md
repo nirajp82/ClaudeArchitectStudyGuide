@@ -28,68 +28,55 @@
 
 ### Revision summary
 
-When Claude Code says a task is finished, do not rely on its own report: read the code changes yourself with /diff, ask a separate AI reviewer to check them with /code-review, and then decide yourself which of the reported problems to fix.
+When Claude Code says a task is finished, don't rely on its own report. Review the work in three steps:
+
+1. **You read the changes** with `/diff`.
+2. **A separate AI reviewer checks them** with `/code-review`. The reviewer is the same model, but it has no memory of your conversation, and it is not a person. It reports problems and changes nothing.
+3. **You decide which findings to fix.** Your Claude Code conversation, the one that wrote the code, then makes the fixes you ask for.
 
 #### Why you review Claude Code's work
 
-When Claude Code finishes, it writes a short report of what it did. The report can be entirely true and still leave out important changes, such as a switched-off test, a new code package, or an edited settings file.
-
-- The conversation that wrote the code is a poor judge of it. It remembers its own reasoning, so it sees what it meant to write, not what it wrote, like proofreading your own essay.
-- The solution is three steps: read the changes yourself, get an independent AI review, then decide what to fix.
-
-#### Who takes part in a review
-
-| Who | What it is | Its job |
-|---|---|---|
-| You | The person using Claude Code | Read the changes and make every decision |
-| Your Claude Code conversation | The conversation that wrote the code | Makes the fixes you ask for and re-checks doubtful findings |
-| The reviewer | A separate AI started by `/code-review`: same model, no memory of your conversation, not a person | Reads only the changed code and reports problems. Changes nothing. |
+Claude Code's report can be entirely true and still leave out important changes, such as a switched-off test, a new code package, or an edited settings file. The conversation that wrote the code is a poor judge of it. It remembers its own reasoning, so it sees what it meant to write, not what it wrote, like proofreading your own essay.
 
 #### Step 1: Read the changes yourself with `/diff`
 
-A **diff** shows the before and after of every change: lines starting with `-` were removed, lines starting with `+` were added.
+A **diff** shows the before and after of every change. Lines starting with `-` were removed, and lines starting with `+` were added.
 
-- `/diff` lists every file with uncommitted changes (not yet saved to Git). Arrow keys move between files; Enter opens one. You can also see what changed in each turn.
+- `/diff` lists every file with uncommitted changes (not yet saved to Git). Arrow keys move between files, and Enter opens one. You can also see what changed in each turn.
 - Look for three warning signs:
   1. **Changes you didn't ask for**, such as an edited settings file when you asked only for a form change.
   2. **Weakened tests.** A test switched off (for example with `it.skip`) or made less strict still "passes," so "all tests pass" proves nothing.
-  3. **New packages and hard-coded values.** A new package is outside code you must now trust and maintain. A **hard-coded value** is typed directly into the code, such as the server address `http://localhost:3000`, which only works on your own computer.
-- If the whole change is wrong, type `/rewind` (or press Esc twice on an empty prompt), pick the message where it went wrong, and choose **Restore code and conversation**. It reverses file edits only, not what commands did: a package installed with `npm install` stays.
+  3. **New packages and hard-coded values.** A new package is outside code you must now trust and maintain. A **hard-coded value** is typed directly into the code, such as `http://localhost:3000`, a server address that only works on your own computer.
+- If the whole change is wrong, type `/rewind` (or press Esc twice on an empty prompt), pick the message where it went wrong, and choose **Restore code and conversation**. It reverses file edits only, not what commands did, so a package installed with `npm install` stays.
 
 #### Step 2: Get an independent review with `/code-review`
 
-`/code-review` starts a separate AI reviewer with a **clean context**: it knows nothing about your conversation, your request, or why choices were made. Seeing only the changed code, it notices what the author missed.
+`/code-review` starts the reviewer with a **clean context**: it knows nothing about your conversation, your request, or why choices were made. Seeing only the changed code, it notices what the author missed.
 
-- It runs in the background and returns a list of problems, called **findings**. It changes no code.
-- Each finding gives a location (`src/config.ts:1` means line 1 of that file), a category, and one sentence. `correctness` means the code may behave wrongly; `style` means it works but breaks the project's conventions.
+- It runs in the background and returns a list of problems, called **findings**.
+- Each finding gives a location (`src/config.ts:1` means line 1 of that file), a category, and one sentence. `correctness` means the code may behave wrongly. `style` means it works but breaks the project's conventions.
 - It uses your plan or budget, so save it for changes that justify it.
-- `/review` is the same command. `--fix` applies the findings, thoroughness ranges from `low` to `max`, and it can review a pull request. `/security-review` is a separate security-only check.
+- `/review` is the same command. `--fix` applies the findings, thoroughness ranges from `low` to `max`, and it can review a pull request. `/security-review` is a separate, security-only check.
 
 #### Step 3: Decide what to do with each finding
 
-The reviewer only reports; you decide. Don't fix everything: not every finding is urgent, and the reviewer can be wrong.
+Don't fix everything, because not every finding is urgent, and the reviewer can be wrong. For each finding, ask two questions. **Is it real?** Open the file at the named line and check. **Does it matter?** It matters if it changes how the software behaves, risks losing or exposing data, weakens tests, or affects users.
 
-- Ask two questions per finding:
-  1. **Is it real?** Open the file at the named line and check.
-  2. **Does it matter?** It matters if it changes how the software behaves, risks losing or exposing data, weakens tests, or affects users.
-- Then put it in one of three groups:
+| Group | Choose it when | What to do |
+|---|---|---|
+| Fix now | It is real and it matters | Ask your conversation to fix it and show test output as proof |
+| Ask why | You're not sure it is real | Ask your conversation to re-check it, pointing to the line |
+| Leave it | It is real but minor, such as style | Write it down and fix it later with other minor issues (*batching*) |
 
-  | Group | Choose it when | What to do |
-  |---|---|---|
-  | Fix now | It is real and it matters | Ask your conversation to fix it and show test output as proof |
-  | Ask why | You're not sure it is real | Ask your conversation to re-check it, pointing to the line |
-  | Leave it | It is real but minor, such as style | Write it down and fix it later with other minor issues (*batching*) |
-
-- Give all decisions in one message: "Fix findings 1 and 3 and show me the test output. Check finding 2 again; line 4 already removes extra spaces. Skip finding 4."
-- Always ask for proof. "I fixed it" is just another report; test output is evidence. If a fix grows large, run `/code-review` again.
+Give all decisions in one message: "Fix findings 1 and 3 and show me the test output. Check finding 2 again; line 4 already removes extra spaces. Skip finding 4." Always ask for proof, because "I fixed it" is just another report. If a fix grows large, run `/code-review` again.
 
 #### When to use which review tool
 
-- **Use only `/diff`** when the change is small and simple, such as a typo in a button label. A quick look at the before and after is enough.
+- **Use only `/diff`** for a small, simple change, such as a typo in a button label.
 - **Use `/diff` and then `/code-review`** when the change is large, touches sensitive code (login, payments, personal data), is hard to undo, or is going to a teammate.
-- **Use `/security-review`** when the change could affect security, such as a new login check or code that handles passwords, because it looks only for security problems.
+- **Use `/security-review`** when the change could affect security, such as a new login check, because it looks only for security problems.
 - **Use `/rewind`** when the whole change is wrong and you want your files back as they were before a chosen message.
-- **Use a rule in `CLAUDE.md`** when the reviewer keeps finding the same problem, such as "Never skip or loosen a test to make it pass," so Claude Code avoids it from the start.
+- **Use a rule in `CLAUDE.md`** when the reviewer keeps finding the same problem, such as "Never skip or loosen a test to make it pass."
 
 #### Exam takeaways
 

@@ -28,72 +28,50 @@
 
 ### Revision summary
 
-A hook is a command that you list in a settings file and that Claude Code runs automatically at a fixed moment, such as right after every file edit or right before every terminal command, so the action happens every single time instead of depending on the model remembering an instruction.
-
-#### What a hook is and why it is different
-
-A hook is a command that Claude Code runs automatically at a fixed moment, such as right after it edits a file. Hooks are *deterministic*, which means they run every single time, with no exceptions.
-
-- **Why this matters:** a rule in `CLAUDE.md` ([lesson 8](08-claude-md-file.md)) is a request to the model, and the model follows it most of the time but not always. A hook is run by the Claude Code program itself, so the model cannot forget it or choose to skip it.
-- **Common uses:** formatting files after every edit, logging every command for compliance, blocking dangerous actions such as changing production files, and sending yourself a notification when Claude Code finishes a task.
-- **The rule of thumb:** if something must happen every time without fail, do not put it in a prompt. Put it in a hook.
+- **Hook:** a command you list in a `settings.json` file. Claude Code runs it automatically at a fixed moment, such as right after every file edit.
+- **Why it beats an instruction:** a rule in `CLAUDE.md` ([lesson 8](08-claude-md-file.md)) is a request the model follows most of the time, but not always. The Claude Code program runs a hook itself, so it runs every time, with no exceptions (*deterministic*).
+- **Common uses:** formatting files after every edit, logging every command for compliance, blocking dangerous actions, and notifying you when Claude Code finishes.
+- **Rule of thumb:** if something must happen every time without fail, put it in a hook, not a prompt.
 
 #### When to use a hook, and which event
 
-- **Use `CLAUDE.md`** for guidance where an occasional miss is acceptable, such as "prefer short functions."
-- **Use a hook** when something must happen every time, such as formatting every edited file or logging every command.
-- **Use a deny rule in `settings.json`** ([lesson 8](08-claude-md-file.md)) when a simple pattern is enough to block an action, such as never editing `config/production.json`. **Use a `PreToolUse` hook** when the check needs a script, such as reading a command and blocking it if it commits to the `main` branch.
-- **Use `PreToolUse`** to check or block a tool call before it runs.
-- **Use `PostToolUse`** to react after a tool call, such as formatting a file or writing a log line.
-- **Use `UserPromptSubmit`** to check or add to your prompt before the model sees it.
-- **Use `Stop`** to run something when Claude Code finishes its reply, such as a final check.
-- **Use `Notification`** to alert yourself when Claude Code needs your input.
+Each hook has three parts: an event (when it runs), an optional matcher (which tools it applies to), and a command (what runs).
 
-#### How a hook is set up
+| Event | When Claude Code runs it | Use it when |
+|---|---|---|
+| `PreToolUse` | Before a tool call runs. It is the only one of these five that can stop a tool call. | You must check or block a tool call |
+| `PostToolUse` | After a tool call finishes successfully | You react afterwards, such as formatting a file or writing a log line |
+| `UserPromptSubmit` | When you send a prompt, before the model sees it | You check or add to your prompt |
+| `Stop` | When Claude Code finishes its reply | You run a final check |
+| `Notification` | When Claude Code sends you a notification, such as needing your input | You want an alert |
 
-You write hooks in a `settings.json` file. Each hook has three parts: an event (when it runs), an optional matcher (which tools it applies to), and a command (what runs).
+- **Use `CLAUDE.md`** for guidance where an occasional miss is fine, such as "prefer short functions." **Use a hook** when something must happen every time.
+- **Use a deny rule in `settings.json`** ([lesson 8](08-claude-md-file.md)) when a simple pattern can block an action, such as never editing `config/production.json`. **Use a `PreToolUse` hook** when the check needs a script, such as reading a command and blocking commits to `main`.
+- There are about thirty events in total, such as `SessionStart`. The Claude Code hooks reference page lists them all.
 
-| Event | When Claude Code runs the hook |
-|---|---|
-| `PreToolUse` | Before a tool call runs. This is the only one of the five that can stop a tool call. |
-| `PostToolUse` | After a tool call finishes successfully. |
-| `UserPromptSubmit` | When you send a prompt, before the model sees it. |
-| `Stop` | When Claude Code finishes its reply. |
-| `Notification` | When Claude Code sends you a notification, for example because it needs your input. |
+#### How to set up and share a hook
 
-- **There are many more events**, about thirty in total, such as `SessionStart`. The hooks reference page in the official Claude Code documentation lists them all.
-- **The matcher** compares against the tool name. `"Edit|Write"` means "the Edit tool or the Write tool." Leaving the matcher out, or writing `"*"`, matches every tool. Matchers are case-sensitive, so `"bash"` does not match the `Bash` tool.
-- **The `/hooks` command** inside Claude Code shows a read-only list of your hooks and which file each comes from. You cannot edit hooks there. You edit the `settings.json` file directly.
-- **Which settings file to use:** use `~/.claude/settings.json` (Windows: `C:\Users\you\.claude\settings.json`) for hooks you want in all your projects, such as a desktop pop-up. Use the project's `.claude/settings.json` for hooks the whole team needs, such as formatting, because it is shared through Git. Use `.claude/settings.local.json` for hooks only you need in this project, because it is not committed. Hooks from all these files add together rather than replace each other.
+- **The matcher** compares against the tool name. `"Edit|Write"` means the Edit tool or the Write tool. Leaving it out, or writing `"*"`, matches every tool. Matchers are case-sensitive, so `"bash"` doesn't match the `Bash` tool.
+- **Which file:** use `~/.claude/settings.json` (Windows: `C:\Users\you\.claude\settings.json`) for hooks in all your projects, such as a desktop pop-up. Use the project's `.claude/settings.json` for hooks the team needs, such as formatting, because Git shares it. Use `.claude/settings.local.json` for your own hooks in one project, because it isn't committed. Hooks from all these files add together.
+- **The `/hooks` command** shows a read-only list of your hooks and which file each comes from. You edit hooks in the `settings.json` file itself.
+- **Sharing:** commit the hook scripts too, for example in `.claude/hooks/`. Refer to them with the `CLAUDE_PROJECT_DIR` environment variable, which holds the project's root folder: `"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-dangerous-commands.sh"`. Then the script is found even when Claude Code has moved into a subfolder.
 
 #### How a hook talks to Claude Code
 
-Claude Code sends the hook details about the tool call, and the hook answers with an exit code.
+Claude Code sends the hook the tool name and the tool's input as JSON (a structured text format) on *stdin* (the channel a program reads input from). A Bash call includes `tool_input.command`, the exact command. An edit includes `tool_input.file_path`. The hook answers with an exit code:
 
-- **Input:** the hook receives the tool name and the tool's input as JSON (a structured text format) on *stdin* (the channel a program reads input from). For a Bash tool call, the input includes `tool_input.command`, the exact command the model wants to run. For an edit, it includes `tool_input.file_path`.
-- **Exit code 0** means "everything is fine, carry on."
-- **Exit code 2** means "block this." In a `PreToolUse` hook, the tool call does not run, and the text the hook wrote to *stderr* (the error output channel) is sent to the model, so the model knows why and can try another way.
-- **Any other exit code**, such as 1, is a non-blocking error. You see a short error notice, but the action still goes ahead. **Warning:** a script that exits 1 by mistake will not block anything.
-- **Exit 2 on other events:** on `PostToolUse` it cannot undo the tool call, which already ran, but the message still reaches the model. On `UserPromptSubmit` it stops your prompt from reaching the model. On `Stop` it makes Claude Code keep working instead of stopping.
+- **Exit code 0:** everything is fine, carry on.
+- **Exit code 2:** block this. In `PreToolUse`, the tool call doesn't run, and the hook's *stderr* text (its error output) goes to the model, so it knows why and can try another way. On `PostToolUse` it can't undo the call, which already ran, but the message still reaches the model. On `UserPromptSubmit` it stops your prompt. On `Stop` it makes Claude Code keep working.
+- **Any other code, such as 1:** a non-blocking error. You see a short notice, but the action goes ahead. **Warning:** a script that exits 1 by mistake blocks nothing.
 
-#### The two most common hooks
-
-1. **Auto-formatting:** a `PostToolUse` hook with the matcher `"Edit|Write"` runs after every file edit. Its command reads the file path and runs the right formatter for the file type, such as Prettier for TypeScript, `gofmt` for Go, or Ruff for Python.
-2. **Blocking dangerous actions:** a `PreToolUse` hook checks the tool call and exits with code 2 to stop it. Examples are blocking writes to a production config folder, blocking Bash commands that contain `rm -rf`, and blocking commits to the `main` branch.
-
-#### How to share hooks with your team
-
-Hooks in the project's `.claude/settings.json` can be committed to Git, so every teammate gets the same hooks automatically.
-
-- Keep hook scripts in the project, for example in `.claude/hooks/`, and commit them too.
-- Refer to scripts with the `CLAUDE_PROJECT_DIR` environment variable, which holds the project's root folder. Write `"\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-dangerous-commands.sh"` so the script is found even when Claude Code has moved into a subfolder.
+The two most common hooks are a formatter and a blocker. The formatter is a `PostToolUse` hook with the matcher `"Edit|Write"` that runs the right tool for the file type: Prettier for TypeScript, `gofmt` for Go, or Ruff for Python. The blocker is a `PreToolUse` hook that exits 2 to stop, for example, writes to a production config folder, Bash commands containing `rm -rf`, or commits to `main`.
 
 #### Other facts about hooks
 
-- A hook that blocks a tool call works in every permission mode, even when a developer turns off permission questions entirely.
-- An `Edit|Write` hook does not see files changed by a Bash command, such as `sed`. A hook that must catch every change needs to match `Bash` too, or check the files in a `Stop` hook.
-- Hooks run with your full user permissions, so review every hook before you add it. Claude Code also waits until you trust a project folder before it runs any hooks there.
-- On Windows, command hooks run in Git Bash by default. Add `"shell": "powershell"` to a hook to run it in PowerShell instead.
+- A blocking hook works in every permission mode, even when a developer turns off permission questions entirely.
+- An `Edit|Write` hook doesn't see files changed by a Bash command, such as `sed`. To catch every change, also match `Bash`, or check the files in a `Stop` hook.
+- Hooks run with your full user permissions, so review every hook before adding it. Claude Code runs a project's hooks only after you trust its folder.
+- On Windows, command hooks run in Git Bash by default. Add `"shell": "powershell"` to a hook to run it in PowerShell.
 - Press `Ctrl+O` to open the transcript view and see what a hook did, or start Claude Code with `claude --debug` for full details.
 
 #### Exam takeaways

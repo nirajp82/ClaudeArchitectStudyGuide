@@ -16,7 +16,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | 3 | Accessing Claude with the API | Making a request | [03-making-a-request.md](03-making-a-request.md) | ✅ Done |
 | 4 | Accessing Claude with the API | Multi-Turn conversations | [04-multi-turn-conversations.md](04-multi-turn-conversations.md) | ✅ Done |
 | 5 | Accessing Claude with the API | System prompts | [05-system-prompts.md](05-system-prompts.md) | ✅ Done |
-| 6 | Accessing Claude with the API | Temperature | `06-temperature.md` | ⬜ |
+| 6 | Accessing Claude with the API | Temperature | [06-temperature.md](06-temperature.md) | ✅ Done |
 | 7 | Accessing Claude with the API | Response streaming | `07-response-streaming.md` | ⬜ |
 | 8 | Accessing Claude with the API | Structured data | `08-structured-data.md` | ⬜ |
 | — | Accessing Claude with the API | Quiz on accessing Claude with the API | Quiz review file | ⬜ |

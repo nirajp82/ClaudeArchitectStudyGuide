@@ -29,104 +29,61 @@
 
 ### Revision summary
 
-When a person types a question such as "What is quantum computing?" into your chat app, the app sends the question to your own server, your server adds your secret API key and sends it on to Anthropic's servers, the model there writes an answer one small piece of text (a *token*) at a time until it decides to stop, and the answer travels back the same way to the person's screen.
+- **The round trip:** your app sends the user's question to your own server. Your server adds the secret API key and sends it to Anthropic. The answer comes back the same way.
+- **The API key:** proves a request comes from your account, which pays for it. It lives only on your server.
+- **The request:** every request carries the key, a `model`, a `messages` list, and `max_tokens`.
+- **Inside the model:** the model cuts the text into tokens, turns them into numbers, fits the numbers to the sentence, and writes the answer one token at a time.
+- **The response:** the answer, the token counts (`usage`), and why the model stopped (`stop_reason`).
 
 #### The five steps of every request
 
-Every message to Claude makes the same round trip, in five steps:
-
 1. **Request to server:** your web or mobile app (the *client*) sends the user's text to your own server.
-2. **Request to Anthropic API:** your server sends the text to Anthropic's servers, with your secret API key attached.
+2. **Request to Anthropic API:** your server sends the text to Anthropic's servers at `api.anthropic.com`, with your secret API key attached.
 3. **Model processing:** the model reads the text and writes an answer.
 4. **Response to server:** Anthropic's servers send the answer back to your server.
 5. **Response to client:** your server passes the answer to the app, and the app shows it to the user.
 
-#### Why your app must go through a server
-
-- The Claude API is the service at `api.anthropic.com` that your code sends requests to. It needs a secret **API key** with every request. The key proves the request comes from your account, and your account pays for it.
-- Anyone who has your app can read the code inside it, whether it is a web page or a phone app. If the key is in that code, someone can copy it and run up charges on your account.
-- So the key lives only on your server. The app talks to your server, and only your server talks to Anthropic.
+Anyone who has your app can read the code inside it, whether it is a web page or a phone app. A key in that code can be copied and used to run up charges on your account. So only your server holds the key.
 
 #### What every request must contain
 
-Your server can call the API through an official **SDK** (a ready-made code library) or with plain HTTP requests. Official SDKs exist for Python, TypeScript and JavaScript, Java, Go, Ruby, C#, and PHP. Every request needs four things:
+Your server calls the API through an official **SDK** (a ready-made code library) or with plain HTTP. Official SDKs exist for Python, TypeScript and JavaScript, Java, Go, Ruby, C#, and PHP. Every request needs four things:
 
-| Field | What it is | Example |
-|---|---|---|
-| API key | Proves who is asking. It goes in the `Authorization: Bearer` header, or in the older `x-api-key` header, which still works. | `sk-ant-...` |
-| `model` | Which Claude model should answer. | `claude-haiku-4-5` |
-| `messages` | The conversation so far, as a list. The user's text sits in a message with the role `user`. | `[{"role": "user", "content": "What is quantum computing?"}]` |
-| `max_tokens` | The most tokens the model may write in its answer. It is a hard limit. | `1000` |
+1. **API key:** proves who is asking, such as `sk-ant-...`. It goes in the `Authorization: Bearer` header, or in the older `x-api-key` header, which still works.
+2. **`model`:** which Claude model answers, such as `claude-haiku-4-5`.
+3. **`messages`:** the conversation so far, as a list. The user's text sits in a message with the role `user`.
+4. **`max_tokens`:** a hard limit on how many tokens the answer may have, such as `1000`.
+
+**Use an SDK** when your server's language has one, such as the `anthropic` package for Python. It adds the headers, retries failed requests, and gives you typed results. **Use plain HTTP** (for example, `curl`) when your language has no SDK, or for a quick test from the terminal.
 
 #### What happens inside the model
 
-The model can only works with numbers, not words directly. Long before request, a process called **training** has already built three things and saved them inside the model. Request never changes them:
+The model works only with numbers. Long before your request, **training** saved three things inside it, and no request changes them:
 
-- **Vocabulary:** A list of all the tokens the model can recognize. A **token** is a small piece of text, such as a word, part of a word, or a symbol such as "?". Each token has a its own number called its **token ID**. For example, the token `bank` might have token ID 5120.
-- Embedding table: A table of numbers with one row for each token ID. These numbers help the model represent what each token means and how it relates to other tokens.
-
-For example, if the token bank has token ID 5120, the model looks up its row in the embedding table:
-
-| Token ID | Token | Number 1 | Number 2 | Number 3 |
-| --- | --- | --- | --- | --- |
-| 5120 | bank | 0.25 | 0.81 | 0.42 |
-
-- Weights: All the other numbers the model learned during training. They help the model process the embedding numbers and generate responses. Stages 3 and 4 below use these numbers.
-
-For example, the model uses its weights to perform mathematical operations on the embedding numbers:
-
-|  | Number 1 | Number 2 | Number 3 |
-| --- | --- | --- | --- |
-| Embedding numbers | 0.25 | 0.81 | 0.42 |
-| Example weights | 0.50 | 0.20 | 0.80 |
-| Multiplication result | 0.125 | 0.162 | 0.336 |
-
-The results are then combined and processed through more mathematical operations to help the model predict what tokens should come next.
-
-Note: All numbers are made up for illustration. Real models use much larger tables, vectors, and more complex mathematical operations. In a real model, each result mixes all the embedding numbers, not one number per weight. The [deep dive](01-deep-dive-inside-the-model.md) works through this, plus training and attention, step by step.
+1. **Vocabulary:** every **token** the model knows (a word, part of a word, or a symbol such as "?"). Each token has a fixed **token ID**, such as 5120 for `bank`.
+2. **Embedding table:** one saved row of numbers per token ID. Each number scores the token on one **trait**, such as "has to do with money."
+3. **Weights:** all the other learned numbers, which process the embedding numbers. In a real model, each result mixes all of a row's numbers, not one number per weight.
 
 On every request, the model runs four stages:
 
-1. **Cutting the text into pieces (Tokenization):** the model cuts your text into tokens. Then it looks up each token in the vocabulary and replaces it with its token ID.
-2. **Turning each piece into numbers (Embedding):** the embedding table was built during training and saved in the model. The model simply uses each token ID to look up that token's pre-saved row of trait numbers. That row of numbers is the token's **embedding**. The model goes straight to the row, without searching, so the token `bank` gets the same row in every sentence.
-3. **Checking the neighbours (Contextualization):** each token looks at the tokens before it and adjusts a copy of its numbers to fit your sentence. In "river bank," the numbers for "bank" move to the riverside meaning. The saved row in the embedding table stays the same.
-4. **Writing the answer one piece at a time (Generation):** the model works out, for every token in its vocabulary, the chance that it comes next. It picks a likely token and adds it to the answer. The new token then goes through stages 2 and 3, and the model picks the next one, until it decides to stop. It doesn't always pick the single most likely token, so the same question can get slightly different answers.
+1. **Tokenization:** cut the text into tokens and replace each one with its token ID.
+2. **Embedding:** go straight to each token's saved row, without searching. So `bank` gets the same row in every sentence.
+3. **Contextualization:** each token looks at the tokens before it and adjusts a copy of its numbers. In "river bank," "bank" moves to the riverside meaning. The saved row stays the same.
+4. **Generation:** give every token in the vocabulary a chance of coming next, pick a likely one, and repeat. The model doesn't always pick the most likely token, so the same question can get slightly different answers.
 
-#### What the numbers in the embedding table mean
+Every row scores the same traits, so any two tokens can be compared. Similar words, such as "cat" and "kitten", have similar rows. A word with several meanings, such as "bank", has a row that mixes them, and stage 3 settles which one you mean. Real rows have thousands of numbers, and nobody names the traits. Training worked them out from which words appear in similar sentences.
 
-Each number in a token's row of the embedding table scores that token on one **trait**, which is one kind of meaning, such as "has to do with money." These facts explain why the tokens' rows are useful:
+#### When the model stops, and what to do
 
-- Every token's row has a number for the same traits, so the rows of any two tokens can be compared.
-- Similar words have similar rows. For example, "cat" and "kitten" have almost the same numbers.
-- A word with several meanings, such as "bank" or "quantum," has a row that mixes all of them, because the same row is used in every sentence. Stage 3 settles which meaning you mean.
-- In a real model, each token's row has thousands of numbers. Nobody names the traits. The model worked out all the numbers itself during training, by noticing which words appear in similar sentences.
+After each token, the model stops if any one of three things is true. The response's `stop_reason` says which one happened.
 
-#### How the model decides to stop
+| `stop_reason` | What happened | What to do |
+|---|---|---|
+| `end_turn` | The model wrote its **end-of-sequence token**, which means "my answer is complete" | Use the answer as it is |
+| `max_tokens` | It reached your `max_tokens` limit, even mid-sentence | Treat the answer as incomplete. Raise the limit, or ask for a shorter answer. Don't show it as complete. |
+| `stop_sequence` | It wrote one of your **stop sequences** (phrases you listed in the request that mean "stop here") | Expect the answer to end early on purpose |
 
-After each new token, the model checks three things. It stops if any one of them is true:
-
-- It has written `max_tokens` tokens. The answer is cut off, even mid-sentence.
-- It has written a special **end-of-sequence token**, which means "my answer is complete."
-- It has written one of your **stop sequences**, which are phrases you listed in the request that mean "stop here."
-
-#### What the API sends back
-
-The response has three main parts:
-
-- **The message:** the answer text, with the role `assistant`.
-- **Usage:** how many input tokens (your request) and output tokens (the answer) were used. You pay for both.
-- **Stop reason:** why the model stopped: `end_turn` (it finished naturally), `max_tokens` (it hit your limit), or `stop_sequence` (it wrote one of your stop phrases).
-
-#### When to use an SDK or plain HTTP
-
-- **Use an official SDK** when your server is written in a language that has one. For example, a Python server uses the `anthropic` package. The SDK adds the headers, retries failed requests, and gives you typed results.
-- **Use plain HTTP** (for example, `curl`) when your language has no official SDK, or for a quick test from the terminal.
-
-#### When to act on each stop reason
-
-- **Use the answer as it is** when the stop reason is `end_turn`.
-- **Treat the answer as incomplete** when the stop reason is `max_tokens`. Raise `max_tokens`, or ask for a shorter answer. Don't show a cut-off answer as if it were complete.
-- **Expect the answer to end early on purpose** when the stop reason is `stop_sequence`, because one of your stop phrases appeared.
+The response also holds the answer text, in a message with the role `assistant`, and `usage`: the input tokens (your request) and output tokens (the answer). You pay for both.
 
 #### Exam takeaways
 
@@ -278,6 +235,16 @@ This happens in two parts:
 | **Weights** | All the other numbers the model learned in training. They hold what the model knows about how words affect each other and which word tends to come next. | Stages 3 and 4 |
 
 Your request never changes these three things. Only a new round of training can change them.
+
+Here is a simple picture of how the weights work on the embedding numbers. Say the token `bank` has the saved row `[0.25, 0.81, 0.42]`, and the model multiplies each number by a weight:
+
+|  | Number 1 | Number 2 | Number 3 |
+|---|:---:|:---:|:---:|
+| Embedding numbers | 0.25 | 0.81 | 0.42 |
+| Example weights | 0.50 | 0.20 | 0.80 |
+| Multiplication result | 0.125 | 0.162 | 0.336 |
+
+The results are then combined through more math to help predict the next token. All these numbers are made up. In a real model, each result mixes all the embedding numbers, not one number per weight. The [deep dive](01-deep-dive-inside-the-model.md) works through the real version step by step.
 
 #### 1. Cutting the text into pieces (Tokenization)
 

@@ -1,6 +1,8 @@
 # Claude Certified Architect (CCAR-F) 2026 Exam Prep — Study Notes
 
-**Course:** [Claude Certified Architect (CCAR-F) 2026 Exam Prep](https://www.udemy.com/course/certified-claude-architect-masterclass-2026/) (Udemy, about 15 hours, with full practice exams at the end) &nbsp;·&nbsp; **Started:** November 15, 2026
+**Course:** [Claude Certified Architect (CCAR-F) 2026 Exam Prep](https://www.udemy.com/course/certified-claude-architect-masterclass-2026/) (Udemy, about 15 hours, with full practice exams at the end) &nbsp;·&nbsp; **Started:** November 15, 2026 &nbsp;·&nbsp; **Status:** Paused
+
+**Paused on purpose.** This course is an exam revision course, and it assumes I already know tool use and agents. I learn those first in [Building with the Claude API](../02_BuildingWithTheClaudeAPI/README.md) (tool use in lessons 20–30, agents in lessons 61–67), then come back here on December 14, as the [study plan](../readme.md) schedules.
 
 **Exam relevance:** This course prepares me for the Foundations exam (CCAR-F), which I take on December 28–30, 2026. I take it before the Professional exam (CCAR-P). See the [study plan](../readme.md).
 

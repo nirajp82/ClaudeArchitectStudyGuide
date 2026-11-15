@@ -13,14 +13,14 @@
 | # | Section |
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
-| 2 | [What this lesson adds](#what-this-lesson-adds) |
-| 3 | [1. One tool call, message by message](#1-one-tool-call-message-by-message) |
-| 4 | [2. Who runs the tool: client tools vs. server tools](#2-who-runs-the-tool-client-tools-vs-server-tools) |
-| 5 | [3. What happens after the result comes back](#3-what-happens-after-the-result-comes-back) |
-| 6 | [4. Three kinds of tools, three kinds of risk](#4-three-kinds-of-tools-three-kinds-of-risk) |
-| 7 | [5. Writing a description Claude can choose from](#5-writing-a-description-claude-can-choose-from) |
-| 8 | [Architect notes](#architect-notes) |
-| 9 | [Recap](#recap) |
+| 2 | [Words to know](#words-to-know) |
+| 3 | [1. One tool call, step by step](#1-one-tool-call-step-by-step) |
+| 4 | [2. Who runs the tool?](#2-who-runs-the-tool) |
+| 5 | [3. What the model does with the result](#3-what-the-model-does-with-the-result) |
+| 6 | [4. Three kinds of tools](#4-three-kinds-of-tools) |
+| 7 | [5. The tool description is the steering wheel](#5-the-tool-description-is-the-steering-wheel) |
+| 8 | [Exam traps](#exam-traps) |
+| 9 | [Architect notes](#architect-notes) |
 | 10 | [My notes / practice](#my-notes--practice) |
 | 11 | [FAQ](#faq) |
 
@@ -34,305 +34,216 @@ Every action an agent takes is the same small exchange, repeated:
 2. **A program runs the tool.** Your code runs tools you wrote. Anthropic runs built-in tools, such as web search.
 3. **The result goes back to Claude.** Claude then calls another tool or gives its answer.
 
-#### The three parts of every tool exchange
+#### The three parts of every exchange
 
-Each tool exchange has three named parts.
-
-| Part | What it is | Who makes it |
+| Part | Plain meaning | Who makes it |
 |---|---|---|
-| **Tool definition** | The description of a tool: a `name`, a plain-words `description`, and an `input_schema` (the inputs it takes). | You, the developer. You send it with each request. |
-| **Tool call** | Claude's request to use a tool: a `tool_use` block holding an `id`, the tool `name`, and the inputs as JSON. It is structured data, not plain text. | Claude. |
-| **Observation** | The tool's result, sent back to Claude so it can plan the next step (the course calls this *tool result injection*). | The program that ran the tool. |
+| **Tool definition** | The tool's "label": its name, what it does, and what inputs it needs. | You, the developer |
+| **Tool call** | Claude's request: "use this tool, with these inputs." | Claude |
+| **Observation** | The tool's answer, handed back to Claude. | The program that ran the tool |
 
-#### The round trip in the API
+When Claude asks for a tool, its reply is marked "tool use" (the API's *stop reason*). That mark tells your program: "Claude is waiting for a tool's answer, not finished."
 
-1. Claude's reply has `stop_reason: "tool_use"` and one or more `tool_use` blocks.
-2. Your code runs each tool.
-3. Your code sends a new `user` message with one `tool_result` block per tool call. Each `tool_result` has a `tool_use_id` that matches the `id` of its `tool_use` block. The `tool_result` blocks must come first in that message, before any text.
-4. Claude reads the results and either calls more tools or answers in plain text.
+#### Who runs the tool
 
-#### Client tools and server tools
+- **Client tools** are tools you build. Your own program runs them and sends back the answer.
+- **Server tools** are built-in tools, such as web search. Anthropic runs them for you.
 
-Who runs a tool depends on its kind.
+#### Workflow or agent
 
-- **Client tools** run in your application. They include tools you write and Anthropic's ready-made tool designs such as `bash`, `text_editor`, and computer use. You must run them and send back the `tool_result`.
-- **Server tools** run on Anthropic's servers. They include `web_search`, `web_fetch`, and `code_execution`. Anthropic runs them and puts the result in Claude's reply, so your code does nothing. A long server-tool turn can stop early with `stop_reason: "pause_turn"`; send the reply back as it is to let Claude continue.
+If the developer decides which tools run, and in what order, it is a workflow. If Claude picks the tool while it runs, it is an agent. In an agent, the order can change from one run to the next.
 
-#### Workflow or agent: who picks the tool
+#### What Claude does with the answer
 
-If the developer decides which tools run and in what order, it is a **workflow**, even if Claude fills in the inputs at every step. If Claude picks the tool while it runs, based on what it has found so far, it is an **agent**. The order of tools can then change from one run to the next.
-
-#### Handling the result
-
-What Claude does next depends on what came back.
-
-- **Success:** Claude uses the result and moves on.
-- **Error:** your code sends a `tool_result` with `"is_error": true` and a clear message. Claude then *replans*: it retries with different inputs, tries another tool, or hands the problem to a person.
-- **Partial result:** Claude makes a follow-up call before moving on.
-- **Several independent tools at once:** Claude can put several `tool_use` blocks in one reply (*parallel tool use*). Your code can run them at the same time, which saves time, and must send all the results back in one `user` message. To turn this off, set `"disable_parallel_tool_use": true` inside `tool_choice`.
+- **It worked:** Claude uses the answer and moves on.
+- **It failed:** Claude tries again with different inputs, tries another tool, or hands over to a person.
+- **Only part of the answer came back:** Claude asks a follow-up tool call first.
+- **Several tools are needed that don't depend on each other:** Claude can ask for all of them at once. Your program runs them at the same time, which saves waiting.
 
 #### When to use which kind of tool
 
-Tools fall into three groups, and each carries a different risk.
+- **Use a "read" tool** to get information, such as searching the web or reading a file. Risk: the information may be old or wrong.
+- **Use a "compute" tool** for work text alone can't do reliably, such as running code or doing math. Risk: code may cause harm if it is not sealed off.
+- **Use a "change" tool** to do something in the world, such as sending an email. Risk: the effect is real and often can't be undone. Add a person's approval.
 
-- **Use a data access tool** to read from the world, such as reading a file or querying a database. Main risk: the data is out of date or wrong.
-- **Use a computation tool** for work text generation cannot do reliably, such as running Python or doing math. Main risk: code in a loose sandbox can change things outside it.
-- **Use an external action tool** to change the world, such as sending an email or updating a record. Main risk: real, often permanent effects. Add human approval for these.
+#### The description decides which tool Claude picks
 
-#### Tool descriptions control reliability
-
-Claude decides which tool to use by reading its description, never its code. Write descriptions a non-engineer could act on: what the tool does, when to use it, what inputs it needs, and what it returns. Leave out how it works inside. When tool use goes wrong, there is rarely an error message. Instead, Claude calls the wrong tool or skips one, and a vague description is the most common cause.
+Claude chooses a tool by reading its description, never its code. A clear description says what the tool does, what it needs, and what it returns. A vague one causes quiet mistakes: Claude picks the wrong tool, or skips one, with no error message.
 
 #### Exam takeaways
 
-- **An agent calls `search_docs` when it should call `search_tickets`, and no error appears.** Rewrite both descriptions to say what each searches, what it returns, and when to use it instead of the other. (Tool Design & MCP Integration)
-- **A developer's loop crashes because Claude asked for three tools at once.** That is parallel tool use. Run all three, then return all three `tool_result` blocks, matched by `tool_use_id`, in one `user` message. (Tool Design & MCP Integration)
-- **A team must rank its agent's tools by risk.** Sort them into data access, computation, and external action tools. External action tools carry the most risk, so give them human approval and the narrowest permissions. (Agentic Architecture & Orchestration)
+- **An agent searches help articles when it should search the user's tickets, and there is no error.** Rewrite both tool descriptions so each says what it searches and when to use it. (Tool Design & MCP Integration)
+- **A developer is surprised that Claude asked for three tools in one reply.** That is normal. Run all three, then send all three answers back together. (Tool Design & MCP Integration)
+- **A team must rank its agent's tools by risk.** "Change" tools are highest, so give them a person's approval. Then "compute," then "read." (Agentic Architecture & Orchestration)
 
 ---
 
-### What this lesson adds
+### Words to know
 
-[Lesson 3](03-agents-workflows-and-chatbots.md) covered the basics: why a model needs tools, the four-step loop, and that the `description` matters most. This lesson zooms in on **one tool call** and adds what lesson 3 left out: the exact messages, who runs which tool, what happens on an error, the three groups of tools, and parallel calls.
+[Lesson 3](03-agents-workflows-and-chatbots.md#words-to-know) defined *model*, *tool*, *tool call*, *runtime*, and *observation*. This lesson adds:
 
-**Running example:** the same online shop as lesson 3. A customer asks: *"Is the blue kettle in stock, and where is my order #1234?"*
-
-**Who's who**
-
-| Player | Where it lives | What it does here |
-|---|---|---|
-| **Claude** (the model) | Anthropic's servers | Reads the tool descriptions and asks for tools. Never runs them itself. |
-| **Your app** (the runtime) | Your server | Sends messages to Claude, runs client tools, and sends back results. |
-| **Anthropic's servers** | Anthropic | Also run server tools, such as web search, for you. |
-| **Your tools** | Your systems | `check_stock` (inventory database) and `get_order` (orders database). |
+| Word | What it means in plain words |
+|---|---|
+| **Tool definition** | The description you give Claude for one tool: its name, what it does, and its inputs. Claude reads it like a label on a box. |
+| **Client tool** | A tool your own program runs, such as "look up order." |
+| **Server tool** | A built-in tool that Anthropic runs for you, such as web search. |
+| **Sandbox** | A sealed-off place to run code. Mistakes inside it cannot reach your real systems. |
+| **SKU** | A product's stock code, such as KET-BLUE for a blue kettle. |
 
 ---
 
-### 1. One tool call, message by message
+### 1. One tool call, step by step
 
-The customer's question needs two independent lookups, so Claude asks for both tools in one reply (parallel tool use).
+We use the same online shop as lesson 3. A customer asks: *"Is the blue kettle in stock?"*
 
-**Claude's reply (shortened):**
+The shop's developer has made a tool called "check stock." Here is what happens.
 
-```json
-{
-  "stop_reason": "tool_use",
-  "content": [
-    { "type": "tool_use", "id": "toolu_A", "name": "check_stock", "input": { "product_sku": "KET-BLUE" } },
-    { "type": "tool_use", "id": "toolu_B", "name": "get_order",   "input": { "order_id": "1234" } }
-  ]
-}
-```
+1. **Your program sends Claude the question**, plus the label of every tool. The "check stock" label says: "Looks up how many units of a product are in stock, using its SKU."
+2. **Claude reads the labels and decides it needs "check stock."** It does not answer in words. Instead it replies with a tool call: "use check stock, with SKU KET-BLUE." The reply is marked "tool use."
+3. **Your program sees the mark and runs the tool.** It asks the inventory database. The database says: 14 units.
+4. **Your program sends the answer back to Claude.** It also says which tool call the answer belongs to. This answer is the observation.
+5. **Claude reads the observation and replies:** *"Yes, 14 blue kettles are in stock."*
 
-- `stop_reason: "tool_use"` tells your app: "Claude is waiting for tool results, not finished."
-- A **SKU** is a product's stock code, here `KET-BLUE`.
-- Each `id` is a label for that one call. Your reply must use it.
+> **Remember this:** Claude asks. Your program does. The answer goes back to Claude.
 
-**Your app runs both tools at once, then sends one `user` message:**
-
-```json
-{
-  "role": "user",
-  "content": [
-    { "type": "tool_result", "tool_use_id": "toolu_A", "content": "In stock: 14 units" },
-    { "type": "tool_result", "tool_use_id": "toolu_B", "content": "Shipped Nov 2, arriving Nov 17" }
-  ]
-}
-```
-
-Claude reads these two observations and answers in plain text: *"Yes, 14 blue kettles are in stock. Your order shipped on November 2 and should arrive on November 17."*
-
-> **Remember this:** Claude asks, your app runs, the `tool_use_id` ties the answer to the question.
-
-**Warning:** If you send the results back in two separate messages, or leave one out, the API rejects the request. Every `tool_use` needs its own `tool_result`, all in the next `user` message.
+This exchange is the smallest unit of every agent. A real task repeats it many times.
 
 ---
 
-### 2. Who runs the tool: client tools vs. server tools
+### 2. Who runs the tool?
 
 | | Client tools | Server tools |
 |---|---|---|
-| **Who runs it** | Your app | Anthropic's servers |
-| **Examples** | Your own tools (`get_order`), `bash`, `text_editor`, computer use | `web_search`, `web_fetch`, `code_execution` |
-| **What your code does** | Runs the tool and sends a `tool_result` | Nothing. The result arrives inside Claude's reply. |
-| **Use it when** | The tool touches your own systems or data | You need a common capability, such as searching the web, without building it |
+| **Who runs it** | Your own program | Anthropic |
+| **Examples** | "Check stock," "look up order" | Web search |
+| **What you must do** | Run it and send back the answer | Nothing. The answer arrives with Claude's reply. |
+| **Use it when** | The tool needs your own data or systems | You need a common skill, such as searching the web, without building it |
 
-Everyday comparison: a client tool is cooking at home from the chef's recipe; a server tool is the chef's kitchen cooking for you and handing you the plate.
+Everyday comparison: a client tool is like cooking at home from a recipe. A server tool is like a restaurant cooking the dish and bringing it to you.
 
 ---
 
-### 3. What happens after the result comes back
+### 3. What the model does with the result
 
-This is where an agent differs from a plain pipeline. A pipeline runs its steps and stops. An agent looks at each result and decides what to do next.
+This is where an agent differs from a fixed list of steps. A fixed list runs its steps and stops. An agent looks at each answer and decides what to do next.
 
 ```mermaid
 flowchart TD
-    A["Claude asks for a tool"] --> B["Tool runs"]
+    A["Claude asks for a tool"] --> B["The tool runs"]
     B --> C{"What came back?"}
-    C -->|Success| D["Claude uses it and moves on"]
-    C -->|Error, sent with is_error: true| E["Claude replans:<br/>retry with new inputs,<br/>try another tool,<br/>or hand over to a person"]
-    C -->|Partial result| F["Claude makes a follow-up call"]
-    D --> G{"Goal met or<br/>stop limit hit?"}
+    C -->|It worked| D["Claude uses the answer"]
+    C -->|It failed| E["Claude tries other inputs,<br/>another tool,<br/>or asks a person"]
+    C -->|Only part of it| F["Claude asks a follow-up"]
     E --> A
     F --> A
+    D --> G{"Job done?"}
     G -->|No| A
-    G -->|Yes| H["Plain-text answer"]
+    G -->|Yes| H["Claude writes its answer"]
 ```
 
-For example, if `get_order` fails, your app sends:
+**An example of a failure.** The "check stock" tool replies: "SKU KET-BLU not found." Claude notices the typo, tries again with "KET-BLUE," and gets 14 units.
 
-```json
-{ "type": "tool_result", "tool_use_id": "toolu_B", "is_error": true, "content": "Order 1234 not found. Check the number." }
-```
+That only works because the error message was clear. If the tool had replied "Error 500," Claude would have nothing to go on.
 
-Claude might then ask the customer to confirm the order number. A clear error message lets Claude recover; a bare "Error 500" leaves it guessing.
+**Asking for several tools at once.** Suppose the customer asks: "Is the blue kettle in stock, and where is my order #1234?" The two lookups don't depend on each other. So Claude asks for "check stock" and "look up order" in the same reply. Your program runs both at the same time, then sends both answers back together.
 
 ---
 
-### 4. Three kinds of tools, three kinds of risk
+### 4. Three kinds of tools
 
-| Group | What it does | Examples | Typical failure | Risk |
+The course sorts tools into three groups. Each group fails in its own way, and carries its own risk.
+
+| Group | What it does | Examples | How it goes wrong | Risk |
 |---|---|---|---|---|
-| **Data access** | Reads from the world | Read a file, query a database, fetch a web page, search | Out-of-date search results | Low: it only reads, but the data may hold hidden instructions |
-| **Computation** | Does work text generation can't do reliably | Run Python in a sandbox, parse a file, do math | A loose sandbox lets code change things outside it | Medium |
-| **External action** | Changes the world | Send an email, create a calendar event, update a record | Writes to the wrong file or record | High: effects are real and often permanent |
+| **Read** (the course says *data access*) | Gets information | Web search, read a file, query a database | Returns old or wrong information | Lowest |
+| **Compute** (*computation*) | Does work that text alone can't do reliably | Run Python code in a sandbox, do a calculation | Code escapes a loose sandbox and changes things | Medium |
+| **Change** (*external API*) | Does something in the world | Send an email, create a calendar event, update a record | Writes to the wrong file or record | Highest |
 
-Knowing a tool's group is the first step in judging its risk. A sandbox is a sealed-off place to run code, so mistakes cannot reach your real systems.
+Knowing a tool's group is the first step in judging how risky it is.
 
 ---
 
-### 5. Writing a description Claude can choose from
+### 5. The tool description is the steering wheel
 
-Claude reads the description, not the code. So the description is not just documentation: it is how you steer which tool Claude picks.
+Claude never sees a tool's code. It only sees the description. So the description decides when Claude uses the tool.
 
-| ❌ Vague | ✅ Clear |
+| ❌ Vague description | ✅ Clear description |
 |---|---|
-| "Processes data." | "Looks up the current stock count for one product in the inventory database, using its SKU (stock code, such as KET-BLUE). Returns the number of units in stock. Use it when a customer asks whether a product is available. It does not reserve or change stock." |
+| "Processes data." | "Looks up how many units of one product are in stock, using its SKU (such as KET-BLUE). Returns the number of units. Use it when a customer asks if a product is available. It does not reserve stock." |
 
-A good description says, in plain words:
+A good description answers four questions, in plain words:
 
-1. **What the tool does.**
-2. **When to use it**, and when not to.
-3. **What inputs it needs**, with an example.
-4. **What it returns.**
+1. What does the tool do?
+2. When should Claude use it, and when not?
+3. What inputs does it need? Give an example.
+4. What does it return?
 
-Leave out how it works inside, such as "uses a Redis cache." Claude doesn't need that to choose. Aim for at least 3 to 4 sentences.
+Leave out how it works inside, such as which database it uses. Claude doesn't need that to choose. The course's test: could a non-engineer read it and know when to use the tool?
+
+**Warning:** A bad description rarely causes an error message. Instead, Claude quietly picks the wrong tool, or skips the right one. This is one of the most common reasons agents go wrong.
+
+---
+
+### Exam traps
+
+| ❌ Trap | ✅ What is true |
+|---|---|
+| A tool call is plain text, like "please check the stock." | It is a structured request: the tool's name plus its inputs. |
+| My program runs every tool Claude uses. | Your program runs client tools. Anthropic runs server tools, such as web search. |
+| If Claude fills in a tool's inputs, it is an agent. | It is an agent only if Claude picks which tool runs. |
+| A broken tool setup always shows an error. | It usually fails quietly: the wrong tool is picked, or a tool is skipped. |
 
 ---
 
 ### Architect notes
 
-#### Speed
-
-- Parallel tool calls cut waiting time. Run independent tools at the same time in your app instead of one after another.
-- Server tools save you building code, but each search or fetch adds time to Claude's reply.
-
-#### Cost
-
-- Server tools can cost extra on top of tokens; for example, web search is charged per search. Prices change, so check the current pricing page.
-- Every tool result is added to the conversation and resent each round. Return only the fields Claude needs, such as `"In stock: 14 units"`, not the whole database row.
-
-#### Security
-
-- Data access tools are a door for *prompt injection*: a web page or email can hide text such as "ignore your rules." Treat every tool result as untrusted.
-- Give external action tools the narrowest scope (for example, only send email to the customer on the order) and require human approval for anything permanent.
-- Run code execution only in a sandbox with no access to your real systems.
-
-#### Production pitfalls
-
-- Return clear errors with `"is_error": true`. When Claude sends bad or missing inputs, it usually retries 2 to 3 times with corrections before giving up.
-- Silent failure is the hard case: no error, just the wrong tool or a skipped tool. Log every `tool_use` and `tool_result`, and review the logs to spot it.
-- Handle `pause_turn` for server tools: send the reply back to let Claude continue, and cap how many times you do this.
-
----
-
-### Recap
-
-- Every tool use has three parts: the **definition** (you write it), the **tool call** (Claude asks), and the **observation** (the result goes back).
-- Claude's reply says `stop_reason: "tool_use"`. You answer with `tool_result` blocks, matched by `tool_use_id`, in one `user` message.
-- **Client tools** run in your app. **Server tools**, such as web search, run on Anthropic's servers.
-- If the developer picks the tool order, it is a workflow. If Claude picks, it is an agent.
-- On an error, Claude replans. Independent tools can run in parallel.
-- Tools are data access, computation, or external action. Risk rises in that order.
-- The description is how you steer tool choice. Bad descriptions cause silent wrong choices.
+- **Speed:** when Claude asks for several tools at once, run them at the same time. Running them one by one makes the customer wait longer.
+- **Cost:** every tool answer is added to the conversation and resent with each request. Return only what Claude needs, such as "14 units," not a whole database row. Web search also costs extra per search. Prices change, so check the current pricing page.
+- **Safety:** answers from "read" tools can hide tricks, such as a web page saying "ignore your rules." Treat every tool answer as untrusted.
+- **"Change" tools:** give them the smallest possible reach, and have a person approve anything permanent.
+- **Errors:** make tools return clear error messages, such as "order 1234 not found." Claude can then fix its request and try again.
+- **Quiet failures:** log every tool call and answer. Reading the logs is how you spot a wrong or skipped tool.
 
 ---
 
 ## My notes / practice
 
-- [ ] Rewrite three vague tool descriptions from a real project using the four-part checklist in section 5.
-- [ ] Sort the tools of an agent you know, such as Claude Code (Read, Edit, Bash, WebSearch), into data access, computation, and external action.
-- [ ] Write out by hand the `tool_use` and `tool_result` messages for a question that needs two tools at once.
-
-<details>
-<summary><strong>Test yourself</strong></summary>
-
-**1. Claude's reply has two `tool_use` blocks. How do you send the results back?**
-In one `user` message with two `tool_result` blocks, each with a `tool_use_id` that matches its `tool_use` block's `id`.
-
-**2. Does your app run the `web_search` tool?**
-No. It is a server tool, so Anthropic runs it and puts the result in Claude's reply.
-
-**3. A system always calls `get_order` and then `send_email`, and Claude fills in the email text. Is it an agent?**
-No. The developer fixed which tools run and in what order, so it is a workflow.
-
-**4. Which group of tools carries the most risk, and why?**
-External action tools, because they change real things, such as sending emails or updating records, and the effects are often permanent.
-
-</details>
-
-### Common mix-ups
-
-| ❌ Wrong idea | ✅ What is true |
-|---|---|
-| A tool call is plain text like "please check stock." | It is a structured `tool_use` block with an `id`, a tool name, and JSON inputs. |
-| My app runs every tool Claude uses. | Your app runs client tools. Anthropic runs server tools such as web search. |
-| If Claude fills in the inputs, it is an agent. | It is an agent only if Claude picks which tool runs. |
-| Results for parallel calls can go in separate messages. | All results go back in one `user` message. |
-| A broken tool setup always shows an error. | It usually fails silently: Claude picks the wrong tool or skips one. |
+- [ ] Find a vague tool description in a real project. Rewrite it using the four questions in section 5.
+- [ ] Sort Claude Code's tools into read, compute, and change: Read, Grep, Bash, Edit, WebSearch.
 
 ---
 
 ## FAQ
 
 **Q1. What does "observation" mean?**
-An observation is a tool's result after it runs, sent back into Claude's conversation. Claude reads it to decide the next step. The course calls this step *tool result injection*.
+It is the tool's answer, handed back to Claude. Claude reads it to decide what to do next.
 
-**Q2. What does Claude's reply look like when it wants a tool?**
-The reply has `stop_reason: "tool_use"` and one or more `tool_use` blocks. Each block has an `id`, the tool `name`, and the inputs as JSON.
+**Q2. How does my program know that Claude wants a tool?**
+Claude's reply is marked "tool use" instead of being a normal answer. It contains the tool's name and the inputs to use.
 
-**Q3. How does my app send a tool's result back to Claude?**
-Send a new `user` message containing a `tool_result` block. Its `tool_use_id` must match the `id` of the `tool_use` block, and the `tool_result` blocks must come before any text in that message.
+**Q3. What is the difference between "client tools" and "server tools"?**
+Your own program runs client tools, such as "check stock." Anthropic runs server tools, such as web search, and sends the answer for you.
 
-**Q4. What is the difference between "client tools" and "server tools"?**
-Client tools run in your application, so you run them and return the result; examples are your own tools and `bash`. Server tools, such as `web_search` and `code_execution`, run on Anthropic's servers, which return the result for you.
+**Q4. What happens when a tool fails?**
+Your program sends Claude a clear error message. Claude then tries different inputs, tries another tool, or hands over to a person.
 
-**Q5. What does `pause_turn` mean?**
-It is a `stop_reason` you can get with server tools when a long turn stops partway. Send Claude's reply back as it is, and Claude continues where it stopped.
+**Q5. Can Claude ask for several tools at once?**
+Yes, when the tools don't depend on each other. Your program runs them at the same time and sends all the answers back together.
 
-**Q6. How do I tell Claude that a tool failed?**
-Send the `tool_result` with `"is_error": true` and a clear message, such as "Order 1234 not found." Claude can then retry with other inputs, try another tool, or ask a person.
+**Q6. What are the three kinds of tools?**
+Read tools get information. Compute tools do work such as running code. Change tools do something in the world, such as sending an email. Risk rises in that order.
 
-**Q7. Can Claude ask for several tools at once?**
-Yes. This is parallel tool use: Claude puts several `tool_use` blocks in one reply when the tools don't depend on each other. Run them at the same time and send all results back in one message. Turn it off with `"disable_parallel_tool_use": true` inside `tool_choice`.
+**Q7. What should a tool description say?**
+What the tool does, when to use it, what inputs it needs, and what it returns. Write it so a non-engineer could understand it.
 
-**Q8. What are the three groups of tools?**
-Data access tools read from the world, computation tools do work such as running code, and external action tools change the world, such as sending an email. Risk rises in that order.
+**Q8. (Exam angle) A support agent keeps searching help articles when users ask about their own tickets. The logs show no errors. What do you fix first?**
+The tool descriptions. Claude picks tools by reading them. Make each one say exactly what it searches and when to use it instead of the other. (Tool Design & MCP Integration)
 
-**Q9. What should a tool description say?**
-What the tool does, when to use it, what inputs it needs, and what it returns, in words a non-engineer could follow. Leave out how it works inside, and aim for at least 3 to 4 sentences.
+**Q9. (Exam angle) A developer's agent breaks when Claude asks for two tools in one reply. What is wrong?**
+The program expects only one tool call per reply. It must run every requested tool, then send all the answers back together. (Tool Design & MCP Integration)
 
-**Q10. How can I tell that a tool description is bad?**
-Usually there is no error. Claude calls the wrong tool or skips a tool it should have used. Check your logs of tool calls when answers look wrong.
-
-**Q11. (Exam angle) A support agent keeps searching the help articles when users ask about their own tickets, and nothing in the logs shows an error. What do you fix first?**
-The tool descriptions. Claude chooses tools from their descriptions, so make each one say exactly what it searches, what it returns, and when to use it instead of the other tool. (Tool Design & MCP Integration)
-
-**Q12. (Exam angle) A developer's agent fails when Claude returns two `tool_use` blocks in one reply. What is wrong, and how do you fix it?**
-The code expects one tool call per reply. Claude used parallel tool use, so the code must run every tool and return every `tool_result`, matched by `tool_use_id`, in one `user` message. If the tools must run one at a time, set `disable_parallel_tool_use` in `tool_choice`. (Tool Design & MCP Integration)
-
-**Q13. (Exam angle) A security team reviews an agent with a web search tool, a Python sandbox, and a send-email tool. How do you rank the risks?**
-Send-email is highest, because it is an external action with real, permanent effects, so give it narrow scope and human approval. The sandbox is next, so keep it sealed off. Web search only reads, but its results can carry prompt injection, so treat them as untrusted. (Agentic Architecture & Orchestration)
+**Q10. (Exam angle) A security team reviews an agent with web search, a code sandbox, and a send-email tool. How do you rank the risks?**
+Send-email is highest, because its effect is real and permanent, so add a person's approval. The sandbox is next, so keep it sealed off. Web search only reads, but its results can hide tricks, so treat them as untrusted. (Agentic Architecture & Orchestration)
 
 ---
 

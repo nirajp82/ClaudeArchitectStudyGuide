@@ -1,6 +1,6 @@
 # Capstone Project Plan: Support Assistant
 
-**Part of:** [Study plan](../readme.md) &nbsp;·&nbsp; **Created:** November 7, 2026 &nbsp;·&nbsp; **Runs:** November 8 to December 14, 2026
+**Part of:** [Study plan](../readme.md) &nbsp;·&nbsp; **Created:** November 7, 2026 &nbsp;·&nbsp; **Runs:** November 16, 2026 to February 7, 2027
 
 ---
 
@@ -26,7 +26,7 @@
 - **Why build it:** the exam asks you to choose between designs and defend the choice. You can only do that well if you have built the thing, measured it, and seen it fail.
 - **How it grows:** you add one feature after each chapter of *Building with the Claude API*. Each feature uses what that chapter just taught. Nothing is built up front.
 - **Where the code lives:** in its own folder, `C:\Projects\Personal\claude-capstone\`, outside these notes. This plan stays here in the notes.
-- **Time:** about 5 hours a week, which includes the matching notebooks from the [Cookbook build-along plan](../cookbook-build-along.md). The Cookbook shows each technique working. The capstone is where you write it yourself.
+- **Time:** about 5 hours a week, which includes the matching notebooks from the [Cookbook build-along plan](../cookbook-build-along.md). The Cookbook shows each technique working. The capstone is where you write it yourself. Pause the capstone from December 14 to January 2 while you prepare for and take the Foundations exam.
 
 > **Remember this:** One chapter, then one feature. If you fall behind on dates, keep the order and keep going.
 
@@ -34,7 +34,7 @@
 
 ### What the finished app does
 
-By December 14, a session in your terminal looks like this. Every item it shows is a feature you add in one milestone.
+By February 7, 2027, a session in your terminal looks like this. Every item it shows is a feature you add in one milestone.
 
 ```text
 You:  How long do I have to ask for a refund?
@@ -214,17 +214,17 @@ Do each milestone right after the course chapter in the "Do it after" column. Th
 
 | # | Dates | Do it after | Cookbook phase | What you add | Done when | Status |
 |:---:|:---|:---|:---:|:---|:---|:---|
-| M0 | Nov 8 | [API course lesson 3, Making a request](../02_BuildingWithTheClaudeAPI/03-making-a-request.md) | 0 | The project and your first API call | The first session above is complete | Not started |
-| M1 | Nov 9 – Nov 12 | API chapter 1, Accessing Claude with the API (lessons 4–8) | 1 | A system prompt, retries in `retry.py`, and replies in a fixed JSON shape | A failed request is tried again, and you can explain why | Not started |
-| M2 | Nov 13 – Nov 15 | Chapter 2, Prompt evaluation (lessons 9–14) | 2 | The first 10 test questions in `cases.jsonl` and `run_evals.py` | One command prints a score out of 10 | Not started |
-| M3 | Nov 16 – Nov 17 | Chapter 3, Prompt engineering techniques (lessons 15–19) | 3 | Documents and instructions wrapped in XML tags in the system prompt | You reran the tests and wrote down whether the score changed | Not started |
-| M4 | Nov 18 – Nov 21 | Chapter 4, Tool use with Claude (lessons 20–31) | 4 | `lookup_ticket`, `create_ticket` with the approval gate, the chat loop in `main.py`, and two tests | The second and third exchanges in the example above work | Not started |
-| M5 | Nov 22 – Nov 24 | Chapter 5, RAG and Agentic Search (lessons 32–38) | 5 | Search over the documents in `sample_documents`, plus 3 test questions the documents can't answer | The first and last exchanges in the example work | Not started |
-| M6 | Nov 25 – Nov 26 | Chapter 6, Features of Claude (lessons 39–46) | 6 | Citations in every answer and prompt caching | You saved the cost per question with and without caching | Not started |
-| M7 | Nov 27 – Nov 29 | Chapter 9, Agents and workflows (lessons 61–67) | 7 | A router that sends each question to document search or to the ticket tools, plus a filter that refuses misuse | 3 misuse test questions pass | Not started |
-| M8 | Dec 1 – Dec 6 | Chapter 7, Model Context Protocol (lessons 47–56), and the [Introduction to MCP course](https://academy.claude.com/courses/introduction-to-model-context-protocol) | none | The ticket tools offered through an MCP server | Claude Code can look up a ticket through your server | Not started |
-| M9 | Dec 7 – Dec 12 | The cloud course: [Bedrock](https://academy.claude.com/courses/claude-with-amazon-bedrock) or [Vertex AI](https://academy.claude.com/courses/claude-with-google-cloud-s-vertex-ai) | 8 | Cost and speed measured for Haiku and one larger model, and the three decision notes | `docs\decisions.md` has three notes based on your numbers | Not started |
-| M10 | Dec 13 – Dec 14 | Everything above | none | About 25 test questions in total, the risk review, and the manager summary | All three write-ups exist and the tests run cleanly | Not started |
+| M0 | Nov 16 | [API course lesson 3, Making a request](../02_BuildingWithTheClaudeAPI/03-making-a-request.md) | 0 | The project and your first API call | The first session above is complete | Not started |
+| M1 | Nov 17 – Nov 19 | API chapter 1, Accessing Claude with the API (lessons 4–8) | 1 | A system prompt, retries in `retry.py`, and replies in a fixed JSON shape | A failed request is tried again, and you can explain why | Not started |
+| M2 | Nov 20 – Nov 22 | Chapter 2, Prompt evaluation (lessons 9–14) | 2 | The first 10 test questions in `cases.jsonl` and `run_evals.py` | One command prints a score out of 10 | Not started |
+| M3 | Nov 23 – Nov 24 | Chapter 3, Prompt engineering techniques (lessons 15–19) | 3 | Documents and instructions wrapped in XML tags in the system prompt | You reran the tests and wrote down whether the score changed | Not started |
+| M4 | Nov 25 – Dec 1 | Chapter 4, Tool use with Claude (lessons 20–31) | 4 | `lookup_ticket`, `create_ticket` with the approval gate, the chat loop in `main.py`, and two tests | The second and third exchanges in the example above work | Not started |
+| M5 | Dec 2 – Dec 4 | Chapter 5, RAG and Agentic Search (lessons 32–38) | 5 | Search over the documents in `sample_documents`, plus 3 test questions the documents can't answer | The first and last exchanges in the example work | Not started |
+| M6 | Dec 5 – Dec 8 | Chapter 6, Features of Claude (lessons 39–46) | 6 | Citations in every answer and prompt caching | You saved the cost per question with and without caching | Not started |
+| M7 | Dec 12 – Dec 13 | Chapter 9, Agents and workflows (lessons 61–67) | 7 | A router that sends each question to document search or to the ticket tools, plus a filter that refuses misuse | 3 misuse test questions pass | Not started |
+| M8 | Jan 3 – Jan 10, 2027 | Chapter 7, Model Context Protocol (lessons 47–56), and the [Introduction to MCP course](https://academy.claude.com/courses/introduction-to-model-context-protocol) | none | The ticket tools offered through an MCP server | Claude Code can look up a ticket through your server | Not started |
+| M9 | Jan 14 – Jan 24 | The cloud course: [Bedrock](https://academy.claude.com/courses/claude-with-amazon-bedrock) or [Vertex AI](https://academy.claude.com/courses/claude-with-google-cloud-s-vertex-ai) | 8 | Cost and speed measured for Haiku and one larger model, and the three decision notes | `docs\decisions.md` has three notes based on your numbers | Not started |
+| M10 | Jan 26 – Feb 7 | Everything above | none | About 25 test questions in total, the risk review, and the manager summary | All three write-ups exist and the tests run cleanly | Not started |
 
 **The test question file.** `cases.jsonl` holds one test question per line, written in JSON (a text format for data). JSONL means "JSON Lines". For example:
 

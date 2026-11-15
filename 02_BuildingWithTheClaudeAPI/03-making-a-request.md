@@ -49,7 +49,7 @@ The course runs its code in a **Jupyter notebook**, a file where you write Pytho
 | `max_tokens` | The most tokens the answer may contain. It is a safety cap, not a target. | `1000` |
 | `messages` | The conversation so far, as a list of messages. | One user message |
 
-- `max_tokens` is only a ceiling. Claude writes the length it thinks is right and stops early when it is done. If it reaches the cap, the answer is cut off mid-sentence.
+- `max_tokens` is only a ceiling. Claude writes the length it thinks is right and stops early when it is done. If it reaches the cap, the answer is cut off mid-sentence. The model is never told the cap, so it can't shorten its answer to fit. You pay only for the tokens actually written, so a high cap costs nothing extra.
 - To get a short answer, ask for one in the message ("Answer in one sentence"). Lowering `max_tokens` only cuts the answer off.
 
 #### What a message is
@@ -177,8 +177,22 @@ The `name=value` style is Python's **keyword arguments**: each setting is passed
 
 Think of `max_tokens` as a page limit on an exam answer. A student who has said everything stops early; a student who reaches the limit is stopped mid-sentence. The limit never makes anyone write more.
 
-- Set it to 1000 and ask for one sentence: Claude writes about 40 tokens and stops.
-- Set it to 20 and ask for a paragraph: Claude is cut off after 20 tokens, and `stop_reason` is `max_tokens`.
+The model is never told the limit. It doesn't plan around it or squeeze its answer to fit. It writes the answer it would write anyway, and the API simply stops it if it reaches the limit.
+
+Here is the same idea with four requests. The answers and token counts are examples:
+
+| Prompt | `max_tokens` | What comes back | `stop_reason` |
+|---|:---:|---|---|
+| "What is quantum computing? Answer in one sentence." | 1000 | "Quantum computing uses qubits, which can be 0 and 1 at once, to solve some problems much faster than normal computers." (about 25 tokens) | `end_turn`: the answer is complete |
+| Same prompt | 10 | "Quantum computing uses qubits, which can be" | `max_tokens`: cut off mid-sentence |
+| "Explain quantum computing." | 1000 | Several paragraphs, about 400 tokens. The high limit didn't make the answer longer, and the prompt didn't ask for a short one. | `end_turn` |
+| "Explain quantum computing." | 50 | The first two sentences of that long answer, then it stops mid-thought | `max_tokens` |
+
+Things to notice:
+
+- **A high limit costs nothing extra.** You pay only for the tokens the model actually writes, so row 1 costs about 25 output tokens, not 1000.
+- **A low limit doesn't make a short answer.** Row 4 isn't a short summary. It is the start of a long answer, chopped off.
+- **When an answer is cut off,** raise `max_tokens` and send the request again, or ask for a shorter answer in the prompt. Don't show a cut-off answer to users as if it were complete.
 
 > **Remember this:** The prompt decides the length. `max_tokens` only decides where to cut.
 
@@ -273,6 +287,7 @@ The token counts above are examples. Your answer will also differ slightly each 
 | ❌ Wrong idea | ✅ What really happens |
 |---|---|
 | "`max_tokens=1000` makes Claude write about 1000 tokens." | It is only a ceiling. Claude stops when the answer is done. |
+| "If `max_tokens` is small, the model squeezes its answer to fit." | The model is never told the limit. It writes as usual and is cut off mid-sentence. |
 | "Claude remembers my last request." | Each request stands alone. You send the earlier messages yourself. |
 | "`message` is the answer text." | `message` is an object. The text is in `message.content[0].text`. |
 | "`content[0]` is always text." | With tools or thinking turned on, the first block can be another type. |
@@ -365,8 +380,13 @@ It reads the `.env` file in the current folder and copies each setting, such as 
 **Q4. What three settings does client.messages.create() need?**
 `model` (which Claude model answers), `max_tokens` (the most tokens the answer may use), and `messages` (the conversation so far).
 
-**Q5. Does max_tokens tell Claude how long to make the answer?**
-No. It is only a ceiling. Claude writes what it thinks is right and stops early; if it reaches the ceiling, the answer is cut off. Ask for the length you want in the message.
+**Q5. Does "max_tokens" tell the model how long to make the answer?**
+No. `max_tokens` is only a ceiling, and the model is never told what it is. The model writes the answer it would write anyway, and the API stops it if it reaches the ceiling. Two examples:
+
+- **The limit is bigger than the answer.** You ask "What is quantum computing? Answer in one sentence." with `max_tokens=1000`. The model writes one full sentence of about 25 tokens and stops. `stop_reason` is `end_turn`, and you pay for about 25 tokens, not 1000.
+- **The limit is too small.** The same prompt with `max_tokens=10` returns "Quantum computing uses qubits, which can be". The sentence is cut off, and `stop_reason` is `max_tokens`.
+
+To control length, ask for it in the message, and keep `max_tokens` high enough for the full answer.
 
 **Q6. What is the difference between a "user" message and an "assistant" message?**
 A user message is what you or your app sends to Claude. An assistant message is an answer Claude wrote earlier, which you send back when continuing a conversation.

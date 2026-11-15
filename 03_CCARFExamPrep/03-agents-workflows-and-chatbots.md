@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| Lesson 2 (not written yet) | [📚 Course index](README.md) | Lesson 4 (not written yet) |
+| Lesson 2 (not written yet) | [📚 Course index](README.md) | [Tool Use as the Foundation of Agency →](04-tool-use-foundation-of-agency.md) |
 
 ---
 
@@ -354,4 +354,4 @@ Give the agent only the tools it needs (minimal footprint), require a person to 
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| Lesson 2 (not written yet) | [📚 Course index](README.md) | Lesson 4 (not written yet) |
+| Lesson 2 (not written yet) | [📚 Course index](README.md) | [Tool Use as the Foundation of Agency →](04-tool-use-foundation-of-agency.md) |

@@ -33,6 +33,7 @@ The table grows lesson by lesson. The full table is built from the Udemy curricu
 | # | Domain | Section | Notes | Status |
 |---|---|---|---|---|
 | 3 | 1. Agentic Architecture & Orchestration | Agents, Workflows, and Chatbots: What's Actually Different | [03-agents-workflows-and-chatbots.md](03-agents-workflows-and-chatbots.md) | ✅ Done |
+| 4 | 1. Agentic Architecture & Orchestration | Tool Use as the Foundation of Agency | [04-tool-use-foundation-of-agency.md](04-tool-use-foundation-of-agency.md) | ✅ Done |
 | — | — | Rest of the curriculum (waiting for the list) | — | ⬜ |
 
 ## To-do

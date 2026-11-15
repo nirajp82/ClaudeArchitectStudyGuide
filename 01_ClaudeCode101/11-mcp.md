@@ -28,71 +28,45 @@
 
 ### Revision summary
 
-MCP (Model Context Protocol) is a standard way to connect Claude Code to services outside your project, such as your team's issue tracker or a library's latest documentation, so that the model can read from and use those services by itself whenever your request needs them.
+- **MCP** (*Model Context Protocol*): an open standard that connects Claude Code to tools and data outside your project, such as an issue tracker, a database, or current library documentation. Much of what Claude Code needs lives outside your code, and MCP brings it into the conversation.
+- **Tool:** an action an AI agent can take, such as reading a ticket. Tools are what separate an agent like Claude Code from a chat AI that only writes text.
+- **MCP server:** a small program that offers tools to Claude Code. Once a server is connected, the model decides by itself when to use its tools.
+- **Examples:** the Linear server reads your team's issues from the Linear project management app. The Context7 server fetches current documentation for a library. Hundreds more are listed at `claude.com/connectors`.
+- **Permissions still apply:** Claude Code asks before it runs an MCP tool for the first time, as it does for other actions.
 
-#### What MCP is and why it helps
+#### How to add and manage a server
 
-MCP (*Model Context Protocol*) is an open standard that lets Claude Code connect to tools and data outside your project, such as an issue tracker, a database, or up-to-date library documentation. Once a server is connected, the model decides by itself when to use its tools.
+**Use an MCP server** when Claude Code needs a service it can't reach with a terminal command, such as your team's Linear issues. Add it with `claude mcp add` in your normal terminal, not inside a Claude Code conversation.
 
-- **Why it matters:** much of the information Claude Code needs lives outside your code, in databases, productivity apps, and public repositories. MCP brings that information into the conversation.
-- **What a tool is:** an action that an AI agent can take, such as reading a ticket or searching documentation. This is what separates an agent like Claude Code from a chat AI that only writes text back.
-- **What an MCP server is:** a small program that offers a set of tools to Claude Code. Examples are the Linear server (reads your team's issues from the Linear project management app) and the Context7 server (fetches current documentation for a library you use). Hundreds more are listed at `claude.com/connectors`.
-- **Permissions still apply:** Claude Code asks before it runs an MCP tool for the first time, just like it asks before other actions.
-
-#### How to add a server
-
-You add a server by running `claude mcp add` in your normal terminal, not inside a Claude Code conversation. There are two types of server.
-
-| Type | Where the server runs | Example command |
-|---|---|---|
-| **HTTP** (remote) | On the service provider's computers, reached over the internet | `claude mcp add --transport http linear-server https://mcp.linear.app/mcp` |
-| **stdio** (local) | As a program on your own computer | `claude mcp add --transport stdio dev-utils -- python C:/Users/you/mcp-server/server.py` |
-
-- In a stdio command, everything after the `--` is the command that starts the server program. Everything before it is an option for Claude Code.
-- Some services also offer an older kind of remote connection called SSE (*Server-Sent Events*). Claude Code still accepts it, but SSE is being phased out (*deprecated*), so when a service offers both SSE and HTTP, choose HTTP.
-- Three more terminal commands manage the servers you added: `claude mcp list` lists every server, `claude mcp get linear-server` shows the settings of one server (here, the one named `linear-server`), and `claude mcp remove linear-server` deletes it.
-
-#### When to use an MCP server, and which type
-
-- **Use an MCP server** when Claude Code needs a service that it can't reach with a terminal command. For example: your team's issues in Linear, or current library documentation from Context7.
-- **Use the service's command-line tool instead** when one exists, such as `gh` for GitHub, because a command takes no space in the context window until it runs.
-- **Use an HTTP server** when the service provider runs the server for you, such as Linear. You only need its web address.
-- **Use a stdio server** when the server is a program on your own computer, such as a Python script you wrote.
-
-#### How to check and manage servers
-
-Inside a Claude Code conversation, type `/mcp` to manage your servers.
-
-- The list shows every server, where its settings are stored, and its status, such as "connected" or "needs authentication."
-- Select a server to sign in to it (for remote services such as Linear), view its tools, reconnect it, or disable it.
-- Disabling a server switches it off without deleting its settings.
+- **Use an HTTP server** (remote) when the provider runs it on their computers and you only need its web address: `claude mcp add --transport http linear-server https://mcp.linear.app/mcp`.
+- **Use a stdio server** (local) when it is a program on your own computer, such as a Python script you wrote: `claude mcp add --transport stdio dev-utils -- python C:/Users/you/mcp-server/server.py`. Everything after `--` starts the server program. Everything before it is an option for Claude Code.
+- **Choose HTTP over SSE.** SSE (*Server-Sent Events*) is an older kind of remote connection. Claude Code still accepts it, but it is being phased out (*deprecated*).
+- **Use the service's command-line tool instead** when one exists, such as `gh` for GitHub or `aws` for Amazon Web Services. A command takes no space in the context window until it runs.
+- **In the terminal:** `claude mcp list` lists every server, `claude mcp get linear-server` shows one server's settings, and `claude mcp remove linear-server` deletes it.
+- **Inside a conversation:** `/mcp` shows each server, where its settings are stored, and its status, such as "connected" or "needs authentication." Select a server to sign in to it (for remote services such as Linear), view its tools, reconnect it, or disable it. Disabling switches it off without deleting its settings.
 
 #### Who gets a server: the three scopes
 
-The scope decides which projects and which people get a server. You choose it with `--scope` when you add the server.
+The scope decides which projects and people get a server. You choose it with `--scope` when you add the server.
 
-| Scope | Who gets it | Where it is saved |
-|---|---|---|
-| **Local** (the default) | Only you, only in the current project | Your personal settings file, `~/.claude.json` (Windows: `C:\Users\you\.claude.json`), under that project's path |
-| **User** | Only you, in all your projects | `~/.claude.json` |
-| **Project** | Everyone who works on the repository | A `.mcp.json` file at the root of the repository, committed to Git |
+| Scope | Who gets it | Where it is saved | Use it when |
+|---|---|---|---|
+| **Local** (the default) | Only you, only in the current project | `~/.claude.json` (Windows: `C:\Users\you\.claude.json`), under that project's path | You are trying a server, or it uses your personal access |
+| **User** | Only you, in all your projects | `~/.claude.json` | You want it everywhere, such as Context7 |
+| **Project** | Everyone who works on the repository | `.mcp.json` at the repository root, committed to Git | The whole team needs it, such as the team's Linear connection |
 
-- **Use local** (the default) to try a server, or for a server that uses your personal access, in one project.
-- **Use user** for a server you want in every project, such as Context7 for documentation.
-- **Use project** when the whole team should get the same server automatically, such as the team's Linear connection.
-- Before Claude Code uses servers from a project's `.mcp.json`, it asks you to approve them, because anyone who can change the repository can add a server.
-- If the same server name exists in several scopes, local wins over project, and project wins over user.
-- **Warning:** never write passwords or access tokens directly in `.mcp.json`, because the file is shared through Git. The docs let you write `${API_KEY}` instead, and Claude Code fills in the value from your computer's environment variables.
+- Claude Code asks you to approve servers from a project's `.mcp.json` before using them, because anyone who can change the repository can add a server.
+- If one server name exists in several scopes, local wins over project, and project wins over user.
+- **Warning:** never write passwords or access tokens in `.mcp.json`, because Git shares the file. Write `${API_KEY}` instead, and Claude Code fills in the value from your computer's environment variables.
 
 #### How MCP servers use your context window
 
-Every connected server takes up some space in the context window (the conversation's working memory, [lesson 6](06-context-management.md)), even when you don't use it.
+Every connected server takes some space in the context window (the conversation's working memory, [lesson 6](06-context-management.md)), even when unused.
 
-1. Each server adds its tool names and instructions to the context window at the start of a conversation.
-2. Tool search is on by default, so the full definition of each tool stays out of the context window until the model needs that tool.
-3. To save space, run `/mcp` and disable servers you are not using.
-4. If a tool has a command-line version, such as `gh` for GitHub or `aws` for Amazon Web Services, using that command is cheaper, because a command adds nothing to the context window until it runs.
-5. You can pair a server with a skill ([lesson 10](10-skills.md)) that teaches the model how to use the server's tools well. Only the skill's name and description load until it is needed.
+1. Each server adds its tool names and instructions at the start of a conversation.
+2. Tool search is on by default, so each tool's full definition stays out until the model needs that tool.
+3. To save space, disable servers you aren't using with `/mcp`, and prefer command-line tools where they exist.
+4. You can pair a server with a skill ([lesson 10](10-skills.md)) that teaches the model to use its tools well. Only the skill's name and description load until it is needed.
 
 #### Exam takeaways
 

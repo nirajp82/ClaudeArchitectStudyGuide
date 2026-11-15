@@ -72,12 +72,27 @@ Whenever a lesson has options to choose between (modes, commands, files, scopes,
 
 ### Keep it short: clear, not long
 
-Clear doesn't mean long. My other common complaint is "the whole page is too long." Aim for **250–400 lines per lesson**.
+Clear doesn't mean long. My other common complaint is "the whole page is too long." Aim for **250–400 lines of text per lesson**, not counting blank lines. A deep dive may go up to about 450. The revision summary gets about **40 lines of text**, with at most one table.
+
+**Short must never mean useless.** The goal is a page I can read and learn from. Cut repetition, never facts or the explanations that make them clear. If keeping an important detail means going over the line limit, keep the detail.
 
 - **Say each thing once.** Don't explain the same point in prose, then a table, then a diagram, then the recap, then the FAQ. Pick the one format that shows it best.
 - **One everyday comparison per main idea**, in 1–3 sentences.
 - **Don't re-teach earlier lessons.** One line plus a link: "(the context window, [lesson 2](02-how-claude-code-works.md))."
 - **Extras from the docs:** only if they matter for the exam or daily use, in 1–2 lines each. Deeper material goes in "Architect notes" (below).
+
+### Shortening a lesson
+
+When I ask you to shorten a page, or a new lesson comes out too long, follow these steps:
+
+1. **Read the whole page and show me a plan first.** List which sections you will keep, merge, or cut, with expected line counts. Wait for my OK.
+2. **List every fact before cutting.** Write down each command, number, setting, term, warning, worked calculation, practice task, mix-up row, and exam point on the old page. This list is the checklist the new page must pass.
+3. **Cut repeats, not content.** Keep the clearest version of each idea in the body, plus the revision summary. Delete the other copies.
+4. **Keep what teaches.** Every idea keeps its everyday comparison, its running example, and its worked numbers. Put long tables or math that I only need to check by hand in a click-to-open `<details>` block instead of deleting them.
+5. **Check the new page against the fact list.** Compare it with the old version in Git (`git show HEAD~1:path`). Put back anything missing, even if the page goes over the line limit.
+6. **Check that the revision summary stands alone.** Read only the summary and make sure it answers every exam-angle FAQ question.
+7. **Do the beginner read-through** (above), and check that no sentence runs over about 20 words.
+8. **Report what changed.** In the reply, list what was merged, what moved into `<details>`, and anything cut on purpose, so I can check it.
 
 ### Architect notes: required from course 2 onward
 

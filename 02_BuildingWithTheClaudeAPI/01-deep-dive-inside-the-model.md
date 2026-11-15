@@ -14,13 +14,11 @@ Give a model these words and ask it to continue:
 The cat sat on the mat because it ...
 ```
 
-It writes "was". It doesn't look that word up in a database, and no `if/else` rule tells it to. It does math on billions of saved numbers and works out a chance for every word it knows. In the small example on this page, the chances look like this:
+It writes "was". It doesn't look that word up, and no `if/else` rule tells it to. It does math on billions of saved numbers and gives every word it knows a chance. In the small example on this page, the chances are:
 
 | Next word | was | is | sat | cat | mat |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Chance | **51.3%** | 18.2% | 14.9% | 8.2% | 7.5% |
-
-This page walks through that math with numbers small enough to check by hand. Then it shows how training found those numbers.
 
 ---
 
@@ -30,137 +28,73 @@ This page walks through that math with numbers small enough to check by hand. Th
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [What a model is](#what-a-model-is) |
-| 4 | [Part 1. What is saved inside the model](#part-1-what-is-saved-inside-the-model) |
-| 5 | [Part 2. How the model answers your message](#part-2-how-the-model-answers-your-message) |
-| 6 | [Part 3. How the model learned its numbers (training)](#part-3-how-the-model-learned-its-numbers-training) |
-| 7 | [Common mix-ups](#common-mix-ups) |
-| 8 | [Test yourself](#test-yourself) |
-| 9 | [Architect notes: what this means for your work](#architect-notes-what-this-means-for-your-work) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 3 | [Part 1. What is saved inside the model](#part-1-what-is-saved-inside-the-model) |
+| 4 | [Part 2. How the model answers your message](#part-2-how-the-model-answers-your-message) |
+| 5 | [Part 3. How the model learned its numbers (training)](#part-3-how-the-model-learned-its-numbers-training) |
+| 6 | [Common mix-ups](#common-mix-ups) |
+| 7 | [Test yourself](#test-yourself) |
+| 8 | [Architect notes: what this means for your work](#architect-notes-what-this-means-for-your-work) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
 
-<details>
-<summary><b>Click to open the revision summary</b></summary>
+- **Model:** a huge saved set of numbers plus fixed math. It runs only on Anthropic's servers, and your app reaches it through the API.
+- **Token:** a small piece of text, such as a word, part of a word, or "?". The model reads, writes, and bills in tokens.
+- **Embedding:** a saved row of numbers for each token. The row describes what the token usually means.
+- **Weights and layers:** the other learned numbers, split across dozens of layers. Each layer adds a little more meaning to every token's row.
+- **Attention:** the step where each token borrows meaning from earlier tokens. For example, "it" picks up meaning from "mat".
+- **Next token:** the model gives every token a chance, picks one, adds it, and repeats until the answer is done.
+- **Training:** sets every number once, before release, by guessing hidden words billions of times. Normal use only reads the numbers.
 
-The model is a huge set of numbers that training tuned by playing millions of fill-in-the-blank games, and correcting the model's guesses; when you send a message, the model only reads those numbers to guess your answer one word at a time.
+#### What is saved inside the model
 
-#### What a model is
+Training saves three things. Every request reads them, and no request changes them.
 
-A model is a big file of numbers plus a fixed set of calculations. It runs only on Anthropic's servers, and your app reaches it through the API. Full explanation: [What a model is](#what-a-model-is).
+1. **Vocabulary:** every token the model knows, each with a fixed **token ID**, such as `cat` = 2207. The ID is only a label, like a primary key.
+2. **Embedding table:** one row of numbers per token ID, such as 2207 → `[0.30, 0.70, 0.50]`. Every row has the same number of columns, and no single column has a meaning.
+3. **Weights:** every other learned number, stored in grids called **matrices**. Each layer has its own set. A **parameter** is any learned number, including the embedding rows.
 
-It does one thing, in a loop:
-
-1. Take the text so far.
-2. Give every possible next token a chance.
-3. Pick one token, using those chances.
-4. Add it to the text, and repeat.
-
-Answering questions, writing code, and summarizing are all this one loop.
-
-#### The 3 things saved inside the model
-
-Training saves these three things. Every request reads them, but no request changes them.
-
-| # | Thing | What it is | In .NET terms | Example |
-|:---:|---|---|---|---|
-| 1 | **Vocabulary** | The list of every **token** (a word, part of a word, or a symbol) the model knows. Each token has a fixed **token ID**. | An `enum`, or a primary key | `cat` = 2207 |
-| 2 | **Embedding table** | One row of numbers for each token ID. That token's row (its **embedding**) describes what the token usually means. | `Dictionary<int, double[]>` | 2207 → `[0.30, 0.70, 0.50]` |
-| 3 | **Weights** | All the other learned numbers, stored as grids called **matrices**. Each layer has its own set. | The business logic. The embeddings are the data. | The attention weights in every layer |
-
-Key facts:
-
-- A token ID is only a label. It has no meaning by itself.
-- Every token's row in the embedding table has the same number of columns. The builders choose that number before training, and it never changes.
-- A weight matrix doesn't multiply each number by one weight. Each result adds up **all** the input numbers, each times its own weight.
-
-| Saved inside the model | **Not** saved inside the model |
-|---|---|
-| The vocabulary, the embedding table, the weights | Your past chats, a copy of the internet, anything after the training cutoff date |
-
-#### Layers
-
-A **layer** is one round of work that every token's row goes through. It adds a little more meaning, then passes the rows on.
-
-| Fact | Detail |
-|---|---|
-| Each layer has its own weights | Its own attention weights and its own feed-forward weights (both explained in the next table) |
-| Fixed after training | They change only if the model is trained again, which makes a new model version |
-| The number of layers | Chosen by the builders before training. It never changes. |
-| Why many layers | Each layer adds meaning only once. For "it" in "The cat sat on the mat because it was comfortable", early layers look at nearby words, middle layers link "it" to the mat or the cat, and late layers expect a verb like "was". |
-| What changes per request | Only the working copy of each token's row. It is made fresh and thrown away after. |
+Each result of a weight matrix adds up all its input numbers, each times its own weight. The model does not store your chats, a copy of the internet, or anything after its training cutoff date.
 
 #### How the model answers your message
 
-| Step | What happens | Key term |
-|:---:|---|---|
-| 1 | Cut the text into tokens, and find each token ID | Tokenization |
-| 2 | Look up each token's row in the embedding table. Add each token's position (1st word, 2nd word, …) so word order isn't lost. | Embedding |
-| 3 | Each token borrows meaning from earlier tokens | **Attention** |
-| 3a | Each token makes a **Query** (what it looks for), a **Key** (what it offers), and a **Value** (what it hands over). It uses three weight matrices, Wq, Wk, and Wv, which all tokens in a layer share. | Query, Key, Value |
-| 3b | Multiply a Query with each earlier Key, number by number, and add. A bigger result means a better match. | **Dot product** |
-| 3c | Turn the match scores into percentages that add up to 100% | **Softmax** |
-| 3d | Add up the earlier tokens' Values, weighted by those percentages. Add this blend to the token's own row, so it keeps its own meaning too. | Residual connection |
-| 4 | Many attentions run side by side, and one more matrix (Wo) joins their results (*multi-head attention*). Then each token's row is worked on by itself (the **feed-forward** step). All of this repeats in dozens of layers. | Multi-head attention, feed-forward |
-| 5 | Turn the last token's row into a score for every token in the vocabulary. Turn the scores into chances, and pick one. | **Logits**, softmax, **temperature** |
-| 6 | Add the picked token and repeat. Stop at a special end token, at `max_tokens` (the most tokens you allow in the answer), or at a stop sequence (text you choose that makes the model stop). | — |
-| 7 | Turn the token IDs back into text. Your app gets the text, the `stop_reason`, and the `usage` token counts. | — |
+The model runs these steps once for every token it writes.
 
-Two rules to remember:
+1. **Tokenization:** cut the text into tokens and find each token ID.
+2. **Embedding:** look up each token's row, and add its position so word order isn't lost.
+3. **Attention, part 1:** each token makes a **Query** (what it looks for), a **Key** (what it offers), and a **Value** (what it hands over). It uses the matrices Wq, Wk, and Wv, which all tokens in a layer share.
+4. **Attention, part 2:** a **dot product** (multiply number by number, then add) scores each Query against each earlier Key. **Softmax** turns the scores into percentages that add up to 100%. The token adds that blend of Values to its own row (*residual connection*).
+5. **Rest of the layer:** many attentions run side by side (*multi-head attention*). Then the **feed-forward** step works on each row alone. This repeats in dozens of layers.
+6. **Pick:** the last row becomes a score (**logit**) for every token in the vocabulary. Softmax turns the scores into chances, and the model picks one.
+7. **Repeat or stop:** the model stops at an end token, at `max_tokens`, or at a stop sequence. Then the token IDs become text again.
 
-- A token can only look at itself and earlier tokens, never later ones (*causal masking*).
-- A low temperature makes answers more consistent, but even temperature 0 doesn't guarantee identical answers.
+A token sees only itself and earlier tokens, never later ones (*causal masking*). **Temperature** divides the scores before softmax. A low temperature makes answers more consistent, but even temperature 0 doesn't guarantee identical answers.
 
 #### How the model learned its numbers
 
-Every number started random. Training repeats this loop billions of times:
+Every number starts random. Training repeats this loop billions of times.
 
-| Step | What happens | Example |
-|:---:|---|---|
-| 1 | Hide the next token in a sentence, and let the model guess | "…because it ___" → "was" got 51.3% |
-| 2 | Measure how wrong the guess was: **loss** = −ln(chance of the right token) | −ln(0.513) = 0.668 |
-| 3 | **Backpropagation** works out a **gradient** for every number: should it go up or down? | Gradient of one weight = −0.417 |
-| 4 | **Gradient descent** moves every number a little: `new = old − (learning rate × gradient)` | 1.5 → 1.5417, and "was" rises to 52.1% |
+1. Hide the next token of a real sentence and let the model guess. The sentence is the answer key, so nobody labels data (*self-supervised learning*).
+2. Measure the error: **loss** = −ln(chance given to the right token). A 51.3% guess gives a loss of 0.668.
+3. **Backpropagation** calculates a **gradient** for every number, which says which way to move it. It changes nothing.
+4. **Gradient descent** moves every number a little: `new = old − (learning rate × gradient)`. A negative gradient makes the number bigger.
 
-Key facts:
+**Pre-training** on huge amounts of text comes first. **Later training** (examples, feedback from people, and Constitutional AI) then teaches the model to follow instructions and stay safe. Training runs once per model version. Normal use (*inference*) only reads the numbers. The model is stateless, so your app must resend earlier messages.
 
-| Fact | Detail |
-|---|---|
-| Where the answer comes from | The sentence itself, so nobody labels anything (*self-supervised learning*). The model never searches the internet. |
-| Gradient sign | Negative means "bigger is better". Positive means "smaller is better". |
-| Backpropagation and gradient descent | Backpropagation only calculates. Gradient descent makes the changes. |
-| Learning rate | A small number, such as 0.1, that keeps each change small |
-| Embedding rows | Trained the same way. Only the rows of tokens in the sentence change in that step. |
-| One wrong sentence | Changes almost nothing. Wrong text repeated many times can be learned. |
-| Two stages | **Pre-training** (guess the next word on huge amounts of text), then **later training** (examples, feedback from people, and Constitutional AI teach it to follow instructions and stay safe) |
-| Cost | Thousands of special chips for weeks or months, once per model version |
+#### When to use which model size
 
-#### Model size, and when to use which
+A model's size is its number of parameters. The builders set it before training by choosing the columns per row, the number of layers, and the width of each layer.
 
-A model's **size** is how many learned numbers (**parameters**) it has. The builders set it before training by choosing how many columns each token's row has, how many layers there are, and how wide each layer is (how many numbers it works with inside).
-
-| | Smaller model (Haiku) | Middle model (Sonnet) | Larger model (Opus) |
+| | Haiku (smallest) | Sonnet (middle) | Opus (largest) |
 |---|---|---|---|
 | Speed and cost | Fastest, cheapest | Balanced | Slowest, most expensive |
-| Skill on hard tasks | Lowest | Good | Highest |
-| Use it when | A simple task runs many times, such as sorting 10,000 support emails into five categories | Most everyday work | A hard task where mistakes are costly, such as finding security risks in a design |
+| Use it when | A simple task runs many times, such as sorting 10,000 support emails | Most everyday work | A hard task where mistakes are costly |
 
-Before paying for a bigger model, test whether the smallest one passes your test questions.
-
-#### Training compared with normal use
-
-| | Training | Normal use (*inference*) |
-|---|---|---|
-| When | Once, before release | On every request |
-| Where the text comes from | Books, websites, and other text | Your request |
-| The next token is | Hidden, so the guess can be checked | Unknown, so the model picks it |
-| Do the numbers change? | Yes, after every batch of sentences | **No. They are only read.** |
-| Does the model remember you? | — | No. It is stateless, so your app must resend earlier messages. |
+Test the smallest model first, and move up only if it fails your test questions.
 
 #### Exam takeaways
 
@@ -168,32 +102,25 @@ Before paying for a bigger model, test whether the smallest one passes your test
 - **A team gets different answers to the same prompt and wants consistent output.** The model picks each token from a set of chances, so some variety is normal. Lower the temperature, give clear examples, and check the output in code. Even at temperature 0, answers are not guaranteed identical. (Claude Models, Prompting & Context Engineering)
 - **A product manager asks why long prompts cost more and run slower.** Every input token goes through every layer, and attention looks back at every earlier token. Send only the text needed, and put fixed text at the start so prompt caching can reuse it. (Solution Design & Architecture)
 
-</details>
-
 ---
 
 ### The big picture
 
-#### Why this matters to you
+#### What a model does
 
-As an architect, you'll get these five questions. Each answer comes from one part of how the model works inside.
+A model is a big file of numbers, often billions, plus a fixed set of calculations that use them. Claude models run only on Anthropic's servers. You can't download them. A model does one thing in a loop: score every possible next token, pick one, add it, and repeat. Answering, writing code, and summarizing are all this one loop.
 
-1. **Why do I pay per token, not per message?** The model processes every token of your prompt, then writes its answer one token at a time. Every token goes through all of the model's layers. So a longer prompt or a longer answer means more work, and more cost. See [Part 2, step 1](#step-1-cut-the-text-into-tokens-tokenization).
-2. **Why are long prompts slow?** Before the model writes anything, each token in your prompt looks back at every token before it. A long prompt means a lot of looking back. Prompt caching helps when many requests start with the same text, such as the same instructions. The model saves its work on that shared start and reuses it next time. See [Part 2, step 3](#step-3-borrow-meaning-from-earlier-words-attention).
-3. **Why does the same question get different answers?** For each next word, the model works out a list of possible words, each with a chance. Then it picks one at random, using those chances. A setting called temperature controls how often it picks a less likely word. See [Part 2, step 5](#step-5-score-every-word-and-pick-one).
-4. **Does chatting with the model change it, or make it remember me?** No. Answering only reads the model's saved numbers and never changes them. If the model needs earlier messages, your app must send them again. See [Architect notes](#architect-notes-what-this-means-for-your-work).
-5. **Why can the model be wrong or out of date?** The model learned from patterns in its training text, and that text stops at a cutoff date. It has no built-in way to check facts. So give it current information in the prompt, and check important answers. See [Part 3](#part-3-how-the-model-learned-its-numbers-training).
-
-#### The whole story, before any details
-
-1. The model is mostly a huge set of numbers, saved on Anthropic's servers.
-2. Your message is cut into small pieces called tokens. Each piece becomes a row of numbers.
-3. Each piece borrows meaning from the pieces before it. That is how "bank" can mean a river bank in one sentence and a money bank in another.
-4. The model gives every word it knows a chance of coming next. It picks one, adds it to the answer, and repeats until the answer is done.
-5. None of this changes the numbers. The numbers were set earlier, in training.
-6. Training set them by showing the model billions of sentences with the next word hidden. After each guess, it nudged all the numbers a little toward a better guess.
-
-#### From your question to the answer
+```csharp
+// A sketch of the idea, not real model code
+var tokens = Tokenize("The cat sat on the mat because it");
+while (tokens.Count < maxTokens)
+{
+    double[] chances = model.ScoreNextToken(tokens);  // a chance for every token in the vocabulary
+    int next = Pick(chances, temperature);            // pick one at random, using the chances
+    if (next == EndToken) break;                      // the model decided the answer is done
+    tokens.Add(next);
+}
+```
 
 ```mermaid
 flowchart TD
@@ -201,8 +128,7 @@ flowchart TD
     subgraph Model["Inside the model, on Anthropic's servers"]
         T[1. Cut the text into tokens<br/>and find each token ID] --> E[2. Look up each token's row<br/>in the embedding table]
         E --> L1[Layer 1<br/>its own attention and feed-forward weights]
-        L1 --> L2[Layer 2<br/>its own weights]
-        L2 --> LN[... dozens more layers,<br/>each with its own weights ...]
+        L1 --> LN[... dozens more layers,<br/>each with its own weights ...]
         LN --> S[3. Score every token in the vocabulary<br/>and pick one]
         S -->|answer not done:<br/>add the token and run again| E
     end
@@ -215,112 +141,32 @@ Things to notice:
 - The loop runs once for every token in the answer. A 300-token answer means 300 trips through all the layers.
 - Everything inside the box only reads the saved numbers. Your question never changes the model.
 
-#### The example used throughout
+#### The running example and who's who
 
-```text
-The cat sat on the mat because it was comfortable.
-```
+The whole page uses one sentence: "The cat sat on the mat because it was comfortable." In Part 2, the model has read up to "it" and must guess "was". In Part 3, training uses the same sentence to improve that guess. Real models use thousands of numbers per token, but this example uses three. The numbers are made up, but each result follows from the ones before, so you can check any step on a calculator.
 
-| Where | What the example does |
-|---|---|
-| Part 2 | The model has read "The cat sat on the mat because it" and must guess the next token. The right answer is "was". |
-| Part 3 | Training uses the same sentence to improve that guess. |
-| The numbers | Real models have thousands of numbers per token, so the example uses only three. The numbers are made up, but each result is calculated from the ones before it, so you can redo any step on a calculator. |
-
-#### Who's who
-
-| Who | Where they are | What they do |
+| Who | Where | What they do |
 |---|---|---|
-| The builders (people at Anthropic) | Before training | Choose the sizes, such as how many columns each token's row has and how many layers the model has |
+| The builders (people at Anthropic) | Before training | Choose the sizes, such as columns per row and number of layers |
 | The training process | Anthropic's computers, before release | Hides the next token, checks the guess, and adjusts the numbers |
 | The model | Anthropic's servers | The saved numbers, plus the calculations that use them |
 | You and your app | Your computer and server | Send text and get the answer. You never change the model. |
 
----
-
-### What a model is
-
-#### What a model is and what it does
-
-A model is a big file of numbers, often billions of them, plus a fixed set of calculations that use those numbers. Claude models run only on Anthropic's servers. You can't download them, and your app reaches them through the API.
-
-A model does one thing, over and over:
-
-1. Take the text so far.
-2. Give every possible next token a chance.
-3. Pick one token, using those chances.
-4. Add it to the text, and go back to step 1.
-
-Answering a question, writing code, and summarizing a document are all this one loop. An answer is simply the text most likely to come after your question.
-
-```csharp
-// A sketch of the idea, not real model code
-var tokens = Tokenize("The cat sat on the mat because it");
-while (tokens.Count < maxTokens)
-{
-    double[] chances = model.ScoreNextToken(tokens);  // a chance for every token in the vocabulary
-    int next = Pick(chances, temperature);            // pick one at random, using the chances
-    if (next == EndToken) break;                      // the model decided the answer is done
-    tokens.Add(next);                                 // add it, then loop again
-}
-```
-
-Part 1 shows what is saved inside the model. Part 2 shows what happens inside `ScoreNextToken` and `Pick`. Part 3 shows how training produced the numbers.
-
 #### Why some models are larger than others
 
-A model's **size** is how many learned numbers (*parameters*) it has. The builders set the size before training by choosing three things:
+A model's **size** is its number of **parameters** (learned numbers). Before training, the builders choose how many columns each token's row has, how many layers there are, and how wide each layer is inside. More of each means more numbers. A larger model is usually smarter on hard tasks, because it has room for more patterns. It is also slower and costs more per token, because every token passes through all its numbers.
 
-| Choice | What it means |
-|---|---|
-| Columns per token's row | How many numbers each token's row in the embedding table has |
-| Number of layers | How many rounds of work every token goes through (Part 2, step 4) |
-| Width of each layer | How many numbers a layer works with inside. For example, the feed-forward step makes each token's row about four times wider for a moment. |
-
-More of each means more numbers.
-
-| A larger model… | Because… |
-|---|---|
-| Is usually smarter on hard tasks, such as long reasoning or tricky code | It has more room to store patterns and facts |
-| Is slower and costs more per token | Every token has to pass through all of its numbers |
-| Costs much more to train | There are more numbers to adjust, on more text |
-
-That is why providers offer a family of models. Anthropic doesn't publish its model sizes. It describes Haiku as its fastest and cheapest model, Opus as its smartest, and Sonnet as the balance between them.
-
-| | Smaller model (Haiku) | Middle model (Sonnet) | Larger model (Opus) |
-|---|---|---|---|
-| Speed and cost | Fastest, cheapest | Balanced | Slowest, most expensive |
-| Skill on hard tasks | Lowest | Good | Highest |
-| Use it when | A simple task runs many times, such as sorting 10,000 support emails into five categories | Most everyday work | A hard task where mistakes are costly, such as finding security risks in a system design |
-
-> [!TIP]
-> **Why you care:** before paying for a bigger model, test whether the smallest one passes your test questions.
-
-#### Other ways models differ
-
-| Difference | What it changes for you |
-|---|---|
-| Training text and cutoff date | What the model knows, and how recent that knowledge is |
-| Later training | How well it follows your instructions, and when it refuses |
-| Settings chosen when it was built, such as the context window size | How much text one request can hold |
+Anthropic doesn't publish its model sizes. It describes Haiku as fastest and cheapest, Opus as smartest, and Sonnet as the balance. The revision summary's table says when to use each. Models also differ in training text and cutoff date, in later training, and in context window size (how much text one request can hold).
 
 ---
 
 ### Part 1. What is saved inside the model
 
-*A computer can only do math on numbers, so the model needs a way to turn "cat" into numbers. Training saves three things for this.*
-
-| # | Thing | What it is | In .NET terms | Example |
-|:---:|---|---|---|---|
-| 1 | **Vocabulary** | Every token the model knows, each with a token ID | An `enum`, or a primary key | `cat` = 2207 |
-| 2 | **Embedding table** | One row of numbers for each token ID | `Dictionary<int, double[]>` | 2207 → `[0.30, 0.70, 0.50]` |
-| 3 | **Weights** | All the other learned numbers, in many matrices | The business logic that works on the data | Wq, Wk, Wv in every layer (Part 2) |
-
-Every request reads these three things, but no request changes them.
+A computer can only do math on numbers, so the model needs a way to turn "cat" into numbers. Training saves three things for this: the vocabulary, the embedding table, and the weights.
 
 #### The vocabulary: from text to a token ID
 
-A fixed list of every token the model knows, each with its own token ID. A **token** is a small piece of text, such as a word, part of a word, or a symbol like "?". The IDs below are made up.
+The **vocabulary** is a fixed list of every token the model knows, each with its own token ID. The IDs below are made up.
 
 | Token | The | cat | sat | on | the | mat | because | it | was |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -328,32 +174,20 @@ A fixed list of every token the model knows, each with its own token ID. A **tok
 
 - Think of it as a huge `enum`, or a table where the token ID is the primary key.
 - "The" and "the" are different tokens, because one has a capital letter.
-- The vocabulary is built once, before training, from the most common pieces of text. It never changes after that.
+- The vocabulary is built once, before training, from the most common pieces of text.
 
-> [!WARNING]
-> A token ID is only a label. ID 2207 doesn't mean "animal", and 2207 and 2208 aren't similar words just because the numbers are close.
+**Warning:** A token ID is only a label. ID 2207 doesn't mean "animal", and 2207 and 2208 aren't similar words.
 
-#### What a row of numbers can describe
+#### The embedding table: from a token ID to a row of numbers
 
-Say you build a movie app in .NET and score each movie on three traits that you pick:
+Picture a movie app that scores each movie on three traits you pick:
 
 | Movie | Action | Comedy | Animation |
 |---|:---:|:---:|:---:|
 | Batman | 9 | 2 | 0 |
-| Superman | 8 | 3 | 0 |
-| Finding Nemo | 1 | 7 | 10 |
 | Toy Story | 2 | 8 | 10 |
 
-Each row describes one movie. Similar movies have similar rows, so your app can find "movies like Batman" by comparing rows.
-
-An embedding table works the same way, with two differences:
-
-1. Nobody names the columns.
-2. Nobody types the numbers. Training finds them (Part 3).
-
-#### The embedding table: from a token ID to a row of numbers
-
-A table with one row for every token ID. Each token's row is a list of numbers that describes what that token usually means. That row is called the token's **embedding**. Here each token's row has three numbers:
+Similar movies get similar rows, so the app can find "movies like Batman" by comparing rows. The **embedding table** works the same way, with two differences: nobody names the columns, and nobody types the numbers. Training finds them (Part 3). A token's row is called its **embedding**.
 
 | Token ID | Token | Number 1 | Number 2 | Number 3 |
 |---|---|:---:|:---:|:---:|
@@ -366,130 +200,55 @@ A table with one row for every token ID. Each token's row is a list of numbers t
 | 845 | because | 0.15 | 0.60 | 0.30 |
 | 340 | it | 0.40 | 0.30 | 0.70 |
 
-Finding a token's row is a direct lookup by token ID, in SQL or in C#:
+- Finding a row is a direct lookup by token ID, like `embedding[2207]` on a `Dictionary<int, double[]>`.
+- Every token's row has the same number of columns. The builders choose that number before training.
+- Real rows have hundreds or thousands of columns. The public model GPT-2 has 50,257 tokens with 768 columns each. Anthropic doesn't publish Claude's sizes.
+- No single column means "animal". A meaning is spread over many columns, so you compare whole rows.
+- One row of numbers is a **vector**. A whole grid of numbers is a **matrix**.
 
-```sql
-SELECT Number1, Number2, Number3 FROM Embedding WHERE TokenID = 2207;   -- cat → 0.30, 0.70, 0.50
-```
-
-```csharp
-Dictionary<int, double[]> embedding = LoadEmbeddingTable();   // saved inside the model
-double[] catRow = embedding[2207];                            // { 0.30, 0.70, 0.50 }
-```
-
-| Fact | Detail |
-|---|---|
-| Same columns for every token | Each token has its own row, and every token's row has the same number of columns. The builders choose that number before training, and it never changes. |
-| Real sizes | Hundreds or thousands of columns. The public model GPT-2 has 50,257 tokens with 768 columns each, about 38.6 million numbers in its embedding table alone. Anthropic doesn't publish Claude's sizes. |
-| What a column means | No single column means "animal" or "grammar". A meaning is spread over many columns, so you compare two tokens by their whole rows, never by one column. |
-| Words to know | One row of numbers is a **vector**. A whole grid of numbers is a **matrix**. |
-
-> [!WARNING]
-> The numbers in a token's row are **not** the IDs of other tokens. They describe this token and don't point anywhere else.
+**Warning:** The numbers in a row are **not** the IDs of other tokens. They describe this token only.
 
 #### The weights: everything else the model learned
 
-All the other numbers the model learned. If the embedding table is the data, the weights are the business logic that works on it. They are many matrices, each with its own job, and each layer has its own set.
-
-| Weight matrix | Its job | Where you see it |
-|---|---|---|
-| Wq, Wk, and Wv, in every layer | Make each token's Query, Key, and Value | Part 2, step 3 |
-| Wo and the feed-forward matrices, in every layer | Join the attention results, then work on each token's row | Part 2, step 4 |
-| The output matrix, once at the end | Give every token in the vocabulary a score | Part 2, step 5 |
-
-> [!NOTE]
-> A **parameter** is any number that training can change, including the embedding rows. A "70-billion-parameter model" has 70 billion learned numbers.
-
-#### How the weights use the embedding numbers
-
-Lesson 1 showed a simple version, with one weight per number:
-
-|  | Number 1 | Number 2 | Number 3 |
-|---|:---:|:---:|:---:|
-| Embedding numbers | 0.25 | 0.81 | 0.42 |
-| Example weights | 0.50 | 0.20 | 0.80 |
-| Multiplication result | 0.125 | 0.162 | 0.336 |
-
-That version is too simple, because the numbers never affect each other. In a real model, **each result adds up all the input numbers**, each times its own weight:
+If the embedding table is the data, the **weights** are the business logic that works on it. They are many matrices, and each layer has its own set. A weight matrix doesn't multiply each number by one weight. **Each result adds up all the input numbers**, each times its own weight:
 
 ```text
 result 1 = (number 1 × weight A) + (number 2 × weight B) + (number 3 × weight C)
 result 2 = (number 1 × weight D) + (number 2 × weight E) + (number 3 × weight F)
 ```
 
-| Weight | Effect |
-|---|---|
-| A big weight | Makes its input count more in that result |
-| A negative weight | Makes its input count against the result |
-| Any weight | Never "picks" a number. Every result mixes every input, so the model can combine information from all the columns. |
+A big weight makes its input count more, and a negative weight makes it count against the result. No weight "picks" a number, so every result mixes information from every column.
 
-#### What is saved, and what is not
+| Weight matrix | Its job | Where you see it |
+|---|---|---|
+| Wq, Wk, Wv, in every layer | Make each token's Query, Key, and Value | Part 2, step 3 |
+| Wo and the feed-forward matrices, in every layer | Join the attention results, then work on each row | Part 2, step 4 |
+| The output matrix, once at the end | Give every token in the vocabulary a score | Part 2, step 5 |
 
-| Saved inside the model | Not saved inside the model |
-|---|---|
-| The vocabulary | Your past chats. The model is stateless, so it doesn't remember you. |
-| The embedding table | A copy of the internet, or a database it can look facts up in |
-| The weights | Anything that happened after its training cutoff date |
-
-> **Remember this:** The vocabulary gives the token ID. The embedding table gives that token's row of numbers. The weights mix the numbers until the model can score the next token.
+> **Remember this:** The vocabulary gives the token ID. The embedding table gives that token's row. The weights mix the numbers until the model can score the next token.
 
 ---
 
 ### Part 2. How the model answers your message
 
-*This part follows the model as it reads "The cat sat on the mat because it" and works out the next token. Every step only reads the saved numbers from Part 1.*
-
-The seven steps:
-
-```text
-1 Tokens → 2 Rows → 3 Attention → 4 Rest of the layer → 5 Score & pick → 6 Repeat → 7 Text out
-```
+This part follows the model as it reads "The cat sat on the mat because it" and works out the next token. Every step only reads the saved numbers from Part 1.
 
 #### Step 1: cut the text into tokens (tokenization)
 
-**[1 Tokens]** → 2 Rows → 3 Attention → 4 Rest of the layer → 5 Score & pick → 6 Repeat → 7 Text out
-
-*The model can't read letters, so it turns your text into numbers first.*
-
 ```text
 In:   "The cat sat on the mat because it"
-Out:  int[] ids = { 101, 2207, 310, 415, 102, 520, 845, 340 };   // 8 token IDs
+Out:  { 101, 2207, 310, 415, 102, 520, 845, 340 }   // 8 token IDs
 ```
 
-> [!TIP]
-> **Why you care:** the API bills by token, not by word. A long or rare word often becomes several tokens.
+The API bills by token, not by word. A long or rare word often becomes several tokens.
 
 #### Step 2: look up each token's row (embedding)
 
-1 Tokens → **[2 Rows]** → 3 Attention → 4 Rest of the layer → 5 Score & pick → 6 Repeat → 7 Text out
+The model copies each token's saved row, such as "it" → `[0.40, 0.30, 0.70]`. It also adds each token's position into its numbers. Without position, "dog bites man" and "man bites dog" would look identical.
 
-*The model needs numbers that describe each token, and they are already saved in the embedding table.*
-
-```csharp
-double[] itRow = embedding[340];   // "it" → { 0.40, 0.30, 0.70 }, a working copy of its saved row
-```
-
-The model also adds each token's position (1st word, 2nd word, and so on) into its numbers. Without this, word order would be lost:
-
-```text
-"dog bites man"  vs  "man bites dog"
-Without position:  the same three rows, so the two sentences look identical
-With position:     "dog" as word 1 and "dog" as word 3 get different numbers
-```
-
-> [!NOTE]
-> The saved row for "it" is the same in every sentence, for every user. That's a problem, because "it" means something different each time. Step 3 fixes this.
+The saved row for "it" is the same in every sentence. That is a problem, because "it" means something different each time. Step 3 fixes this.
 
 #### Step 3: borrow meaning from earlier words (attention)
-
-1 Tokens → 2 Rows → **[3 Attention]** → 4 Rest of the layer → 5 Score & pick → 6 Repeat → 7 Text out
-
-*The row for "it" can't say what "it" refers to, so "it" collects meaning from the words before it.*
-
-```text
-In:   the row of "it"            [0.40, 0.30, 0.70]
-Out:  a new row for "it"         [0.855, 0.622, 1.144]   // now holds some meaning from "mat", "sat", and the rest
-```
 
 Each token makes three new rows from its own row:
 
@@ -499,125 +258,37 @@ Each token makes three new rows from its own row:
 | **Key** | What this token offers to others | The column the search is matched against |
 | **Value** | The information this token hands over | The data you get back |
 
-There is one big difference from SQL. SQL returns only the rows that match. Attention gives **every** earlier token a percentage, then adds up a little of each token's Value:
+Unlike SQL, attention doesn't return only matches. It gives **every** earlier token a percentage, then adds up a little of each Value.
 
-```sql
--- Not real SQL. This only shows the idea: no WHERE filter, every earlier token counts a little.
-SELECT SUM(MatchPercent * Value)
-FROM EarlierTokens;
-```
-
-Attention has five small steps, 3a to 3e.
-
-##### 3a. Make the Query for "it" (matrix multiplication)
-
-```text
-In:   row of "it"    [0.40, 0.30, 0.70]
-Work: × Wq           (a weight matrix that training learned)
-Out:  Query of "it"  [1.10, 0.65]
-```
-
-Wq has one row for each of the 3 embedding numbers, and one column for each Query number:
+**3a. Make the Query for "it".** Multiply the row of "it" by Wq. Each Query number adds up every row number times its weight (this is *matrix multiplication*):
 
 | Wq | Query number 1 | Query number 2 |
 |---|:---:|:---:|
-| From embedding number 1 | 1.0 | 0.0 |
-| From embedding number 2 | 0.0 | 1.0 |
-| From embedding number 3 | 1.0 | 0.5 |
+| From number 1 | 1.0 | 0.0 |
+| From number 2 | 0.0 | 1.0 |
+| From number 3 | 1.0 | 0.5 |
 
 ```text
 Query number 1 = 0.40 × 1.0 + 0.30 × 0.0 + 0.70 × 1.0 = 1.10
 Query number 2 = 0.40 × 0.0 + 0.30 × 1.0 + 0.70 × 0.5 = 0.65
 ```
 
-That is all "matrix multiplication" means: for each result, multiply every input by its weight and add them up.
+**3b. Make a Key for every earlier token.** Each row is multiplied by the same Wk. For example, "mat" `[0.80, 0.10, 0.40]` becomes the Key `[1.55, 0.25]`. All tokens in one layer share Wq, Wk, and Wv, like one C# method called on every row. Each token still gets its own Query, Key, and Value, because it starts from its own row. Each layer has its own three matrices.
 
-<details>
-<summary>Show the same math in C#</summary>
-
-```csharp
-double[] Multiply(double[] row, double[,] W)
-{
-    var result = new double[W.GetLength(1)];
-    for (int col = 0; col < W.GetLength(1); col++)   // for each result number
-        for (int i = 0; i < row.Length; i++)         // use every input number
-            result[col] += row[i] * W[i, col];       // times its own weight
-    return result;
-}
-// Multiply(itRow, Wq) returns { 1.10, 0.65 }
-```
-
-</details>
-
-##### 3b. Make a Key for every earlier token
+**3c. Score each match with a dot product.** Multiply number by number, then add. Bigger means a better match.
 
 ```text
-In:   every token's row     e.g. "mat" [0.80, 0.10, 0.40]
-Work: × Wk                  (the same Wk for every token)
-Out:  every token's Key     e.g. "mat" [1.55, 0.25]
-```
-
-<details>
-<summary>Show the math</summary>
-
-| Wk | Key number 1 | Key number 2 |
-|---|:---:|:---:|
-| From embedding number 1 | 2.0 | 0.5 |
-| From embedding number 2 | −0.5 | 0.5 |
-| From embedding number 3 | 0.0 | −0.5 |
-
-```text
-Key number 1 = 0.80 × 2.0 + 0.10 × −0.5 + 0.40 × 0.0  = 1.55
-Key number 2 = 0.80 × 0.5 + 0.10 × 0.5  + 0.40 × −0.5 = 0.25
-```
-
-</details>
-
-> [!IMPORTANT]
-> **Your question: does every token have its own Wq, Wk, and Wv?** No. Each token has its own row, so it gets its own Query, Key, and Value. But all tokens in one layer use the same three matrices, like calling one C# method on every row of a table. That is why their Queries and Keys can be compared. Each layer has its own three.
-
-> [!WARNING]
-> "It" can see "The cat sat on the mat because it", including itself. It can't see "was comfortable", because those words don't exist yet while the model is writing. Hiding later words like this is called *causal masking*.
-
-##### 3c. Score each match (dot product)
-
-```text
-In:   Query of "it" [1.10, 0.65]  and each earlier token's Key
-Work: multiply number by number, then add (a dot product)
-Out:  one match score per earlier token. Bigger means a better match.
-
 "it" with "mat":  1.10 × 1.55 + 0.65 × 0.25 = 1.868
 "it" with "cat":  1.10 × 0.25 + 0.65 × 0.25 = 0.438
 ```
 
-> [!NOTE]
-> The model then divides each score by the square root of how many numbers each Key has. Here each Key has 2 numbers, so it divides by √2, about 1.414. This stops the scores from getting too big when Keys have thousands of numbers.
+The model then divides each score by the square root of the Key length (here √2, about 1.414). This stops scores from getting too big when Keys have thousands of numbers.
 
-##### 3d. Turn scores into percentages (softmax)
+**3d. Turn scores into percentages with softmax.** **Softmax** raises *e* (about 2.718) to the power of each score, then divides each result by the total. Every result becomes positive, and bigger scores pull further ahead.
 
 ```text
-In:   the match scores
-Work: softmax
-Out:  mat 26.8%   sat 16.8%   it 11.8%   the 10.2%   cat 9.7%   The 9.4%   because 7.9%   on 7.4%   (total 100%)
+mat 26.8%   sat 16.8%   it 11.8%   the 10.2%   cat 9.7%   The 9.4%   because 7.9%   on 7.4%   (total 100%)
 ```
-
-"Mat" gets the most attention.
-
-> [!NOTE]
-> **Softmax in one minute.** Softmax turns any list of scores into percentages that add up to 100%. It does two things:
-> 1. It raises the number *e* (about 2.718) to the power of each score. This makes every result positive and pushes bigger scores further ahead.
-> 2. It divides each result by the total of all of them.
->
-> ```csharp
-> double[] Softmax(double[] scores)
-> {
->     var powers = scores.Select(Math.Exp).ToArray();   // e to the power of each score
->     double total = powers.Sum();
->     return powers.Select(p => p / total).ToArray();   // each one's share of the total
-> }
-> ```
->
-> The model uses softmax twice: here for attention, and again in step 5 to pick the next word.
 
 <details>
 <summary>Show the full softmax table</summary>
@@ -636,16 +307,9 @@ Out:  mat 26.8%   sat 16.8%   it 11.8%   the 10.2%   cat 9.7%   The 9.4%   becau
 
 </details>
 
-> [!IMPORTANT]
-> **Your question: how did the model know "mat" should score highest?** It didn't know. Nobody wrote a rule that "it" means "mat". Training tuned Wq, Wk, and the tokens' rows in the embedding table so the scores help guess the next token. In this sentence, "it" could also mean the cat. Attention doesn't have to decide. It only collects what helps the next guess.
+How did the model know "mat" should score highest? It didn't. Nobody wrote a rule that "it" means "mat". Training tuned Wq, Wk, and the embedding rows so the scores help guess the next token.
 
-##### 3e. Blend the Values into "it"
-
-```text
-In:   each earlier token's Value, and its percentage
-Work: multiply each Value by its percentage, add them all up, then add the blend to the row of "it"
-Out:  the working row of "it" in this sentence
-```
+**3e. Blend the Values into "it".** Multiply each Value by its percentage and add them up. To keep the example short, each Value here equals the token's embedding row. A real Wv mixes the numbers like Wq does.
 
 | | Number 1 | Number 2 | Number 3 |
 |---|:---:|:---:|:---:|
@@ -653,145 +317,63 @@ Out:  the working row of "it" in this sentence
 | + Blend from attention | 0.455 | 0.322 | 0.444 |
 | = Row of "it" in this sentence | **0.855** | **0.622** | **1.144** |
 
-<details>
-<summary>Show the math</summary>
+The blend is **added**, not swapped in, so "it" keeps its own meaning and gains context (*residual connection*). Only this request's working copy changes. The saved row stays the same.
 
-To keep this short, the Wv here just copies each token's row. So each token's Value is the same as its row in the embedding table from Part 1. A real Wv mixes the numbers, just like Wq does in 3a.
-
-```text
-blend number 1 = 9.4% × 0.20 (The) + 9.7% × 0.30 (cat) + … + 26.8% × 0.80 (mat) + … = 0.455
-blend          = [0.455, 0.322, 0.444]
-```
-
-</details>
-
-> [!NOTE]
-> The saved row of "it" in the embedding table doesn't change. Only the working copy for this request now holds the meaning of this sentence. The blend is **added**, not swapped in, so "it" keeps its own meaning and gains context on top. This is called a *residual connection*.
+**Warning:** "It" can see "The cat sat on the mat because it", including itself. It can't see "was comfortable", because those words don't exist yet. Hiding later words is called *causal masking*.
 
 > **Remember this:** The Query asks. Each Key answers. Softmax turns the matches into percentages. The Values are what gets handed over.
 
 #### Step 4: the rest of each layer
 
-1 Tokens → 2 Rows → 3 Attention → **[4 Rest of the layer]** → 5 Score & pick → 6 Repeat → 7 Text out
-
-*Attention is only part of one layer, and a model has dozens of layers.*
-
-A **layer** is one round of work that every token's row goes through:
-
-```text
-In:   every token's row, from the layer before
-Work: attention (step 3), then the feed-forward step (below)
-Out:  every token's row, now holding a bit more meaning, sent to the next layer
-```
-
-The parts of one layer:
+A **layer** is one round of work that every token's row goes through. Attention is only one part of it.
 
 | Part | What happens | Why it is there |
 |---|---|---|
-| **Many heads** (*multi-head attention*) | Each layer runs many attentions side by side, each with its own Wq, Wk, and Wv. One more matrix, **Wo**, joins their results back into one row per token. | Different heads can track different links, such as what "it" refers to, or which word is the verb. Training decides what each head does. |
-| **Feed-forward** | Each token's row is made wider (often about four times), passed through a simple rule that turns negative numbers into zero (or close to zero), then made narrow again. | Attention moves information between tokens. This step works on what each token now holds. Much of the model's knowledge is stored here. |
-| **Normalization** | The model rescales each token's working row so its numbers stay in a steady range. | Without it, the numbers could grow or shrink too much over many layers. |
+| **Many heads** (*multi-head attention*) | Many attentions run side by side, each with its own Wq, Wk, and Wv. One more matrix, **Wo**, joins their results into one row per token. | Different heads can track different links, such as what "it" refers to |
+| **Feed-forward** | Each row is made about four times wider, negative numbers are turned to zero or near zero, and the row is made narrow again | Attention moves information between tokens. This step works on what each token now holds. Much of the model's knowledge is stored here. |
+| **Normalization** | Each row is rescaled so its numbers stay in a steady range | Without it, numbers could grow or shrink too much over many layers |
 
-The layers run one after another, like ASP.NET Core middleware. Each piece takes the request, changes it, and hands it to the next piece:
+The layers run one after another, like ASP.NET Core middleware. A simplified picture of what the row for "it" holds:
 
-```csharp
-// A sketch: the layers as a pipeline
-foreach (var layer in model.Layers)   // dozens of layers, each with its own fixed weights
-    rows = layer.Process(rows);       // attention, then feed-forward
-```
-
-What the layers do for "it", in a simplified picture:
-
-| After… | What the row of "it" now holds (simplified) |
+| After… | The row of "it" holds (simplified) |
 |---|---|
-| The embedding lookup | Only the usual meaning of "it": a word that stands for a thing |
-| The early layers | Facts about nearby words. For example, "it" comes right after "because", so a reason is starting. |
-| The middle layers | Links to earlier words. For example, "it" probably means the mat or the cat. |
-| The late layers | What should come next. For example, after "because it", a verb like "was" or "is" is likely. |
-| The last layer | A row for "it" that is ready to be scored, and that gives "was" the highest chance |
+| The embedding lookup | Only the usual meaning: a word that stands for a thing |
+| Early layers | Facts about nearby words, such as "a reason is starting after 'because'" |
+| Middle layers | Links to earlier words: "it" probably means the mat or the cat |
+| Late layers | What should come next: a verb like "was" or "is" |
 
-> [!NOTE]
-> Nobody gives each layer a job. Training decides what each layer does, so the table above is a simplified picture. The point is that one layer combines meaning only once, and understanding a sentence takes many rounds.
-
-> [!WARNING]
-> Every token goes through the same layers, but each token can only use the tokens before it. "Cat" is the second word, so it can only look at "The" and itself. It never sees "mat" or "it", because those words come later.
-
-| | What it means |
-|---|---|
-| How many layers a model has | The builders choose this before training, and it never changes. GPT-2, a small public model from 2019, has 12 layers with 12 heads each and about 124 million weights. Today's large models have many more. |
-| What more layers give you | More rounds to combine meaning, and more weights to store patterns. So the model is usually smarter. |
-| What more layers cost you | Every token goes through every layer. Each extra layer adds math for every token, so the model gets slower and more expensive. |
+Nobody gives each layer a job. Training decides that. The builders choose the number of layers before training. GPT-2, a small public model from 2019, has 12 layers with 12 heads each. More layers usually make a model smarter, but every token goes through every layer, so each one adds cost and time.
 
 #### Step 5: score every word and pick one
 
-1 Tokens → 2 Rows → 3 Attention → 4 Rest of the layer → **[5 Score & pick]** → 6 Repeat → 7 Text out
-
-*After the last layer, the model turns the final row of "it" into a choice of next token.*
-
-##### 5a. Score every token in the vocabulary (logits)
-
-```text
-In:   final row of "it"   [0.855, 0.622, 1.144]
-Work: × the output matrix (one column per token in the vocabulary)
-Out:  one score per token, called a logit
-      was 2.966   is 1.930   sat 1.729   cat 1.136   mat 1.038
-```
-
-<details>
-<summary>Show the math</summary>
-
-This example's vocabulary has only five tokens.
-
-| Output matrix | was | is | sat | cat | mat |
-|---|:---:|:---:|:---:|:---:|:---:|
-| From number 1 | **1.5** | 0.8 | 0.6 | 0.2 | 0.4 |
-| From number 2 | 0.5 | 0.9 | 0.3 | 1.0 | 0.2 |
-| From number 3 | 1.2 | 0.6 | 0.9 | 0.3 | 0.5 |
+The output matrix turns the final row of "it" `[0.855, 0.622, 1.144]` into one score per vocabulary token, called a **logit**. For example, "was" uses the weights 1.5, 0.5, and 1.2:
 
 ```text
 logit for "was" = 0.855 × 1.5 + 0.622 × 0.5 + 1.144 × 1.2 = 2.966
 ```
 
-</details>
-
-> [!NOTE]
-> Remember the weight **1.5** that connects number 1 to "was". Part 3 uses that exact weight to show how training works.
-
-##### 5b. Turn scores into chances (softmax)
-
-This is the same softmax as in [step 3d](#3d-turn-scores-into-percentages-softmax), now used on the logits.
+Part 3 uses that weight of **1.5** to show how training works. Softmax then turns the logits into chances:
 
 | Token | was | is | sat | cat | mat |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Logit | 2.966 | 1.930 | 1.729 | 1.136 | 1.038 |
 | Chance | **51.3%** | 18.2% | 14.9% | 8.2% | 7.5% |
 
-##### 5c. Pick one token (temperature)
+The model picks one token at random, using these chances. Before softmax, it divides every logit by the **temperature**:
 
-The model picks one token at random, using the chances, so "was" is picked about half the time. Before softmax, the model divides every logit by the **temperature**:
-
-| Temperature | was | is | sat | cat | mat | Effect |
+| Temperature | was | is | sat | cat | mat | Use it when |
 |:---:|:---:|:---:|:---:|:---:|:---:|---|
-| 0.5 | 79.5% | 10.0% | 6.7% | 2.0% | 1.7% | The top token wins more often, so answers are more predictable |
-| 1.0 | 51.3% | 18.2% | 14.9% | 8.2% | 7.5% | The chances as calculated |
-| 1.5 | 39.8% | 20.0% | 17.5% | 11.8% | 11.0% | Other tokens get more chances, so answers vary more |
+| 0.5 | 79.5% | 10.0% | 6.7% | 2.0% | 1.7% | You want predictable output, such as sorting or JSON |
+| 1.0 | 51.3% | 18.2% | 14.9% | 8.2% | 7.5% | You want the chances as calculated |
+| 1.5 | 39.8% | 20.0% | 17.5% | 11.8% | 11.0% | You want varied, creative output |
 
-Other ways to pick, which you'll see in documentation:
+Other picking methods you may see: **greedy** always takes the top token, **top-k** picks from the k most likely tokens, and **top-p** picks from the top tokens whose chances add up to p.
 
-| Method | How it picks |
-|---|---|
-| **Greedy** | Always the top token. The text can get dull. |
-| **Top-k** | Keeps only the k most likely tokens, such as 40, and picks from those |
-| **Top-p** | Keeps the top tokens whose chances add up to p, such as 90%, and picks from those |
+**Warning:** Even at temperature 0, Anthropic doesn't promise identical answers. For output your code must parse, such as JSON, also validate it in code. [Lesson 6](06-temperature.md) covers the temperature setting.
 
-> [!WARNING]
-> A low temperature makes answers more consistent, but not identical. Even at temperature 0, Anthropic doesn't promise the same answer every time. For output your code must parse, such as JSON, also validate it in code. [Lesson 6](06-temperature.md) covers the Claude API's temperature setting.
+#### Step 6: repeat, then send the text back
 
-#### Step 6: repeat until the answer is done
-
-1 Tokens → 2 Rows → 3 Attention → 4 Rest of the layer → 5 Score & pick → **[6 Repeat]** → 7 Text out
-
-*One pass gives one token. The answer needs many.*
+One pass gives one token. The model adds it and runs again, until it stops:
 
 ```text
 Round 1:  "...because it"           → picks "was"
@@ -800,224 +382,28 @@ Round 3:  "...it was comfortable"   → picks "."
 Round 4:  "...comfortable."         → picks the end token, so it stops
 ```
 
-| When the model stops | What it means |
-|---|---|
-| It picks a special end token | The model decided the answer is complete |
-| It reaches `max_tokens` | The most tokens you allowed in the answer. The answer may be cut off. |
-| It writes a stop sequence | Text you chose in the request that makes the model stop |
-
-Each new token goes through steps 2 to 5, looking back at everything before it.
-
-> [!TIP]
-> **Why you care:** the model saves the Keys and Values it already made for earlier tokens, so each round it only makes them for the new token. This saved work is called the *KV cache*. Prompt caching builds on the same idea across requests.
-
-#### Step 7: turn token IDs back into text
-
-1 Tokens → 2 Rows → 3 Attention → 4 Rest of the layer → 5 Score & pick → 6 Repeat → **[7 Text out]**
-
-*The model works in token IDs, but your app needs text.*
-
-```text
-In:   picked token IDs   { 371, 4012, 13 }
-Work: look each ID up in the same vocabulary
-Out:  " was comfortable."
-```
+The model saves the Keys and Values it already made, so each round it only makes them for the new token. This saved work is the *KV cache*. Prompt caching uses the same idea across requests. When it stops, the model turns the token IDs back into text with the same vocabulary.
 
 | Your app receives | What it is |
 |---|---|
-| The text | Sent as it is made if you use streaming, so the user sees the answer appear word by word ([lesson 7](07-response-streaming.md)) |
-| `stop_reason` | Why the model stopped: end token, `max_tokens`, or a stop sequence ([lesson 1](01-accessing-the-api.md#5-when-the-model-stops-and-what-comes-back)) |
+| The text | Sent piece by piece if you use streaming ([lesson 7](07-response-streaming.md)) |
+| `stop_reason` | Why it stopped: the end token, `max_tokens` (your answer length limit, so the answer may be cut off), or a stop sequence (text you chose) ([lesson 1](01-accessing-the-api.md#5-when-the-model-stops-and-what-comes-back)) |
 | `usage` | How many input and output tokens were used, which is what you pay for |
-
-#### What changed during this request
-
-| Part of the model | When it is decided | Did your request change it? |
-|---|---|---|
-| The vocabulary and every token ID | Before training | No |
-| How many columns each token's row in the embedding table has | Before training | No |
-| How many layers the model has | Before training | No |
-| The embedding table | Learned in training | No |
-| Each layer's own Wq, Wk, Wv, Wo, and feed-forward matrices | Learned in training, separately for each layer | No. They change only if the model is trained again, which makes a new model version. |
-| The working copy of each token's row, as it moves through the layers | Made fresh for every request | Yes. It was made for your request and is thrown away after. |
 
 ---
 
 ### Part 3. How the model learned its numbers (training)
 
-*Part 2 used numbers like Wq, Wk, and the output weight 1.5 as if they were just there. This part shows where they came from.*
+Part 2 used numbers like Wq and the output weight 1.5 as if they were just there. This part shows where they came from.
 
 #### What training is
 
-Training is how a model gets its numbers.
-
-```text
-Before training:  the shape is set (vocabulary, columns per row, number of layers),
-                  but every number is random, so the model writes nonsense
-Training:         a long run of practice that adjusts every number a little at a time
-After training:   the numbers are fixed, and the model writes useful text
-```
-
-Anthropic trains each model on thousands of special computer chips for weeks or months. This is very expensive, so it happens once for each model version. A newer model, such as a newer Sonnet, comes from a new training run.
-
-Training has two stages:
+Before training, the shape is set (vocabulary, columns per row, number of layers), but every number is random. The model writes nonsense. **Training** is a long run of practice that adjusts every number a little at a time. Anthropic trains each model on thousands of special chips for weeks or months, once per model version. A newer model comes from a new training run.
 
 | Stage | What the model practises | What it learns |
 |---|---|---|
-| 1. **Pre-training** | Guessing the next word on a huge amount of text from books, websites, and other sources | Language and facts about the world. At this stage it can only continue text, not answer like an assistant. |
-| 2. **Later training** | Examples of good answers, feedback from people, and a written set of rules called *Constitutional AI* | To follow instructions, be helpful, and refuse harmful requests |
-
-What training does to the model:
-
-| | Before training | After training |
-|---|---|---|
-| The numbers | Random | Tuned by billions of small fixes |
-| The rows for "cat" and "kitten" in the embedding table | Unrelated | Similar, because both words appear in similar sentences |
-| Given "The cat sat on the" | Guesses a random token | Gives "mat" a high chance |
-| Given "Summarize this email" | Just keeps writing more text | Writes a summary, after later training |
-
-The steps below show exactly how one of those small fixes works, with real numbers. The training loop:
-
-```text
-1 Start random → 2 Hide a word → 3 Loss → 4 Gradient → 5 Backpropagation → 6 Update → back to 2
-```
-
-#### Step 1: every number starts random
-
-**[1 Start random]** → 2 Hide a word → 3 Loss → 4 Gradient → 5 Backpropagation → 6 Update
-
-```text
-Before training, every token's row in the embedding table and every weight matrix holds small random numbers:
-cat  [ 0.25, −0.31,  0.42]
-mat  [−0.15,  0.75, −0.21]
-```
-
-| Fact | Detail |
-|---|---|
-| Range | The starting numbers can be negative, and they don't have to be between 0 and 1 |
-| Meaning | None yet. "Cat" is no closer to "kitten" than to "refrigerator". |
-| Output | Ask an untrained model to continue "The cat sat on the mat because it", and it might say "refrigerator" |
-
-#### Step 2: practise with a hidden word
-
-1 Start random → **[2 Hide a word]** → 3 Loss → 4 Gradient → 5 Backpropagation → 6 Update
-
-The training process shows the model the start of a sentence and keeps the next token as the answer. One sentence gives one practice question per token:
-
-| The model is shown | The hidden answer |
-|---|---|
-| The | cat |
-| The cat | sat |
-| The cat sat | on |
-| … | … |
-| The cat sat on the mat because it | **was** |
-
-- The answer comes from the sentence itself, so nobody has to label anything. This is called *self-supervised learning*.
-- The model never searches Wikipedia or the internet to check. The training process already has the answer.
-
-> [!IMPORTANT]
-> **Your question: why ask the model to guess a word the sentence already has?** Because the model only sees the words before it. The training process keeps the hidden word as the answer key. Practising like this on billions of sentences teaches the model to guess new text well.
-
-#### Step 3: measure how wrong the guess was (loss)
-
-1 Start random → 2 Hide a word → **[3 Loss]** → 4 Gradient → 5 Backpropagation → 6 Update
-
-```text
-In:   the model's guess (from Part 2): "was" got 51.3%
-Work: loss = −ln(chance of the right token)        // ln is the natural log button on a calculator
-Out:  loss = −ln(0.513) = 0.668
-```
-
-| Chance given to the right token | Loss | What it means |
-|:---:|:---:|---|
-| 10% | 2.30 | Very wrong |
-| 50% | 0.69 | Unsure |
-| **51.3%** ("was") | **0.668** | Unsure |
-| 90% | 0.11 | Mostly right |
-| 99% | 0.01 | Almost perfect |
-
-The goal of training is the lowest possible average loss over all the training text.
-
-> [!IMPORTANT]
-> **Your question: how does the model know "the cat sat on the mat" is more likely than "the dog sat on the mat"?** It doesn't know what is true. It learned what was common in its training text. If "mat" often came after "sat on the", training pushed the numbers to give "mat" a high chance there.
-
-#### Step 4: find which way to move a number (the gradient)
-
-1 Start random → 2 Hide a word → 3 Loss → **[4 Gradient]** → 5 Backpropagation → 6 Update
-
-*To make the next guess better, training must change the numbers. First it needs to know which way to move each one.*
-
-Let's follow the 1.5 weight from Part 2, step 5a. It helped make the score for "was". Make it 0.01 bigger and run the guess again:
-
-| | Weight | Loss |
-|---|:---:|:---:|
-| Before | 1.50 | 0.6684 |
-| 0.01 bigger | 1.51 | 0.6642 |
-
-```text
-The loss went down by 0.0042 when the weight went up by 0.01.
-0.0042 ÷ 0.01 = 0.42, so the loss falls about 0.42 for every 1 the weight grows.
-Gradient = −0.42
-```
-
-| Gradient | What it means | So the number should |
-|:---:|---|---|
-| Positive | Bigger makes the loss worse | Get smaller |
-| Negative | Bigger makes the loss better | Get bigger |
-| Zero | This number didn't affect the guess | Stay the same |
-
-#### Step 5: get every gradient at once (backpropagation)
-
-1 Start random → 2 Hide a word → 3 Loss → 4 Gradient → **[5 Backpropagation]** → 6 Update
-
-*Testing one number at a time would take billions of reruns. Backpropagation gets every gradient in one pass.*
-
-```text
-In:   the loss
-Work: go backward through every step of Part 2: from the scores, through every layer, into the embedding rows
-Out:  a gradient for every number in the model
-```
-
-<details>
-<summary>Show the math for the 1.5 weight</summary>
-
-```text
-gradient = (the input this weight multiplies) × (chance of "was" − 1)
-         = 0.855 × (0.513 − 1)
-         = −0.417
-```
-
-That matches the −0.42 from step 4, without any reruns.
-
-</details>
-
-> [!WARNING]
-> Backpropagation only calculates. It doesn't change any number. Gradient descent, in step 6, makes the changes.
-
-#### Step 6: change every number a little (gradient descent)
-
-1 Start random → 2 Hide a word → 3 Loss → 4 Gradient → 5 Backpropagation → **[6 Update]**
-
-```text
-Rule:  new value = old value − (learning rate × gradient)
-
-       new value = 1.5 − (0.1 × −0.417)
-                 = 1.5 + 0.0417
-                 = 1.5417
-```
-
-The **learning rate** (here 0.1) is a small number that keeps each change small, so one sentence can't push the model too far.
-
-| | Weight | Chance of "was" | Loss |
-|---|:---:|:---:|:---:|
-| Before the update | 1.5000 | 51.3% | 0.668 |
-| After one update | 1.5417 | 52.1% | 0.651 |
-
-Taking away a negative gradient makes the number bigger, which matches the table in step 4. Training changes every number this way, not just this one.
-
-> [!IMPORTANT]
-> **Your question: what does gradient descent do with a gradient of −0.5?** It makes the number bigger: `old − (0.1 × −0.5) = old + 0.05`.
-
-The whole training loop, repeated billions of times:
+| 1. **Pre-training** | Guessing the next word on huge amounts of text from books, websites, and more | Language and facts. It can only continue text, not answer like an assistant. |
+| 2. **Later training** | Examples of good answers, feedback from people, and a written set of rules (*Constitutional AI*) | To follow instructions, be helpful, and refuse harmful requests |
 
 ```mermaid
 flowchart TD
@@ -1029,32 +415,51 @@ flowchart TD
     F --> A
 ```
 
-#### The embedding rows are trained the same way
+#### Step 1: practise with a hidden word
+
+The training process shows the model the start of a sentence and keeps the next token as the answer key. One sentence gives one practice question per token: "The" → cat, "The cat" → sat, and so on, up to "The cat sat on the mat because it" → **was**.
+
+- The answer comes from the sentence itself, so nobody labels anything (*self-supervised learning*).
+- The model never searches the internet to check. The training process already has the answer.
+- The model learns what is common, not what is true. If "mat" often follows "sat on the", training raises the chance of "mat" there.
+
+#### Step 2: measure how wrong the guess was (loss)
+
+**Loss** is one number for how wrong a guess was: −ln(chance given to the right token). "ln" is the natural log button on a calculator. "Was" got 51.3%, so the loss is −ln(0.513) = 0.668.
+
+| Chance given to the right token | 10% | 51.3% | 90% | 99% |
+|---|:---:|:---:|:---:|:---:|
+| Loss | 2.30 (very wrong) | 0.668 (unsure) | 0.11 (mostly right) | 0.01 (almost perfect) |
+
+The goal of training is the lowest average loss over all the training text.
+
+#### Step 3: find which way to move each number (gradient and backpropagation)
+
+Take the 1.5 weight from Part 2, step 5. Make it 0.01 bigger and run the guess again. The loss drops from 0.6684 to 0.6642. The loss falls about 0.42 for every 1 the weight grows, so its **gradient** is about −0.42.
+
+| Gradient | What it means | So the number should |
+|:---:|---|---|
+| Positive | Bigger makes the loss worse | Get smaller |
+| Negative | Bigger makes the loss better | Get bigger |
+| Zero | This number didn't affect the guess | Stay the same |
+
+Testing one number at a time would take billions of reruns. **Backpropagation** works backward once through every step of Part 2 and gets every gradient in one pass. For the 1.5 weight: `0.855 × (0.513 − 1) = −0.417`, which matches the test. Backpropagation only calculates. It changes nothing.
+
+#### Step 4: change every number a little (gradient descent)
+
+**Gradient descent** makes the change: `new value = old value − (learning rate × gradient)`.
 
 ```text
-Tokens in the sentence ("it", "mat", "cat", …):  their rows in the embedding table get gradients and change a little
-Tokens not in the sentence ("refrigerator"):     their rows stay exactly the same in this step
+new value = 1.5 − (0.1 × −0.417) = 1.5 + 0.0417 = 1.5417
 ```
 
-- This is how the random rows from step 1 slowly get meaning.
-- "Cat" and "kitten" appear in similar sentences, such as "I fed the ___". So their rows get pushed the same way, and after billions of steps they end up close.
-- Wq, Wk, Wv, Wo, the feed-forward matrices, and the output matrix are all trained in this same loop.
+The **learning rate** (here 0.1) is a small number that keeps each change small. After this one update, the chance of "was" rises from 51.3% to 52.1%, and the loss falls from 0.668 to 0.651. Training changes every number this way, not just this one.
 
-#### How real training is different from this example
+#### What else to know about training
 
-| In this example | In real training |
-|---|---|
-| One sentence, then an update | Many sentences at once (a *batch*), gradients averaged, then an update. This smooths out any one odd sentence. |
-| The plain update rule | Improved versions of gradient descent, such as *Adam*, which pick a step size for each number |
-| One update | A very long run of steps. Most text is read once or a few times. One full pass over all the text is an *epoch*. |
-| Next-word practice only | Followed by later training, which teaches the model to follow instructions and stay safe |
-
-#### Can one wrong sentence spoil what the model learned?
-
-Usually not. Say the model read "cats are animals" thousands of times, then read "The cat is a refrigerator" once. That one change is tiny, and it is averaged with many other sentences.
-
-> [!WARNING]
-> If wrong text appears many times, the model can learn it. That is why the quality of training text matters.
+- **Embedding rows are trained the same way.** Rows of tokens in the sentence change a little. Rows of other tokens, like "refrigerator", stay the same in that step. "Cat" and "kitten" appear in similar sentences, so their rows end up close.
+- **Real training uses batches.** The model reads many sentences at once (a *batch*), averages their gradients, then updates. Improved versions of gradient descent, such as *Adam*, choose a step size for each number. One full pass over all the text is an *epoch*.
+- **One wrong sentence changes almost nothing.** It is averaged with many other sentences. But wrong text repeated many times can be learned, so training-text quality matters.
 
 ---
 
@@ -1063,9 +468,8 @@ Usually not. Say the model read "cats are animals" thousands of times, then read
 | ❌ Wrong idea | ✅ What really happens |
 |---|---|
 | The numbers in a token's row are IDs of related words. | They describe the token itself. Token IDs only label tokens. |
-| Each weight multiplies one number, and a big weight picks that number. | Each result adds up all the inputs, each times its own weight. Nothing is picked. |
+| Each weight multiplies one number, and a big weight picks that number. | Each result adds up all the inputs, each times its own weight. |
 | Backpropagation changes the numbers. | Backpropagation only calculates. Gradient descent makes the changes. |
-| Only the weights are trained. The embedding table stays fixed. | The embedding rows are trained in the same loop. |
 | Every token has its own Wq, Wk, and Wv. | All tokens in a layer share the same three. Each layer has its own set. |
 | The model learns from my chats. | Answering only reads the numbers. Nothing from your chat is saved inside the model. |
 
@@ -1076,7 +480,7 @@ Usually not. Say the model read "cats are animals" thousands of times, then read
 <details>
 <summary>1. A weight is 2.0, its gradient is +0.8, and the learning rate is 0.1. What is the new weight?</summary>
 
-The new weight is 1.92, because `2.0 − (0.1 × 0.8) = 1.92`. A positive gradient means bigger makes the loss worse, so the weight gets smaller.
+The new weight is 1.92, because `2.0 − (0.1 × 0.8) = 1.92`. A positive gradient means bigger is worse, so the weight gets smaller.
 </details>
 
 <details>
@@ -1088,112 +492,92 @@ The dot product is 1.21, because `1.10 × 1.10 + 0.65 × 0.00 = 1.21`.
 <details>
 <summary>3. Why can't "it" look at "comfortable" in "The cat sat on the mat because it was comfortable"?</summary>
 
-"Comfortable" comes after "it". The model writes left to right, so later words don't exist yet. This is called causal masking.
+"Comfortable" comes after "it", and the model writes left to right, so it doesn't exist yet. This is causal masking.
 </details>
 
 <details>
-<summary>4. Your app asked for JSON twice with the same prompt and got slightly different JSON the second time. Why, and what do you do?</summary>
+<summary>4. Your app asked for JSON twice with the same prompt and got different JSON. Why, and what do you do?</summary>
 
-The model picks each token at random using its chances, so a different token can win the second time. Lower the temperature to make answers more consistent, but don't rely on it, because even temperature 0 doesn't guarantee identical output. Validate the JSON in code, and retry or repair it when it doesn't match your schema.
+The model picks each token at random using its chances, so a different token can win. Lower the temperature, but don't rely on it alone. Validate the JSON in code, and retry or repair it when it fails your schema.
 </details>
 
 ---
 
 ### Architect notes: what this means for your work
 
-The short version: **more tokens = more work for the model = more cost.** Training compared with normal use is summarized in the revision summary and in [What changed during this request](#what-changed-during-this-request).
+The short version: **more tokens mean more work for the model, and more cost.**
 
 | Concern | Why it happens inside the model | What you do |
 |---|---|---|
-| **Cost of input** | You pay per token, and every input token goes through every layer. Long documents cost money even when the answer is short. | Find and send only the passages that match the question (called retrieval, lessons 32–38) |
-| **Cost of output** | Each output token needs a full trip through the model. That is one reason output tokens cost more than input tokens. | Ask for only the length you need. Check current prices on Anthropic's pricing page. |
-| **Speed** | Each token looks back at every earlier token. The attention work grows with the square of the prompt length: twice as many tokens means about four times as much attention work. | Keep prompts lean, especially when the user waits for the first word |
-| **Repeated prompts** | The work on an unchanged start of a prompt can be saved and reused | Use prompt caching (lessons 43–45). Put fixed text, such as instructions and reference documents, at the start. |
-| **Context window** | The model can only use what is in one request, up to a limit counting input and answer | Look up each model's limit, and trim or summarize long histories |
+| **Cost of input** | Every input token goes through every layer, even when the answer is short | Send only the passages that match the question (retrieval, lessons 32–38) |
+| **Cost of output** | Each output token needs a full trip through the model, one reason output costs more than input | Ask for only the length you need. Check current prices on Anthropic's pricing page. |
+| **Speed** | Each token looks back at every earlier token. Twice as many tokens means about four times the attention work. | Keep prompts lean, especially when a user waits for the first word |
+| **Repeated prompts** | Work on an unchanged start of a prompt can be saved and reused | Use prompt caching (lessons 43–45). Put fixed instructions and documents at the start. |
+| **Context window** | One request can hold only so many tokens, counting input and answer | Look up each model's limit, and trim or summarize long histories |
 | **Out-of-date knowledge** | The model only knows its training text, up to a cutoff date | Put new facts in the prompt, or give the model a search tool |
-| **No memory** | Answering never changes the numbers, so the model is stateless | Your app stores the chat history and resends it every time (sketch below). Store it securely. |
-| **Varied answers** | Each token is picked at random from a set of chances | For tasks that need the same answer, lower the temperature, give examples, and check the output in code. Don't promise identical answers. |
+| **No memory** | Answering never changes the numbers, so the model is stateless | Your app stores the chat history securely and resends all of it every time |
+| **Varied answers** | Each token is picked at random from a set of chances | Lower the temperature, give examples, and check output in code. Don't promise identical answers. |
 | **Model choice** | Smaller models have fewer weights, so each token needs less math | Test the smallest model that passes your test questions first |
-| **Data terms** | Your requests never change the model. Keeping or training on data is a policy question. | Check Anthropic's current terms and data-retention options for each customer |
+| **Data terms** | Requests never change the model. Keeping or training on data is a policy question. | Check Anthropic's current terms and data-retention options for each customer |
 
-```csharp
-// A sketch: your app keeps the history, not the model
-var history = new List<Message> { new("user", "What is quantum computing?") };
-string reply = await claude.SendAsync(history);   // send the whole history
-history.Add(new("assistant", reply));
-history.Add(new("user", "Explain it more simply."));
-reply = await claude.SendAsync(history);          // send everything again
-```
-
-> [!WARNING]
-> **Prompt injection.** Attention treats all text in the prompt the same way. There is no wall between your instructions and text from a document. It is like building a SQL query by pasting user input into the string: hidden text in a document can act as an instruction. Tag untrusted text, limit which tools the model can use, and check its output.
+**Warning:** Attention treats all text in the prompt the same way, so there is no wall between your instructions and a document's text. This is *prompt injection*. It is like building a SQL query by pasting user input into the string. Tag untrusted text, limit which tools the model can use, and check its output.
 
 ---
 
 ### Recap
 
-| Idea | Takeaway |
-|---|---|
-| Saved inside | The vocabulary turns text into token IDs. The embedding table turns each ID into a row of numbers (the data). The weights mix those numbers (the business logic). |
-| Weights mix | Each result adds up all the inputs, each times its own weight |
-| Layers | Every token's row passes through dozens of layers. Each layer has its own fixed weights and adds a little more meaning. |
-| Answering | Cut into tokens, look up rows and add position, borrow meaning through attention, repeat over many layers, score every token, pick one, repeat, and turn the token IDs back into text |
-| Attention | Query, Key, and Value from shared matrices. A dot product scores each match, softmax makes percentages, and the Values are blended in. |
-| Picking | Softmax turns scores into chances. Temperature controls how spread out they are, but even temperature 0 doesn't guarantee identical answers. |
-| Training | Every number starts random. The model guesses a hidden token, the loss measures the error, backpropagation finds every gradient, and gradient descent moves every number a little. |
-| Normal use | Answering only reads the numbers. The model is stateless, never learns from your chat, and doesn't remember you. |
+- **Saved inside:** the vocabulary gives token IDs, the embedding table gives each token a row, and the weights mix those rows.
+- **Weights mix:** each result adds up all the inputs, each times its own weight.
+- **Layers:** every row passes through dozens of layers, each with its own fixed weights.
+- **Attention:** Query, Key, and Value from shared matrices. A dot product scores matches, softmax makes percentages, and Values are blended in.
+- **Picking:** softmax turns scores into chances, and temperature controls how spread out they are.
+- **Training:** guess a hidden token, measure the loss, get gradients with backpropagation, and update with gradient descent.
+- **Normal use:** only reads the numbers. The model is stateless and never learns from your chat.
 
 ---
 
 ## My notes / practice
 
-- [ ] Work out the Query of "it" by hand. `[0.40, 0.30, 0.70]` times Wq should give `[1.10, 0.65]`.
-- [ ] Work out the Key of "cat" with Wk. You should get `[0.25, 0.25]`.
-- [ ] Put the C# `Multiply` and `Softmax` methods in a console app. Use them to make the Keys and attention percentages for all eight tokens.
-- [ ] Do softmax by hand for two scores, 2.966 and 1.930. Check that the two chances add up to 100%.
+- [ ] Work out the Query of "it" by hand: `[0.40, 0.30, 0.70]` times Wq should give `[1.10, 0.65]`.
+- [ ] Do softmax by hand for two scores, 2.966 and 1.930, and check that the chances add up to 100%.
+- [ ] Write a C# `Softmax` method in a console app and reproduce the attention percentages for all eight tokens.
 - [ ] Explain backpropagation and gradient descent out loud in under a minute, using the change from 1.5 to 1.5417.
 
 ---
 
 ## FAQ
 
-**Q1. What does "token ID" mean?**
-A token ID is the fixed number the vocabulary gives each token, such as 2207 for "cat". It is only a label, like a primary key. Two close IDs are not similar words.
+**Q1. What does "token ID" mean, and are the numbers in an embedding row token IDs?**
+A token ID is the fixed label the vocabulary gives each token, such as 2207 for "cat". It works like a primary key, so close IDs are not similar words. The numbers in an embedding row are not IDs. They describe the token itself.
 
-**Q2. Are the numbers in an embedding row the IDs of other tokens?**
-No. The numbers describe the token itself. `[0.30, 0.70, 0.50]` describes "cat" and doesn't point to any other row.
+**Q2. What do the columns of the embedding table mean?**
+No column has a name or one clear meaning. Training spreads each meaning over many columns, so you compare tokens by their whole rows.
 
-**Q3. What do the columns of the embedding table mean?**
-No column has a name or one clear meaning. Training fills the columns in and spreads each meaning over many of them. So you compare tokens by their whole rows, never by one column.
+**Q3. Why are some models larger than others, and when should I use a smaller one?**
+A larger model has more learned numbers, so it handles harder tasks. Every token passes through all those numbers, so it is slower and costs more. Use Haiku for simple work you run many times, and Opus for hard work where mistakes are costly.
 
-**Q4. Why are some models larger than others, and when should I use a smaller one?**
-A larger model has more learned numbers, so it can store more patterns and handle harder tasks. But every token passes through all those numbers, so it is slower and costs more. Use a smaller model like Haiku for simple work you run many times, and a larger one like Opus for hard thinking.
-
-**Q5. Does every token have its own Wq, Wk, and Wv?**
+**Q4. Does every token have its own Wq, Wk, and Wv?**
 No. All tokens in a layer share the same three matrices, and each layer has its own set. Each token still gets its own Query, Key, and Value, because it starts from its own row.
 
-**Q6. Why can't a token look at the words after it?**
-The model writes left to right, so later words don't exist yet. Attention only looks at the token itself and the tokens before it. This is called causal masking.
+**Q5. Why can't a token look at the words after it?**
+The model writes left to right, so later words don't exist yet. This is called causal masking.
 
-**Q7. Where do the embedding numbers come from?**
-They start random. Training changes the embedding-table rows of the tokens in each practice sentence a little, billions of times. In the end, words used in similar sentences have similar rows.
+**Q6. Where do the embedding numbers come from?**
+They start random. Training changes the rows of the tokens in each practice sentence a little, billions of times. In the end, words used in similar sentences have similar rows.
 
-**Q8. Why does training make the model guess a word the sentence already has?**
-The model only sees the words before the hidden word. The training process keeps that word as the answer key. Practising this way on billions of sentences teaches the model to guess new text well.
+**Q7. What does "loss" mean?**
+Loss is one number for how wrong a guess was: −ln(the chance given to the right token). A 90% chance gives 0.11, and a 10% chance gives 2.30.
 
-**Q9. What does "loss" mean?**
-Loss is one number that says how wrong a guess was: −ln(the chance given to the right token). A 90% chance gives 0.11, and a 10% chance gives 2.30.
-
-**Q10. What is the difference between backpropagation and gradient descent?**
+**Q8. What is the difference between backpropagation and gradient descent?**
 Backpropagation works out which way each number should move to lower the loss. Gradient descent then moves each number: `new = old − (learning rate × gradient)`.
 
-**Q11. (Exam angle) A customer asks whether their employees' chats will change how the model answers other customers. How do you answer?**
+**Q9. (Exam angle) A customer asks whether their employees' chats will change how the model answers other customers. How do you answer?**
 No. Answering only reads the model's numbers, and the model keeps no memory between requests. Whether Anthropic keeps or trains on data is set by its terms, so point the customer to Anthropic's current terms and data-retention options. (Governance, Safety & Risk Management)
 
-**Q12. (Exam angle) A team gets different answers to the same prompt in a sorting task and needs consistent output. What do you recommend?**
+**Q10. (Exam angle) A team gets different answers to the same prompt in a sorting task and needs consistent output. What do you recommend?**
 Explain that the model picks each token from a set of chances, so some variety is normal. Lower the temperature, give clear examples, and check the output in code. Answers get more consistent, but not identical, even at temperature 0. (Claude Models, Prompting & Context Engineering)
 
-**Q13. (Exam angle) A product manager asks why requests with long documents cost more and run slower. What do you say, and what do you change?**
+**Q11. (Exam angle) A product manager asks why requests with long documents cost more and run slower. What do you say, and what do you change?**
 Every input token goes through every layer, and attention looks back at every earlier token. So cost and time grow with the prompt. Send only the passages needed, and put fixed text at the start so prompt caching can reuse it. (Solution Design & Architecture)
 
 ---

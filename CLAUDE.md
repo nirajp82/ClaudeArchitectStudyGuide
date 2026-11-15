@@ -321,3 +321,19 @@ Keep the reply short:
 3. **What you added beyond the course**: comparisons, examples, extra facts, exam-angle answers. Name them so I can check them.
 4. **Missing images**: which ones to paste.
 5. That the change is committed and pushed, with the commit message.
+
+---
+
+## 8. Course 3 only: CCAR-F 2026 Exam Prep (Udemy)
+
+These rules add to sections 1–7 for `03_CCARFExamPrep/`, the Udemy course [Claude Certified Architect (CCAR-F) 2026 Exam Prep](https://www.udemy.com/course/certified-claude-architect-masterclass-2026/). It prepares me for the Foundations exam (CCAR-F) on December 28–30, 2026.
+
+1. **Files.** Make one notes file per Udemy section, not per lecture, so each file stays within 250–400 lines. Number the files in course order (`01-section-name.md`, `02-...`). The progress table in `03_CCARFExamPrep/README.md` has the columns # | Domain | Section | Notes | Status, built from the Udemy curriculum I paste.
+2. **Template.** Use the lesson template, including Architect notes. The course line is: `**Course:** [CCAR-F 2026 Exam Prep](https://www.udemy.com/course/certified-claude-architect-masterclass-2026/) &nbsp;·&nbsp; **Domain N:** domain name &nbsp;·&nbsp; **Completed:** date`.
+3. **Plain English.** Write in plain, easy English for a beginner, as section 2 describes. Don't copy the course's wording or jargon.
+4. **Domains.** Exam-angle FAQ questions and Exam takeaways use the 5 Foundations domains: Agentic Architecture & Orchestration, Claude Code Configuration & Workflows, Prompt Engineering & Structured Output, Tool Design & MCP Integration, Context Management & Reliability. The weights in the course README (27, 20, 20, 18, 15 percent) are the course's figures, not Anthropic's.
+5. **No re-teaching.** Before writing, search `01_ClaudeCode101/` and `02_BuildingWithTheClaudeAPI/` for the same topic. If I already have notes on it, write one line and a link, then spend the space on what is new: the exam angle, scenario traps, and anything my earlier notes don't cover. In the earlier lesson, add a short "Also covered in" link to the new file.
+6. **Check every fact.** This is a third-party course. Check every command, file name, setting, and number against https://code.claude.com/docs (Claude Code) or the Claude API documentation. If the course is wrong or out of date, follow the documentation and add a **Warning:** line saying what the course says and what is actually true. For example, check whether `.claudeignore` is a real Claude Code feature before writing about it (Claude Code may keep files out of reach with permission "deny" rules in settings instead). In the reply, list every place the course disagrees with the documentation.
+7. **Images.** Udemy blocks automatic downloads, so use only the screenshots I paste. Save them as `images/NN-short-name.png`.
+8. **Practice questions and practice exams.** Keep missed or guessed questions in `NN-practice-exam-review.md`. Restate each question in your own words instead of copying it. Give the right answer, why each wrong option is wrong, the domain, and a link to my notes file for that topic.
+9. **When a section is done.** Mark it Done in `03_CCARFExamPrep/README.md`, update the Udemy row in the root `readme.md` study plan (status and notes link), then commit and push without asking.

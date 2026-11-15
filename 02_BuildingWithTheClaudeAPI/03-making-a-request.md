@@ -1,6 +1,6 @@
 # Lesson 3 — Making a request
 
-**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Chapter 1:** Accessing Claude with the API &nbsp;·&nbsp; **Completed:** November 1, 2026
+**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Lesson page:** [Making a request](https://academy.claude.com/courses/building-with-the-claude-api/making-a-request) &nbsp;·&nbsp; **Chapter 1:** Accessing Claude with the API &nbsp;·&nbsp; **Completed:** November 1, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

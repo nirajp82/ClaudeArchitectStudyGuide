@@ -1,6 +1,6 @@
 # Lesson 6 — Context management
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 3:** Daily workflows &nbsp;·&nbsp; **Completed:** October 18, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [Context management](https://academy.claude.com/courses/claude-code-101/context-management) &nbsp;·&nbsp; **Chapter 3:** Daily workflows &nbsp;·&nbsp; **Completed:** October 18, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

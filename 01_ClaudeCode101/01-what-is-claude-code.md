@@ -1,6 +1,6 @@
 # Lesson 1 — What is Claude Code?
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 1:** What is Claude Code? &nbsp;·&nbsp; **Completed:** October 17, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [What is Claude Code?](https://academy.claude.com/courses/claude-code-101/what-is-claude-code) &nbsp;·&nbsp; **Chapter 1:** What is Claude Code? &nbsp;·&nbsp; **Completed:** October 17, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

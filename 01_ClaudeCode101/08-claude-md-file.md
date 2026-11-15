@@ -1,6 +1,6 @@
 # Lesson 8 — The CLAUDE.md file
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 4:** Customizing Claude Code &nbsp;·&nbsp; **Completed:** October 18, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [The CLAUDE.md file](https://academy.claude.com/courses/claude-code-101/the-claude-md-file) &nbsp;·&nbsp; **Chapter 4:** Customizing Claude Code &nbsp;·&nbsp; **Completed:** October 18, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

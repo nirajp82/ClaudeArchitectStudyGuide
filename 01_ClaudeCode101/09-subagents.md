@@ -1,6 +1,6 @@
 # Lesson 9 — Subagents
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 4:** Customizing Claude Code &nbsp;·&nbsp; **Completed:** October 25, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [Subagents](https://academy.claude.com/courses/claude-code-101/subagents) &nbsp;·&nbsp; **Chapter 4:** Customizing Claude Code &nbsp;·&nbsp; **Completed:** October 25, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

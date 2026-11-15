@@ -235,7 +235,7 @@ Every lesson file follows this order exactly:
 ````markdown
 # Lesson N — Lesson name
 
-**Course:** [Course Name](course-url) &nbsp;·&nbsp; **Chapter N:** Chapter name &nbsp;·&nbsp; **Completed:** Month D, YYYY
+**Course:** [Course Name](course-url) &nbsp;·&nbsp; **Lesson page:** [Lesson name](lesson-url) &nbsp;·&nbsp; **Chapter N:** Chapter name &nbsp;·&nbsp; **Completed:** Month D, YYYY
 
 | Previous | Course | Next |
 |:---|:---:|---:|
@@ -315,6 +315,7 @@ Answer.
 
 ### Header and footer rules
 
+- **Link the lesson page itself** in the course line, not only the course home page. Take the address from the lesson links on the course page (for example, `https://academy.claude.com/courses/building-with-the-claude-api/making-a-request`), never guess it.
 - The header and footer navigation tables are **identical**.
 - **Never use a `>` blockquote for the header.** GitHub joins its lines into one messy paragraph.
 - First lesson: put `Start of course` in the Previous cell. Last item: put `End of course` in the Next cell.

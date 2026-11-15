@@ -1,6 +1,6 @@
 # Lesson 2 — Getting an API key
 
-**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Chapter 1:** Accessing Claude with the API &nbsp;·&nbsp; **Completed:** November 1, 2026
+**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Lesson page:** [Getting an API key](https://academy.claude.com/courses/building-with-the-claude-api/getting-an-api-key) &nbsp;·&nbsp; **Chapter 1:** Accessing Claude with the API &nbsp;·&nbsp; **Completed:** November 1, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

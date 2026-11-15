@@ -1,6 +1,6 @@
 # Lesson 4 — Your first prompt
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 2:** Your first prompt &nbsp;·&nbsp; **Completed:** October 17, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [Your first prompt](https://academy.claude.com/courses/claude-code-101/your-first-prompt) &nbsp;·&nbsp; **Chapter 2:** Your first prompt &nbsp;·&nbsp; **Completed:** October 17, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

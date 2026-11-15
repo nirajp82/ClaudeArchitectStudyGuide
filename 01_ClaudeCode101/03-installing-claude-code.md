@@ -1,6 +1,6 @@
 # Lesson 3 — Installing Claude Code
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 2:** Your first prompt &nbsp;·&nbsp; **Completed:** October 17, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [Installing Claude Code](https://academy.claude.com/courses/claude-code-101/installing-claude-code) &nbsp;·&nbsp; **Chapter 2:** Your first prompt &nbsp;·&nbsp; **Completed:** October 17, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

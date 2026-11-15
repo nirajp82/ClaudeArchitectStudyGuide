@@ -1,6 +1,6 @@
 # Deep dive — How does Claude know what to say next?
 
-**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Extra reading for Lesson 1** &nbsp;·&nbsp; **Written:** November 7, 2026
+**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Lesson page:** [Accessing the API](https://academy.claude.com/courses/building-with-the-claude-api/accessing-the-api) &nbsp;·&nbsp; **Extra reading for Lesson 1** &nbsp;·&nbsp; **Written:** November 7, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

@@ -1,6 +1,6 @@
 # Lesson 5 — The explore → plan → code → commit workflow
 
-**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Chapter 3:** Daily workflows &nbsp;·&nbsp; **Completed:** October 17, 2026
+**Course:** [Claude Code 101](https://academy.claude.com/courses/claude-code-101) &nbsp;·&nbsp; **Lesson page:** [The explore, plan, code, commit workflow](https://academy.claude.com/courses/claude-code-101/the-explore-plan-code-commit-workflow) &nbsp;·&nbsp; **Chapter 3:** Daily workflows &nbsp;·&nbsp; **Completed:** October 17, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|

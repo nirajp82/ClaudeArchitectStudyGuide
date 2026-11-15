@@ -20,7 +20,7 @@ An exam **domain** is one subject area of the exam. Its **weight** is the share 
 
 ## How these notes work
 
-- **One notes file per Udemy section, not per lecture.** This keeps each file within 250–400 lines. Files are numbered in course order: `01-section-name.md`, `02-section-name.md`, and so on.
+- **One folder per Udemy section, one notes file per lesson.** Folders are named after the section number and name, such as `02-agentic-architecture-foundations/`. Lesson files use Udemy's lesson number and name, such as `03-agents-workflows-and-chatbots.md`.
 - **No re-teaching.** Much of this course overlaps my earlier notes in [Claude Code 101](../01_ClaudeCode101/README.md) and [Building with the Claude API](../02_BuildingWithTheClaudeAPI/README.md). When a topic is already covered there, a notes file gives one line and a link, then spends its space on what is new: the exam angle, scenario traps, and anything the earlier notes miss.
 - **Every fact is checked.** This is a third-party course, so every command, file name, setting, and number is checked against the [Claude Code documentation](https://code.claude.com/docs) or the Claude API documentation. Where the course is wrong or out of date, the notes follow the documentation and add a **Warning:** line.
 - **Images** are only the screenshots I paste, because Udemy blocks automatic downloads. They are saved in `images/` as `NN-short-name.png`.
@@ -28,17 +28,34 @@ An exam **domain** is one subject area of the exam. Its **weight** is the share 
 
 ## Progress
 
-The table grows lesson by lesson. The full table is built from the Udemy curriculum once I paste it.
+Each Udemy section has its own folder, and each lesson in it has its own notes file. Lesson numbers follow Udemy's numbering, which runs through the whole course.
 
-| # | Domain | Section | Notes | Status |
-|---|---|---|---|---|
-| 3 | 1. Agentic Architecture & Orchestration | Agents, Workflows, and Chatbots: What's Actually Different | [03-agents-workflows-and-chatbots.md](03-agents-workflows-and-chatbots.md) | ✅ Done |
-| 4 | 1. Agentic Architecture & Orchestration | Tool Use as the Foundation of Agency | [04-tool-use-foundation-of-agency.md](04-tool-use-foundation-of-agency.md) | ✅ Done |
-| — | — | Rest of the curriculum (waiting for the list) | — | ⬜ |
+| Section | Domain | Section name | Folder | Status |
+|:---:|:---|:---|:---|:---:|
+| 1 | — | Welcome | No notes needed | ✅ Done |
+| 2 | D1: Agentic Architecture | Foundations | [02-agentic-architecture-foundations](02-agentic-architecture-foundations/) | In progress |
+| 3 | D1: Agentic Architecture | Task Decomposition & Planning | — | ⬜ |
+| 4 | D1: Agentic Architecture | Multi-Agent Orchestration | — | ⬜ |
+| 5 | D1: Agentic Architecture | Reliability & Human Oversight | — | ⬜ |
+| 6 | D2: Tool Design & MCP | Tool Design Fundamentals | — | ⬜ |
+| … | | Later sections (waiting for the list) | | ⬜ |
+
+### Section 2: D1: Agentic Architecture - Foundations
+
+| # | Lesson | Notes | Status |
+|:---:|:---|:---|:---:|
+| 3 | Agents, Workflows, and Chatbots — What's Actually Different | [03-agents-workflows-and-chatbots.md](02-agentic-architecture-foundations/03-agents-workflows-and-chatbots.md) | ✅ Done |
+| 4 | Tool Use as the Foundation of Agency | [04-tool-use-foundation-of-agency.md](02-agentic-architecture-foundations/04-tool-use-foundation-of-agency.md) | ✅ Done |
+| 5 | Perception, Reasoning, Action, and Observation | `05-perception-reasoning-action-observation.md` | ⬜ |
+| 6 | Loop Control — Stopping, Iterating, and Escalating | `06-loop-control.md` | ⬜ |
+| 7 | Quick Check-In | `07-quick-check-in.md` | ⬜ |
+| 8 | When Workflows Outperform Agents | `08-when-workflows-outperform-agents.md` | ⬜ |
+| 9 | Choosing the Right Architecture | `09-choosing-the-right-architecture.md` | ⬜ |
+| — | Quiz 1: 1A Quiz | Practice review file | ⬜ |
 
 ## To-do
 
-- [ ] **Curriculum.** Paste the Udemy section and lecture list so the progress table can be built.
+- [ ] **Curriculum.** Paste the section list after section 6, and each section's lesson list when you start it.
 - [ ] **Images.** No images are missing so far.
 
 ## When you finish this course
@@ -51,10 +68,12 @@ The table grows lesson by lesson. The full table is built from the Udemy curricu
 
 ```text
 03_CCARFExamPrep/
-├── README.md                  ← this index
-├── images/                    ← screenshots I paste, named NN-short-name.png
-├── 01-section-name.md         ← one file per Udemy section
-├── 02-section-name.md
-├── ...
-└── NN-practice-exam-review.md ← missed or guessed practice questions
+├── README.md                                 ← this index
+├── images/                                   ← screenshots I paste, named NN-short-name.png
+├── 02-agentic-architecture-foundations/      ← one folder per Udemy section
+│   ├── 03-agents-workflows-and-chatbots.md   ← one file per lesson, Udemy numbering
+│   ├── 04-tool-use-foundation-of-agency.md
+│   └── ...
+├── 03-task-decomposition-and-planning/
+└── NN-practice-exam-review.md                ← missed or guessed practice questions
 ```

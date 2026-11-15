@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| Lesson 2 (not written yet) | [📚 Course index](README.md) | [Tool Use as the Foundation of Agency →](04-tool-use-foundation-of-agency.md) |
+| Start of course | [📚 Course index](../README.md) | [Tool Use as the Foundation of Agency →](04-tool-use-foundation-of-agency.md) |
 
 ---
 
@@ -84,7 +84,7 @@ You describe each tool to Claude with a `name`, a `description` in plain words, 
 
 ### The three kinds of AI system
 
-You already know one agent well: Claude Code. It is agentic because the model decides which file to open and which command to run next ([Claude Code 101, lesson 1](../01_ClaudeCode101/01-what-is-claude-code.md)). This lesson explains what makes that true in general.
+You already know one agent well: Claude Code. It is agentic because the model decides which file to open and which command to run next ([Claude Code 101, lesson 1](../../01_ClaudeCode101/01-what-is-claude-code.md)). This lesson explains what makes that true in general.
 
 **The running example.** A customer emails an online shop: *"My order #1234 never arrived."* The shop could answer with a chatbot, a workflow, or an agent.
 
@@ -176,7 +176,7 @@ sequenceDiagram
 
 Things to notice:
 
-- The model never touches the database. It only asks. Your code does the work, exactly as Claude Code does on your computer ([Claude Code 101, lesson 2](../01_ClaudeCode101/02-how-claude-code-works.md)).
+- The model never touches the database. It only asks. Your code does the work, exactly as Claude Code does on your computer ([Claude Code 101, lesson 2](../../01_ClaudeCode101/02-how-claude-code-works.md)).
 - A tool definition looks like this. The description does most of the work, because Claude chooses tools by reading it:
 
 ```json
@@ -354,4 +354,4 @@ Give the agent only the tools it needs (minimal footprint), require a person to 
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| Lesson 2 (not written yet) | [📚 Course index](README.md) | [Tool Use as the Foundation of Agency →](04-tool-use-foundation-of-agency.md) |
+| Start of course | [📚 Course index](../README.md) | [Tool Use as the Foundation of Agency →](04-tool-use-foundation-of-agency.md) |

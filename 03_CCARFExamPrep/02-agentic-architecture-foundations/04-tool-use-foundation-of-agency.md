@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Agents, Workflows, and Chatbots](03-agents-workflows-and-chatbots.md) | [📚 Course index](README.md) | Lesson 5 (not written yet) |
+| [← Agents, Workflows, and Chatbots](03-agents-workflows-and-chatbots.md) | [📚 Course index](../README.md) | Perception, Reasoning, Action, and Observation (not written yet) |
 
 ---
 
@@ -334,4 +334,4 @@ Send-email is highest, because it is an external action with real, permanent eff
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Agents, Workflows, and Chatbots](03-agents-workflows-and-chatbots.md) | [📚 Course index](README.md) | Lesson 5 (not written yet) |
+| [← Agents, Workflows, and Chatbots](03-agents-workflows-and-chatbots.md) | [📚 Course index](../README.md) | Perception, Reasoning, Action, and Observation (not written yet) |

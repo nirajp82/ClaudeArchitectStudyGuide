@@ -28,7 +28,8 @@
 
 ### Revision summary
 
-A system is **agentic** when the AI model itself decides what to do next, for example which tool to call to look up a customer's order, then sees the result and decides again, round after round until the job is done, while in a **workflow** a developer writes every step in code ahead of time and the model only fills in text at each step.
+- **Agentic:** the AI model decides each next step itself. For example, it chooses a tool to look up a customer's order, reads the result, and decides again, round after round, until the job is done.
+- **Workflow:** a developer writes every step in code ahead of time. The model only fills in text at each step and never chooses what happens next.
 
 #### The three kinds of AI system
 

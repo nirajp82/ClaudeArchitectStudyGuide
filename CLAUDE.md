@@ -97,7 +97,12 @@ I revise from the top of each lesson, so **every lesson starts with a `### Revis
 
 The model is lesson 6's and lesson 7's summary. Rules:
 
-- **Open with one plain sentence that sums up the whole lesson**, as the first line under `### Revision summary`. Do not put a heading or label above it, such as "In one sentence." Write it so a beginner understands it with no other context: name who does what, say what the thing is in everyday words, give a concrete example, and avoid vague verbs such as "pulls it out." For example, write "A skill is a file of step-by-step instructions for one kind of task, such as reviewing a pull request, that you write once and save in a skills folder, and whenever you ask for that kind of task, Claude Code opens the file and follows its steps," not "A skill is a how-to guide Claude Code pulls out when needed."
+- **Open with short bullets that sum up the whole lesson**, as the first lines under `### Revision summary`, with no heading or label above them. Never write one long sentence that joins several ideas with "while," "and," or "then."
+  - **When the lesson compares things**, write one bullet per thing, starting with its name in bold. For example:
+    - **Agentic:** the AI model decides each next step itself. For example, it chooses a tool to look up a customer's order, reads the result, and decides again until the job is done.
+    - **Workflow:** a developer writes every step in code ahead of time. The model only fills in text at each step.
+  - **When the lesson describes a process**, write one short lead-in line, then a numbered list with one step per item.
+  - Each bullet is one or two short, full sentences that a beginner understands with no other context: name who does what, use everyday words, give a concrete example, and avoid vague verbs such as "pulls it out."
 
 - **It must stand on its own.** I read it without the rest of the lesson. Never refer to the lesson's running example or screenshots ("in the signup example," "the dark mode plan"). If an example helps, describe it fully in the sentence itself.
 - **Group by topic.** Use one `####` heading per main idea (for example "How to use less of the context window"). Open each topic with one or two sentences that state the idea, then list its facts under it. Related points always sit under one heading, never as separate "Tip 1 / Tip 2" bullets scattered around.
@@ -116,7 +121,7 @@ Use these the way lesson 2 does. **Not every lesson needs all of them**: pick th
 
 | Technique | What it is | Example from lesson 2 |
 |---|---|---|
-| **Opening sentence** | Open the revision summary with the whole idea in one plain sentence, with no heading above it (see "Revision summary" in section 2). | "Claude Code finishes a task by repeating the same cycle until the job is done…" |
+| **Opening bullets** | Open the revision summary with short bullets, one per idea or per thing compared, with no heading above them (see "Revision summary" in section 2). | "**Agentic:** the AI model decides each next step itself." / "**Workflow:** a developer writes every step in code ahead of time." |
 | **Overview table** | Before details, a table of the lesson's main parts in plain words. | "The four parts": loop, context window, tools, permissions |
 | **Everyday comparison** | Compare each big idea to something from daily life. | Loop = a mechanic. Context window = a whiteboard. Tools = a friend with a wrench vs. on the phone. Permissions = keys for a new assistant. |
 | **One running example** | Pick one realistic task and use it through the whole lesson. | "The login test is failing. Fix it." |
@@ -238,7 +243,7 @@ Every lesson file follows this order exactly:
 
 ### Revision summary
 
-(The whole lesson in one plain sentence that a beginner understands with no other context.)
+(The whole lesson as short bullets, one per idea or per thing compared, that a beginner understands with no other context.)
 
 #### (One heading per main idea)
 

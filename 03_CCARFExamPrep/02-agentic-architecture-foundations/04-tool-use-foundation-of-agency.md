@@ -28,7 +28,11 @@
 
 ### Revision summary
 
-Every action an agent takes is one small exchange that repeats: Claude reads the tool descriptions and asks for a tool by name with its inputs, a program runs that tool (your code for tools you wrote, or Anthropic for built-in tools such as web search), and the result goes back to Claude, which then decides whether to call another tool or give its answer.
+Every action an agent takes is the same small exchange, repeated:
+
+1. **Claude asks for a tool.** It reads the tool descriptions, then asks for one tool by name, with its inputs.
+2. **A program runs the tool.** Your code runs tools you wrote. Anthropic runs built-in tools, such as web search.
+3. **The result goes back to Claude.** Claude then calls another tool or gives its answer.
 
 #### The three parts of every tool exchange
 

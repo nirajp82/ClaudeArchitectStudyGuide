@@ -12,7 +12,7 @@ I'll paste a lesson's **video transcript** and/or its **written course text**, s
 
 1. **Work out the file.** Check the course folder's `README.md` progress table for the lesson number and file name. The file is `0X-lesson-name.md`, directly in the course folder.
 2. **Treat the transcript as a checklist, not a draft.** It tells you *what* the lesson covers. Your job is to explain it far more clearly than the course does. Don't just tidy up the transcript.
-3. **Check facts that need to be exact.** For commands, settings, keyboard shortcuts, or install steps, check the official docs (for Claude Code: `https://code.claude.com/docs`). Don't guess.
+3. **Check facts that need to be exact.** For commands, settings, keyboard shortcuts, or install steps, check the official docs (for Claude Code: `https://code.claude.com/docs`). Don't guess. Also check whether the course's technique still works on current models. If it doesn't, follow "When the course is out of date" in section 2.
 4. **Write the file** using the template in section 6.
 5. **Save the images** (section 4).
 6. **Update the links:**
@@ -67,6 +67,17 @@ Whenever a lesson has options to choose between (modes, commands, files, scopes,
 - In the revision summary, state the fact plainly with no source label.
 - In the lesson body, mark extra facts as **Not in the course, from the official Claude Code documentation:**.
 - Explain every term in those facts too. Don't write "SSE is deprecated." Write "SSE is an older kind of remote connection that is being phased out (*deprecated*), so choose HTTP when a service offers both."
+
+### When the course is out of date
+
+The Claude API and Claude Code change faster than the courses. Some lessons teach a way that newer models reject or that has a better replacement. For example, lesson 8 of Building with the Claude API teaches prefill and stop sequences for clean JSON, but newer models reject prefill and use structured outputs instead.
+
+- **Check every technique against the current official documentation** before writing. Ask: does this still work on current models, and is it still the recommended way?
+- **Build the lesson around the current way.** The main sections, the running example, the code, the revision summary, the FAQ, and the exam takeaways teach what works on current models.
+- **Cover the course's old way in one short section** of about 10 to 20 lines: what it was, a short code snippet, which models it still works on, and why it changed. Keep the course's images in that section.
+- **Add a Warning: line near the top of the lesson** saying what the course teaches and what is current.
+- **Quiz questions on an outdated topic get two versions**: one for older models (the course's answer) and one for current models.
+- **In the reply, list what was outdated** and what the lesson teaches instead.
 
 **Before finishing a lesson, do a beginner read-through:** read every paragraph as someone who has never coded. For each sentence ask: *Who is doing this? Which file, and where is it? Do I know every word?* If any answer is "not sure," rewrite the sentence.
 

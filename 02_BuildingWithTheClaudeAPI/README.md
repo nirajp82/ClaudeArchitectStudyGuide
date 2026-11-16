@@ -19,7 +19,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | 6 | Accessing Claude with the API | Temperature | [06-temperature.md](06-temperature.md) | ✅ Done |
 | 7 | Accessing Claude with the API | Response streaming | [07-response-streaming.md](07-response-streaming.md) | ✅ Done |
 | 8 | Accessing Claude with the API | Structured data | [08-structured-data.md](08-structured-data.md) | ✅ Done |
-| — | Accessing Claude with the API | Quiz on accessing Claude with the API | Quiz review file | ⬜ |
+| — | Accessing Claude with the API | Quiz on accessing Claude with the API | [68-course-quiz-review.md](68-course-quiz-review.md#quiz-on-accessing-claude-with-the-api) | ✅ Done |
 | 9 | Prompt evaluation | Prompt evaluation | `09-prompt-evaluation.md` | ⬜ |
 | 10 | Prompt evaluation | A typical eval workflow | `10-a-typical-eval-workflow.md` | ⬜ |
 | 11 | Prompt evaluation | Generating test datasets | `11-generating-test-datasets.md` | ⬜ |

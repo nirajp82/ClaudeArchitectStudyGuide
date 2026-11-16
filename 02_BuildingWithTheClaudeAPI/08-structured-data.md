@@ -15,77 +15,69 @@
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
 | 3 | [1. The problem: extra text around the data](#1-the-problem-extra-text-around-the-data) |
-| 4 | [2. Stop sequences](#2-stop-sequences) |
-| 5 | [3. Prefill and stop sequence together](#3-prefill-and-stop-sequence-together) |
-| 6 | [4. Cleaning and parsing the result](#4-cleaning-and-parsing-the-result) |
-| 7 | [5. Beyond JSON](#5-beyond-json) |
-| 8 | [6. The current way: structured outputs](#6-the-current-way-structured-outputs) |
-| 9 | [7. Nested JSON and more than one JSON](#7-nested-json-and-more-than-one-json) |
-| 10 | [Architect notes](#architect-notes) |
-| 11 | [Recap](#recap) |
-| 12 | [My notes / practice](#my-notes--practice) |
-| 13 | [FAQ](#faq) |
+| 4 | [2. Structured outputs: the current way](#2-structured-outputs-the-current-way) |
+| 5 | [3. Nested JSON and more than one JSON](#3-nested-json-and-more-than-one-json) |
+| 6 | [4. Beyond JSON: code, CSV, and lists](#4-beyond-json-code-csv-and-lists) |
+| 7 | [5. The course's way: prefill and stop sequences (older models only)](#5-the-courses-way-prefill-and-stop-sequences-older-models-only) |
+| 8 | [Architect notes](#architect-notes) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
 
 - **The problem:** when you ask the model for JSON, it usually wraps the JSON in a Markdown code block and adds a sentence of explanation. Your app then can't use the answer as it is.
-- **Stop sequence:** a piece of text you list in the request. The moment the model writes it, the API ends the answer. The stop text itself is not included.
-- **Prefill:** an assistant message you write yourself, placed last in the message list. The model treats it as the start of its own answer and continues from there.
-- **Together:** prefill with ` ```json ` and stop on ` ``` `. The model writes only the JSON, then stops as it tries to close the code block.
+- **Structured outputs (the current way):** you send a JSON schema with the request, in the `output_config.format` setting. The API then returns plain JSON that always matches that schema, with no fences and no explanation.
+- **Prefill and stop sequences (the course's way):** an older trick that starts the model's answer for it and cuts it off at the closing fence. It works only on older models such as `claude-haiku-4-5`. Newer models reject it with a 400 error.
 
-#### How the trick works, step by step
+#### How structured outputs work
 
-Your code sends one request with a user message, a prefilled assistant message, and a stop sequence:
+Your code sends one request, and the API does the rest:
 
-1. The user message asks: "Generate a very short event bridge rule as json."
-2. The prefilled assistant message is ` ```json `. The model believes it has already opened a JSON code block.
-3. The model continues by writing the JSON itself, with no introduction.
-4. When the model writes ` ``` ` to close the block, the stop sequence ends the answer at once.
-5. The answer holds only the JSON, plus a few line breaks. Your code removes them with `.strip()` and reads the JSON with `json.loads()`.
+1. Your code writes a *JSON schema*: a description of the fields the answer must have and the type of each one.
+2. Your code sends the schema in `output_config={"format": {"type": "json_schema", "schema": ...}}`, next to the normal messages.
+3. While the model writes, the API only lets it write text that fits the schema. Fences, explanations, and missing fields are impossible.
+4. The answer is plain JSON. Your code reads it with `json.loads(response.content[0].text)`.
 
-#### What to prefill and where to stop
+The Python SDK also has `client.messages.parse()`, which takes a Pydantic class instead of a raw schema and returns a ready Python object in `response.parsed_output`.
 
-The rule: find what the model naturally wraps your content in. Use the opening as the prefill and the closing as the stop sequence.
+#### What structured outputs guarantee, and what they don't
 
-- **For JSON:** prefill ` ```json ` and stop on ` ``` `.
-- **For Python code:** prefill ` ```python ` and stop on ` ``` `.
-- **For CSV data:** prefill ` ```csv ` and stop on ` ``` `.
-- **For a bulleted list:** ask for the list inside tags such as `<list>`, prefill `<list>`, and stop on `</list>`.
+- **Guaranteed:** the JSON is valid, every required field is there, every field has the right type, and no extra field appears.
+- **Not guaranteed:** that the values are true. The model can still put a wrong state name in a correct field, so check values that matter.
+- **Check `stop_reason` first.** If it is `"max_tokens"` (the answer was cut off) or `"refusal"` (the model declined), the answer may not match the schema.
 
-#### When to use which way of getting clean data
+#### When to use what
 
-The prefill trick is the old way. On newer models you can't use it, and you don't need it, because structured outputs do the job better.
+| Model | How to get clean JSON |
+|---|---|
+| Claude Opus 4.6, Sonnet 4.6, and every newer model, such as `claude-opus-5-5` | Structured outputs. A prefilled last assistant message fails with a 400 error on these models. |
+| Older models, such as `claude-haiku-4-5` (the course's model) | Prefill ` ```json ` and stop on ` ``` `. The JSON shape is not guaranteed, so check it in code. |
 
-| Model | Can you prefill? | How to get clean JSON |
-|---|---|---|
-| Older models, such as `claude-haiku-4-5` (the course's model) | Yes | Prefill ` ```json ` and stop on ` ``` ` |
-| Claude Opus 4.6, Sonnet 4.6, and every newer model, such as `claude-sonnet-5-5` | No. A prefilled last assistant message fails with a 400 error. | Use structured outputs: the `output_config.format` setting with a JSON schema. No prefill and no stop sequence are needed. |
-
-- **Use structured outputs** for anything new that your code must parse as JSON. They also guarantee the JSON matches your schema, which the prefill trick never did.
-- **Use a system prompt instruction** ("Answer with the content only, with no introduction") when the answer is plain text, not JSON, and you only want to skip the opening sentence.
+- **Use structured outputs** for anything your code must parse, such as a rule, a record, or a list of orders.
+- **Use a system prompt instruction** ("Answer with the content only, with no introduction") when the answer is plain text, not data, and you only want to skip the opening sentence.
 
 #### Exam takeaways
 
-- **A web app shows generated JSON with a copy button, but users keep copying the Markdown fences and the explanation too.** Prefill the assistant message with ` ```json ` and add ` ``` ` as a stop sequence, so the answer holds only the JSON. On current models, use structured outputs instead. (Integration)
-- **A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error.** Newer models reject a prefilled last assistant message, so the prefill must go. The team doesn't need it anymore: for JSON, they remove the prefill and the ` ``` ` stop sequence and add structured outputs (`output_config.format` with a JSON schema). For plain text, a system prompt instruction such as "Answer with no introduction" replaces the prefill. (Claude Models, Prompting & Context Engineering)
-- **A pipeline parses model JSON and sometimes crashes on a missing field.** Prefill only shapes the start of the answer. It doesn't guarantee valid or complete JSON. Validate the parsed result in code, or use structured outputs with a schema, which guarantees the shape. (Solution Design & Architecture)
+- **A web app shows generated JSON with a copy button, but users keep copying Markdown fences and an explanation.** Use structured outputs with a JSON schema. The answer is then plain JSON with nothing around it. (Integration)
+- **A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error.** Newer models reject a prefilled last assistant message. Remove the prefill and the ` ``` ` stop sequence, and add `output_config.format` with a JSON schema. For plain-text answers, a system prompt instruction replaces the prefill. (Claude Models, Prompting & Context Engineering)
+- **A pipeline parses model JSON and sometimes crashes on a missing field.** Use structured outputs and list the field under `required`, so it is always present. Also check `stop_reason` for `"max_tokens"` and validate values that matter. (Solution Design & Architecture)
 
 ---
 
 ### The big picture
 
+**Warning:** The course teaches the prefill trick (section 5). It is outdated: newer models reject it with a 400 error. This page teaches the current way, structured outputs, first.
+
 | Part | In plain words | Everyday comparison |
 |---|---|---|
 | The problem | The model adds wrapping and chat around the data | Ordering a part and getting it in gift wrap with a card |
-| Stop sequence | Text that makes the API end the answer the moment it appears | A referee's whistle: play stops on that sound |
-| Prefill | You write the first words of the model's answer | Starting someone's sentence, so they finish it your way |
-| Structured outputs | The API forces the answer to match a JSON shape you give | A form with fixed boxes, so nothing extra fits |
+| Structured outputs | The API forces the answer into a JSON shape you give | A paper form with fixed boxes: nothing fits outside the boxes |
+| Prefill + stop sequence (old) | You write the start of the answer, and the API cuts it off at the closing fence | Starting someone's sentence, then hanging up before they add a remark |
 
 **The running example:** a web app called "EventBridge Rule Generator." A user types "Rule to monitor EC2 instances" and clicks **Generate**. The app should show clean JSON with a copy button.
-
-Two words in that example:
 
 - **AWS EventBridge** is an Amazon Web Services service that watches for events, such as a server starting. A **rule** is a small piece of JSON that says which events to catch.
 - **EC2 instances** are virtual servers rented from Amazon.
@@ -97,8 +89,9 @@ Two words in that example:
 | Player | Where it lives | What it does |
 |---|---|---|
 | **The user** | In front of the web app | Types a description and copies the JSON |
-| **Your app** (Python code) | Your server | Builds the messages, sets the stop sequence, calls the API, and parses the answer |
-| **The Claude API and the model** | Anthropic's servers | Continues the prefilled answer and stops when it writes the stop sequence |
+| **Your app** (Python code) | Your server | Writes the schema, calls the API, and reads the JSON |
+| **The Claude API** | Anthropic's servers | Checks every piece the model writes against your schema |
+| **The model** | Anthropic's servers | Writes the rule, only in ways the schema allows |
 
 ---
 
@@ -120,131 +113,31 @@ By default, a request for JSON returns something like this:
 This rule captures EC2 instance state changes when instances start running.
 ````
 
-The JSON is correct. But it sits between Markdown fences (the ` ``` ` lines that mark a code block), and a sentence follows it. If the app's copy button copies the whole answer, the user pastes text that AWS rejects. The user has to select the JSON by hand.
+The JSON is correct. But it sits between Markdown fences (the ` ``` ` lines that mark a code block), and a sentence follows it. If the copy button copies the whole answer, the user pastes text that AWS rejects.
 
 The model adds this wrapping to be helpful in a chat. In an app, your code is the reader, and code needs the raw data only.
 
 ---
 
-### 2. Stop sequences
+### 2. Structured outputs: the current way
 
-A **stop sequence** is a piece of text you list in the request. As soon as the model writes it, the API ends the answer. You saw the `stop_sequence` stop reason in [lesson 1](01-accessing-the-api.md).
+**Not in the course, from the official Claude API documentation.**
 
-The course adds a `stop_sequences` option to the `chat()` helper from [lesson 6](06-temperature.md):
+#### How it works
 
-```python
-def chat(messages, system=None, temperature=1.0, stop_sequences=[]):
-    params = {
-        "model": model,
-        "max_tokens": 1000,
-        "messages": messages,
-        "temperature": temperature
-    }
-    if system:
-        params["system"] = system
-    if stop_sequences:
-        params["stop_sequences"] = stop_sequences
+A **JSON schema** is a description of a JSON shape: which fields exist, what type each one is, and which ones are required. You send it with the request. While the model writes, the API only lets it choose tokens that keep the answer valid for that schema (this is called *constrained decoding*). A Markdown fence or an opening sentence would break the schema, so the model can't write them.
 
-    message = client.messages.create(**params)
-    return message.content[0].text
-```
+Think of a paper form with fixed boxes. You can write anything inside a box, but nothing outside the boxes.
 
-- `stop_sequences=[]` means the option is empty unless the caller passes a list, such as `["```"]`.
-- `if stop_sequences:` adds the setting to the request only when the list has something in it.
-- `params["stop_sequences"]` is the real API setting name. It takes a list, so you can give several stop texts.
-
-**Not in the course, from the official Claude API documentation:** when a stop sequence ends the answer, the response has `stop_reason` set to `"stop_sequence"`. The `stop_sequence` field shows which text matched. The matched text is not part of the answer.
-
----
-
-### 3. Prefill and stop sequence together
-
-**Prefilling** means you add an assistant message as the last message in the list. The model does not start a new answer. It continues the text you wrote, as if it had written those words itself.
-
-```python
-messages = []
-
-add_user_message(messages, "Generate a very short event bridge rule as json")
-add_assistant_message(messages, "```json")
-
-text = chat(messages, stop_sequences=["```"])
-```
-
-- `add_user_message()` and `add_assistant_message()` are the helpers from [lesson 4](04-multi-turn-conversations.md).
-- The assistant message ` ```json ` is the prefill. Your code wrote it. The model did not.
-- `stop_sequences=["```"]` ends the answer when the model writes the closing fence.
-
-![The request holds the stop sequence ```, the user message "Generate an Event Bridge rule as JSON", and the prefilled assistant message ```json. Claude thinks "I need to write a full rule and describe it", then "Oh, I've already started the JSON part!", then "All done with the json, I'll close it with ```"](images/08-prefill-and-stop-sequence.png)
-
-#### What the model "thinks" at each step
-
-| Step | What the model sees | What happens |
-|---|---|---|
-| 1 | The user message alone | It plans to write a full rule and describe it |
-| 2 | Its answer already starts with ` ```json ` | It skips any introduction and writes JSON straight away |
-| 3 | The JSON is finished | It writes ` ``` ` to close the block |
-| 4 | The API spots the stop sequence | The answer ends there, so the closing sentence is never written |
-
-The answer that comes back is only the new text, without your prefill:
-
-```json
-{
-  "source": ["aws.ec2"],
-  "detail-type": ["EC2 Instance State-change Notification"],
-  "detail": {
-    "state": ["running"]
-  }
-}
-```
-
-> **Remember this:** Open the box for the model (prefill), and stop it as it tries to close the box (stop sequence).
-
-**Warning:** Prefill only works on older models, such as `claude-haiku-4-5`, the model this course uses. On Claude Opus 4.6, Sonnet 4.6, and every newer model, a request whose last message is a prefilled assistant message fails with a 400 error. Section 6 shows the replacement.
-
----
-
-### 4. Cleaning and parsing the result
-
-The answer often starts and ends with a line break. For example, the model writes a new line right after ` ```json `. Python can clean that up and read the JSON:
+#### The request
 
 ```python
 import json
 
-# Clean up and parse the JSON
-clean_json = json.loads(text.strip())
-```
-
-- `text.strip()` removes spaces and line breaks from both ends of the text.
-- `json.loads()` turns JSON text into Python data (a dictionary here), such as `clean_json["source"]`, which gives `["aws.ec2"]`.
-
-**Warning:** Prefill and stop sequences shape the answer, but they don't promise valid JSON. The model could still leave out a comma or a field. `json.loads()` then raises an error. Catch that error, and check that the fields your app needs are there.
-
----
-
-### 5. Beyond JSON
-
-The same trick works for any content the model normally wraps:
-
-| You want | Prefill | Stop sequence |
-|---|---|---|
-| JSON | ` ```json ` | ` ``` ` |
-| A Python code snippet | ` ```python ` | ` ``` ` |
-| CSV data (rows of comma-separated values) | ` ```csv ` | ` ``` ` |
-| A bulleted list (my example, not the course's) | `<list>`, after asking for the list inside `<list>` tags | `</list>` |
-
-The course's rule: find what the model naturally wraps your content in. Use that wrapping's opening as the prefill and its closing as the stop sequence.
-
----
-
-### 6. The current way: structured outputs
-
-**Not in the course, from the official Claude API documentation:** current models reject prefill. The replacement for JSON is **structured outputs**. You give the API a **JSON schema** (a description of the exact fields and their types). The API then makes sure the answer is JSON that matches it.
-
-```python
 response = client.messages.create(
     model="claude-opus-5-5",
-    max_tokens=16000,
-    messages=[{"role": "user", "content": "Generate a very short event bridge rule as json"}],
+    max_tokens=1000,
+    messages=[{"role": "user", "content": "Generate a very short EventBridge rule to monitor EC2 instances"}],
     output_config={
         "format": {
             "type": "json_schema",
@@ -252,69 +145,76 @@ response = client.messages.create(
                 "type": "object",
                 "properties": {
                     "source": {"type": "array", "items": {"type": "string"}},
-                    "detail-type": {"type": "array", "items": {"type": "string"}}
+                    "detail-type": {"type": "array", "items": {"type": "string"}},
+                    "detail": {
+                        "type": "object",
+                        "properties": {
+                            "state": {"type": "array", "items": {"type": "string"}}
+                        },
+                        "required": ["state"],
+                        "additionalProperties": False
+                    }
                 },
-                "required": ["source", "detail-type"],
+                "required": ["source", "detail-type", "detail"],
                 "additionalProperties": False
             }
         }
     }
 )
+
 rule = json.loads(response.content[0].text)
+print(rule["source"])   # ['aws.ec2']
 ```
 
-- `output_config` holds output settings. Its `format` part says "answer as JSON matching this schema."
+- `output_config` holds settings about the output. Its `format` part says "answer as JSON matching this schema."
+- `"type": "object"` means the answer is a JSON object, the `{ ... }` kind.
+- `"properties"` lists the fields. `{"type": "array", "items": {"type": "string"}}` means "a list of text values," such as `["aws.ec2"]`.
+- `"detail"` is an object inside the object. Each object, including nested ones, gets its own `required` list.
 - `"required"` lists the fields that must appear. `"additionalProperties": False` forbids any other field.
-- No prefill, no stop sequence, and no `.strip()` is needed. The answer is plain JSON.
+- `json.loads()` turns the JSON text into a Python dictionary. No `.strip()` and no fence removal are needed.
 
-#### Do I still need the prefill trick on a newer model?
+The answer text is plain JSON, ready for the copy button:
 
-No. On a newer model, you **can't** use the prefill, and you **don't need** it. Structured outputs do the same job better. Here is what changes in your code when you move the EventBridge generator from Haiku 4.5 to a newer model:
+```json
+{"source": ["aws.ec2"], "detail-type": ["EC2 Instance State-change Notification"], "detail": {"state": ["running"]}}
+```
 
-| Part of the request | Haiku 4.5 (the course's way) | Newer model, such as `claude-sonnet-5-5` |
-|---|---|---|
-| Last message | Your prefilled assistant message ` ```json ` | Removed. The list ends with the user message. Keeping it causes the 400 error. |
-| `stop_sequences` | `["```"]` | Removed. With structured outputs the model writes no fences, so there is nothing to stop on. |
-| `output_config` | Not used | Added, with your JSON schema |
-| Cleaning the answer | `text.strip()`, then `json.loads()` | Just `json.loads()` |
-| Is the shape guaranteed? | No. Check the fields yourself. | Yes. The JSON always matches the schema. |
+#### The shortcut: `client.messages.parse()` with Pydantic
 
-Stop sequences themselves still work on newer models. Only the prefilled last assistant message is rejected. You simply have no reason to add ` ``` ` as a stop sequence once structured outputs remove the fences.
+Writing schemas by hand is tedious. *Pydantic* is a Python library where you describe data as a class. The SDK can turn that class into a schema for you:
 
-| Way | Works on | Shape guaranteed? | Use it when |
-|---|---|---|---|
-| Prefill + stop sequence | Older models, such as Haiku 4.5 | No | You follow this course, or you maintain code on an older model |
-| Structured outputs | Current models | Yes | You build anything new that parses JSON |
-| System prompt instruction | All models | No | You only want to skip the introduction sentence |
+```python
+from pydantic import BaseModel
+
+class Customer(BaseModel):
+    id: str
+    name: str
+    email: str
+
+response = client.messages.parse(
+    model="claude-opus-5-5",
+    max_tokens=1000,
+    messages=[{"role": "user", "content": "Extract the customer: Asha Rao, ID C-101, asha@example.com"}],
+    output_format=Customer,
+)
+
+customer = response.parsed_output   # a Customer object
+print(customer.email)               # asha@example.com
+```
+
+- `output_format=Customer` passes the class. The SDK builds the schema and sends it for you.
+- `response.parsed_output` is already a checked `Customer` object, so you skip `json.loads()`.
+
+> **Remember this:** Describe the shape, and the API holds the model to it.
 
 ---
 
-### 7. Nested JSON and more than one JSON
+### 3. Nested JSON and more than one JSON
 
 **Not in the course; my answer to a follow-up question.** Say your app needs two things from one answer: customer data and that customer's orders.
 
-#### Nested JSON works with both ways
-
-*Nested* JSON means objects inside objects, or lists of objects. For example, a customer object that holds an address object.
-
-- **Prefill and stop sequence:** nesting is no problem. The stop sequence ` ``` ` never matches a `}` or `]`, so the model writes the whole nested object before it stops.
-- **Structured outputs:** the schema itself can hold nested objects and lists of objects (see the example below).
-
-#### Two separate JSON blocks break the prefill trick
-
-Suppose you ask for "the customer as one JSON block, then the orders as a second JSON block." With prefill ` ```json ` and stop sequence ` ``` `, this happens:
-
-| Step | What the model writes | Result |
-|---|---|---|
-| 1 | The customer JSON, after your ` ```json ` prefill | Kept in the answer |
-| 2 | ` ``` ` to close the first block | The stop sequence fires, and the answer ends |
-| 3 | The orders JSON | Never written |
-
-So your app gets the customer data only, and the order data is lost.
-
-#### The fix: one JSON object that holds both
-
-Ask for a single object with one key per part:
+- **Nested JSON works.** *Nested* means objects inside objects, or lists of objects, like `detail` inside the rule above. The schema simply describes the inner objects.
+- **Two JSONs: put them in one object.** A schema describes one JSON value. So ask for one object with a key per part, then read `data["customer"]` and `data["orders"]`.
 
 ```json
 {
@@ -326,8 +226,8 @@ Ask for a single object with one key per part:
 }
 ```
 
-- With prefill, the user message says: "Return the customer and their orders as one JSON object with the keys `customer` and `orders`." Then parse once and read `data["customer"]` and `data["orders"]`.
-- With structured outputs, write the same shape as a schema:
+<details>
+<summary>The schema for this customer-and-orders object</summary>
 
 ```python
 schema = {
@@ -361,15 +261,48 @@ schema = {
 }
 ```
 
-- `"type": "array"` with `"items"` means "a list, where every item has this shape." Here, every order has an `order_id` and a `total`.
-- Each object, including the nested ones, gets its own `required` list and `"additionalProperties": False`.
-- Pass `schema` in `output_config` exactly as in section 6.
+- `"type": "array"` with `"items"` means "a list, where every item has this shape." Every order has an `order_id` and a `total`.
+- Pass `schema` in `output_config` exactly as in section 2.
+
+</details>
 
 | Need | Use it when | How |
 |---|---|---|
-| One combined object | The parts belong together, such as a customer and their orders | One JSON object with a key per part (recommended) |
-| Two separate requests | The parts are unrelated, or each one is large | One request per JSON |
-| Tags, no stop sequence | You must keep separate blocks on an older model | Ask for each JSON inside its own tags, such as `<customer>` and `<orders>`, then cut them out in code |
+| One combined object | The parts belong together, such as a customer and their orders | One schema with a key per part (recommended) |
+| Two separate requests | The parts are unrelated, or each one is large | One request and one schema per JSON |
+
+---
+
+### 4. Beyond JSON: code, CSV, and lists
+
+Structured outputs return JSON. For other content, you have two current options:
+
+| You want | Use it when | How |
+|---|---|---|
+| Code, CSV, or a list that your code reads | Your code must pull the content out reliably | Put it in a JSON field, such as a schema with a `"code"` string or a `"rows"` list, and read that field |
+| Text a person reads | You only want to skip the introduction | A system prompt instruction, such as "Answer with the CSV only, with no introduction or code fences" |
+
+---
+
+### 5. The course's way: prefill and stop sequences (older models only)
+
+The course solves the problem with two settings. This works only on older models such as `claude-haiku-4-5`.
+
+- A **stop sequence** is text you list in `stop_sequences`. The moment the model writes it, the API ends the answer, and `stop_reason` becomes `"stop_sequence"`. The stop text is not included.
+- **Prefilling** means you add an assistant message as the last message. The model continues your text instead of starting fresh.
+
+```python
+add_user_message(messages, "Generate a very short event bridge rule as json")
+add_assistant_message(messages, "```json")     # the prefill
+text = chat(messages, stop_sequences=["```"])  # stop at the closing fence
+rule = json.loads(text.strip())                # remove leftover line breaks, then parse
+```
+
+The prefill makes the model think it already opened a JSON block, so it writes only JSON. When it tries to close the block with ` ``` `, the stop sequence ends the answer. The course's `chat()` helper just gains a `stop_sequences` option that it passes on as `params["stop_sequences"]`.
+
+![The request holds the stop sequence ```, the user message "Generate an Event Bridge rule as JSON", and the prefilled assistant message ```json. Claude thinks "I need to write a full rule and describe it", then "Oh, I've already started the JSON part!", then "All done with the json, I'll close it with ```"](images/08-prefill-and-stop-sequence.png)
+
+**Warning:** On Claude Opus 4.6, Sonnet 4.6, and every newer model, a prefilled last assistant message fails with a 400 error. Stop sequences still work there, but you no longer need them for JSON. The trick also never guaranteed valid JSON, and two JSON blocks in one answer lose the second one, because the stop sequence fires when the first block closes.
 
 ---
 
@@ -377,45 +310,44 @@ schema = {
 
 #### Reliability
 
-- Always parse inside a `try` block and validate the fields. A model can return broken JSON, and a crash in production is worse than a clear error and a retry.
-- Check `stop_reason`. A `"max_tokens"` stop means the JSON was cut off before the model finished it. A `"stop_sequence"` stop is the expected result here.
-- A stop sequence can fire too early if the same text appears inside the content. For example, a Python snippet that contains ` ``` ` inside a string ends the answer in the middle.
+- Check `stop_reason` before parsing. `"max_tokens"` means the JSON was cut off, and `"refusal"` means the model declined. In both cases the answer may not match the schema.
+- The schema guarantees the shape, not the facts. Validate values your app depends on, such as allowed state names.
 
-#### Limits and pitfalls
+#### Limits
 
-- The API rejects a prefill that ends with a space or line break. Write ` ```json `, not ` ```json\n `.
-- The returned text does not include your prefill. If you need the full text, join the prefill and the answer yourself.
+- Not every JSON Schema feature is supported. For example, recursive schemas (a shape that contains itself) and number limits such as `minimum` are not. Check the current list in the structured outputs documentation.
+- Structured outputs can't be combined with citations, a feature covered later in this course. That combination returns a 400 error.
 
 #### Cost and speed
 
-- Stop sequences save output tokens. The closing sentence is never written, so you don't pay for it, and the answer arrives sooner.
-- Structured outputs add a little to the first request with a new schema, while the API prepares that schema. Later requests with the same schema reuse it. Look up the current behaviour, because it can change.
+- The first request with a new schema takes a little longer, while the API prepares the schema. Later requests with the same schema reuse that work. Look up the current behaviour, because it can change.
+- Structured output answers have no fences or explanation, so you pay for fewer output tokens.
 
 #### Design trade-offs
 
-- For new code, prefer structured outputs. They work on current models and guarantee the shape, so your parsing code stays simple.
-- Keep prefill code only where you must stay on an older model. Plan to move it to structured outputs when you upgrade the model.
+- Keep schemas small and flat where you can. Each extra field is more for the model to fill in and more for you to maintain.
+- When you upgrade old prefill code, change the request (remove the prefill and the stop sequence, add `output_config`) and simplify the parsing code too.
 
 ---
 
 ### Recap
 
 - By default, the model wraps JSON in Markdown fences and adds an explanation, so apps can't use the answer as it is.
-- A stop sequence ends the answer the moment the model writes a given text.
-- A prefill is an assistant message you write. The model continues from it.
-- Prefill ` ```json ` plus stop sequence ` ``` ` returns only the JSON. Clean it with `.strip()` and parse it with `json.loads()`.
-- The same trick works for code, CSV, and lists: prefill the opening wrapper and stop on the closing one.
-- Current models reject prefill. Use structured outputs (`output_config.format`) instead.
+- Structured outputs send a JSON schema in `output_config.format`, and the API returns plain JSON that matches it.
+- `client.messages.parse()` builds the schema from a Pydantic class and returns a ready object.
+- Nested JSON works. To get two JSONs, put both in one object.
+- For code, CSV, or lists, put the content in a JSON field, or use a system prompt instruction for text people read.
+- The course's prefill and stop sequence trick works only on older models. Newer models reject the prefill with a 400 error.
 
 ---
 
 ## My notes / practice
 
-- [ ] Ask `claude-haiku-4-5` for an EventBridge rule as JSON with no prefill, and look at the extra text.
-- [ ] Add the ` ```json ` prefill and the ` ``` ` stop sequence, and parse the answer with `json.loads()`.
-- [ ] Print `stop_reason` and `stop_sequence` from the full message object.
-- [ ] Try the trick for a CSV of three fake customers.
-- [ ] Send the same prefill request to `claude-sonnet-5-5`, read the 400 error, then rewrite it with structured outputs.
+- [ ] Ask a current model for an EventBridge rule as JSON with no schema, and look at the extra text.
+- [ ] Send the same request with the schema from section 2, and parse the answer with `json.loads()`.
+- [ ] Rewrite it with `client.messages.parse()` and a Pydantic class.
+- [ ] Build the customer-and-orders schema and print `data["orders"]`.
+- [ ] Send a prefill request to a newer model, read the 400 error, then fix it with structured outputs.
 
 ---
 
@@ -424,41 +356,41 @@ schema = {
 **Q1. Why does the model add text around the JSON I asked for?**
 It is trained to be helpful in a chat, so it formats code in Markdown blocks and explains what it wrote. That suits a person, but not code that needs to read the data.
 
-**Q2. What does "stop sequence" mean?**
-It is a piece of text you list in the request. As soon as the model writes it, the API ends the answer, and the stop text is left out. For example, with ` ``` ` as a stop sequence, the answer ends where the code block would close.
+**Q2. What does "structured outputs" mean?**
+It is an API setting, `output_config.format`, where you send a JSON schema with the request. The API then makes sure the answer is plain JSON that matches the schema.
 
-**Q3. What does "prefill" mean?**
-It means you write the first part of the model's answer yourself, as the last message in the list, with the role `assistant`. The model continues from your text instead of starting fresh.
+**Q3. What does "JSON schema" mean?**
+It is a description of a JSON shape: which fields exist, the type of each one, and which ones are required. For example, "`source` is a list of text values and must appear."
 
-**Q4. Why do prefill and stop sequence work well together?**
-The prefill ` ```json ` makes the model skip the introduction and start with JSON. The stop sequence ` ``` ` ends the answer before the closing explanation. So the answer holds only the JSON.
+**Q4. How does the API make the model follow the schema?**
+While the model writes, the API only lets it choose tokens that keep the answer valid for the schema. So a Markdown fence, an opening sentence, or a missing required field can't happen.
 
-**Q5. Does the answer include my prefilled text, and why does it start with a line break?**
-No, the answer holds only the new text the model wrote after your prefill. It often starts with a line break because the model writes a new line after ` ```json `. Remove it with `text.strip()` before you call `json.loads()`.
+**Q5. Does structured outputs guarantee the data is correct?**
+It guarantees the shape: valid JSON, every required field, and the right types. It doesn't guarantee the values are true, and a `"max_tokens"` or `"refusal"` stop can leave the answer unfinished. Check `stop_reason` and validate important values.
 
-**Q6. Does this trick work for things other than JSON?**
-Yes. Use it for code, CSV data, or lists. Prefill the opening wrapper the model would use, such as ` ```python `, and stop on the closing one, such as ` ``` `.
+**Q6. What does "client.messages.parse()" do?**
+It is a Python SDK shortcut. You pass a Pydantic class as `output_format`, the SDK turns it into a schema, and `response.parsed_output` holds a ready, checked Python object.
 
-**Q7. Do I still need prefill and stop sequences on newer Claude models?**
-No. Prefill works only on older models such as `claude-haiku-4-5`. Claude Opus 4.6, Sonnet 4.6, and every newer model reject a prefilled last assistant message with a 400 error. On those models, you get clean JSON with structured outputs instead, so you need neither the prefill nor the ` ``` ` stop sequence.
+**Q7. Can structured outputs return nested JSON?**
+Yes. Nested JSON means objects inside objects, or lists of objects, such as a customer with an address inside it. The schema simply describes the inner objects, each with its own `required` list.
 
-**Q8. What does "structured outputs" mean?**
-It is an API setting, `output_config.format`, where you give a JSON schema. The API then makes sure the answer is JSON with exactly those fields. It replaces prefill for JSON on current models.
+**Q8. Can one answer return two JSONs, such as customer data and order data?**
+Put both in one object, such as `{"customer": {...}, "orders": [...]}`, and describe that shape in one schema. Then read `data["customer"]` and `data["orders"]`. If the two parts are unrelated, make two requests instead.
 
-**Q9. Does prefill with a stop sequence work for nested JSON?**
-Yes. Nested JSON means objects inside objects, or lists of objects, such as a customer with an address inside it. The stop sequence ` ``` ` never matches a `}` or `]`, so the model writes the whole nested object before it stops. Structured outputs handle nesting too: the schema just describes the inner objects.
+**Q9. How do I get clean code, CSV, or a list from a newer model?**
+If your code reads it, put it in a JSON field, such as a `"code"` string, and use structured outputs. If a person reads it, a system prompt instruction such as "Answer with the CSV only, with no introduction" is enough.
 
-**Q10. Can one answer return two JSONs, such as customer data and order data?**
-Not as two separate blocks with prefill. The stop sequence fires when the first block closes, so only the customer data comes back. Instead, ask for one object that holds both, such as `{"customer": {...}, "orders": [...]}`, then read `data["customer"]` and `data["orders"]`. With structured outputs, describe that same combined shape in the schema.
+**Q10. What were "prefill" and "stop sequence" in the course's method, and do I still need them?**
+A prefill is an assistant message you write as the last message, which the model continues. A stop sequence is text that ends the answer when the model writes it. On newer models you don't need them for JSON: the prefill fails with a 400 error, and structured outputs replace both.
 
 **Q11. (Exam angle) A web app shows generated JSON with a copy button, but users keep copying Markdown fences and an explanation. How do you fix the output?**
-On a model that accepts prefill, prefill ` ```json ` and add ` ``` ` as a stop sequence, so only the JSON comes back. On current models, use structured outputs with a JSON schema. (Integration)
+Use structured outputs with a JSON schema in `output_config.format`. The answer is then plain JSON with nothing around it, ready to copy. (Integration)
 
 **Q12. (Exam angle) A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error. What do you tell them?**
-Newer models don't accept a prefilled last assistant message, so the prefill must go, and they don't need it anymore. For JSON, remove the prefill and the ` ``` ` stop sequence, and add structured outputs (`output_config.format` with a JSON schema). The API then returns plain JSON that always matches the schema. For plain text, replace the prefill with a system prompt instruction such as "Answer with no introduction." (Claude Models, Prompting & Context Engineering)
+Newer models don't accept a prefilled last assistant message, and they don't need it. Remove the prefill and the ` ``` ` stop sequence, and add `output_config.format` with a JSON schema. For plain-text answers, use a system prompt instruction instead. (Claude Models, Prompting & Context Engineering)
 
 **Q13. (Exam angle) A data pipeline parses model JSON and sometimes crashes on a missing field. What do you recommend?**
-Prefill and stop sequences shape the answer but don't guarantee valid or complete JSON. Validate the parsed data and handle errors, or switch to structured outputs, which guarantee the schema. Also check `stop_reason` for `"max_tokens"`, which means the JSON was cut off. (Solution Design & Architecture)
+Use structured outputs and list the field under `required`, so it is always present. Also check `stop_reason` for `"max_tokens"`, which means the answer was cut off, and validate values the pipeline depends on. (Solution Design & Architecture)
 
 ---
 

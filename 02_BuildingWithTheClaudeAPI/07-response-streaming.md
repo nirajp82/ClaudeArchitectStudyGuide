@@ -18,10 +18,11 @@
 | 4 | [2. How streaming works](#2-how-streaming-works) |
 | 5 | [3. The six kinds of stream event](#3-the-six-kinds-of-stream-event) |
 | 6 | [4. Three ways to stream in Python](#4-three-ways-to-stream-in-python) |
-| 7 | [Architect notes](#architect-notes) |
-| 8 | [Recap](#recap) |
-| 9 | [My notes / practice](#my-notes--practice) |
-| 10 | [FAQ](#faq) |
+| 7 | [5. How the stream travels: Server-Sent Events](#5-how-the-stream-travels-server-sent-events) |
+| 8 | [Architect notes](#architect-notes) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
@@ -47,6 +48,17 @@ With streaming on, the API sends a series of *events* (small messages, each with
 - **Use `client.messages.create(..., stream=True)`** when you need every raw event, such as to handle tool calls yourself. You loop over `stream` and check each event's type.
 - **Use `client.messages.stream(...)` with `stream.text_stream`** when you only want the text to show users. It filters out every event except the text chunks.
 - **Use `stream.get_final_message()`** after the loop when you also need the complete message, such as to save it in a database or add it to the chat history.
+
+#### How the stream travels
+
+The Claude API streams with *Server-Sent Events* (SSE). SSE is plain HTTP: one request, and one long reply that arrives in pieces.
+
+- **Your server to the Claude API:** always SSE. The API replies with the header `Content-Type: text/event-stream` and keeps the connection open. Each event is an `event:` line plus a `data:` line holding JSON. The SDK reads these lines for you.
+- **The browser to your server:** your choice. Your server reads the chunks from Claude and forwards each one to the browser at once.
+- **Use SSE** to forward chunks to the browser for a normal chat. The answer only flows one way, and SSE is the simplest option.
+- **Use WebSockets** (a two-way connection) when the browser must also send messages during an answer, such as a live "stop" button.
+- **Use SignalR** if your app is already built on ASP.NET Core. SignalR is a .NET library that picks WebSockets or SSE underneath.
+- **Never let the browser call the Claude API directly.** The browser would need your API key, and anyone could copy it.
 
 #### Exam takeaways
 
@@ -208,6 +220,142 @@ This gives you both: live text for the user, and a complete message for your cod
 
 ---
 
+### 5. How the stream travels: Server-Sent Events
+
+**Not in the course, from the official Claude API documentation:** the Claude API streams with **Server-Sent Events** (SSE). SSE is a web standard built on plain HTTP. The server keeps one reply open and writes small pieces of text into it over time. It is not SignalR, and it is not WebSockets.
+
+#### What happens on the wire
+
+1. Your server sends a normal HTTPS `POST` to `https://api.anthropic.com/v1/messages`, with `"stream": true` in the body.
+2. The API replies with the header `Content-Type: text/event-stream`. A *header* is a label at the top of an HTTP reply. This one says "events will follow." The API keeps the connection open.
+3. Each time the model writes a few tokens, the API adds another event to the same reply.
+4. After `message_stop`, the API closes the connection.
+
+Each event is an `event:` line, a `data:` line holding JSON, and a blank line:
+
+```text
+event: message_start
+data: {"type":"message_start","message":{"id":"msg_01...","role":"assistant","content":[],...}}
+
+event: content_block_start
+data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Quantum"}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" computing is"}}
+
+event: content_block_stop
+data: {"type":"content_block_stop","index":0}
+
+event: message_delta
+data: {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":42}}
+
+event: message_stop
+data: {"type":"message_stop"}
+```
+
+These are the six events from section 3. `stream.text_stream` is SDK code that reads these lines and keeps only the `text_delta` pieces.
+
+| Technology | What it is | Why the Claude API does or doesn't use it |
+|---|---|---|
+| **SSE** | Plain HTTP. The server pushes text one way, to the caller. | Used. You ask once and the answer flows back one way. Any HTTP client in any language can read it. |
+| **WebSockets** | A two-way connection that stays open | Not needed for one-way answers, and harder to run behind proxies and load balancers |
+| **SignalR** | A .NET library that runs over WebSockets, SSE, or long polling | Tied to .NET and its own protocol, so it doesn't suit a public API that Python, Go, and curl all call |
+
+So streaming works fine "API to API." Your server is just an HTTP client reading a reply that arrives slowly.
+
+#### Passing the stream on to your users
+
+There are two streams. The first is fixed. You choose the second.
+
+```mermaid
+sequenceDiagram
+    participant B as User's browser
+    participant S as Your server
+    participant A as Claude API
+    B->>S: POST /chat {"question": "..."}
+    S->>A: POST /v1/messages (stream: true, API key)
+    A-->>S: SSE event: "Quantum"
+    S-->>B: forward "Quantum"
+    A-->>S: SSE event: " computing is"
+    S-->>B: forward " computing is"
+    A-->>S: message_stop
+    S-->>B: done
+```
+
+Things to notice:
+
+- Only your server holds the API key. The browser never talks to the Claude API.
+- Your server forwards each chunk the moment it arrives. It doesn't wait for the full answer.
+
+#### Example: forwarding with SSE in Python
+
+This server uses FastAPI, a Python web framework. It reads text chunks from Claude and writes each one to the browser as an SSE event:
+
+```python
+import json
+import anthropic
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+
+app = FastAPI()
+client = anthropic.AsyncAnthropic()
+
+@app.post("/chat")
+async def chat(body: dict):
+    async def relay():
+        async with client.messages.stream(
+            model="claude-haiku-4-5",
+            max_tokens=1000,
+            messages=[{"role": "user", "content": body["question"]}],
+        ) as stream:
+            async for text in stream.text_stream:
+                yield f"data: {json.dumps({'text': text})}\n\n"   # one SSE event per chunk
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(relay(), media_type="text/event-stream")
+```
+
+- `AsyncAnthropic()` is the SDK client for `async` code, so one server can handle many users at once.
+- `relay()` is a *generator*: a function that hands out values one at a time. Each `yield` sends one piece to the browser at once.
+- `json.dumps` wraps each chunk in JSON. Line breaks inside the text then can't break the SSE format.
+- `[DONE]` is a marker you invent, so the browser knows the answer is finished.
+
+The browser reads the reply piece by piece with `fetch`. The browser's built-in `EventSource` object only supports `GET` requests, and you need `POST` to send the question.
+
+```javascript
+const res = await fetch("/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ question: "What is quantum computing?" }),
+});
+
+const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+let buffer = "";
+while (true) {
+  const { value, done } = await reader.read();
+  if (done) break;
+  buffer += value;
+  const events = buffer.split("\n\n");
+  buffer = events.pop();                          // keep any half-received event
+  for (const e of events) {
+    const data = e.replace(/^data: /, "");
+    if (data === "[DONE]") continue;
+    output.textContent += JSON.parse(data).text;  // add the chunk to the page
+  }
+}
+```
+
+- `reader.read()` waits for the next piece of the reply.
+- `buffer` matters because the network can split one event across two reads. The code keeps the unfinished part until the rest arrives.
+- `output` is the page element that shows the answer.
+
+**Other options:** in an ASP.NET Core app, a SignalR hub method can return `IAsyncEnumerable<string>` and `yield return` each chunk from Claude. The JavaScript client then reads it with `connection.stream(...)`. Use WebSockets only if the browser must also send messages mid-answer. The Claude side stays the same in every case.
+
+---
+
 ### Architect notes
 
 #### Speed
@@ -228,8 +376,14 @@ This gives you both: live text for the user, and a complete message for your cod
 
 #### Design
 
-- Your server needs a way to push chunks to the app, such as Server-Sent Events (a simple one-way stream over HTTP) or WebSockets (a two-way connection).
+- Your server needs a way to push chunks to the app: SSE for one-way answers, WebSockets or SignalR when the browser also sends messages mid-answer (section 5).
 - Save the chat history from `get_final_message()`, not from chunks you joined yourself. Then you also get the stop reason and token counts.
+
+#### Production pitfalls
+
+- **Proxies that buffer.** A *proxy* (such as Nginx or a load balancer) sits between your server and the browser. Some collect the whole reply before passing it on, which silently undoes streaming. In Nginx, turn this off with `proxy_buffering off;` or the `X-Accel-Buffering: no` header. Don't compress `text/event-stream` replies either.
+- **The user leaves mid-answer.** Close the Claude stream when the browser disconnects. Otherwise the model keeps writing, and you pay for output tokens nobody reads.
+- **Idle timeouts.** The Claude API sends `ping` events to keep its connection alive. On your own stream to the browser, send a comment line such as `: keep-alive` every 15 to 30 seconds during long pauses.
 
 ---
 
@@ -240,6 +394,7 @@ This gives you both: live text for the user, and a complete message for your cod
 - The events are MessageStart, ContentBlockStart, ContentBlockDelta (the text), ContentBlockStop, MessageDelta, and MessageStop.
 - `stream=True` gives raw events. `messages.stream()` with `text_stream` gives only the text.
 - `get_final_message()` gives the complete message after the stream ends.
+- The Claude API streams with Server-Sent Events over plain HTTP. Your server forwards each chunk to the browser with SSE, WebSockets, or SignalR, and keeps the API key to itself.
 
 ---
 
@@ -249,6 +404,8 @@ This gives you both: live text for the user, and a complete message for your cod
 - [ ] Run the `text_stream` example on a long answer, and watch the text appear piece by piece.
 - [ ] Call `get_final_message()` and print its `stop_reason` and `usage`.
 - [ ] Time a long request with and without streaming. Compare when the first word appears.
+- [ ] Run the FastAPI relay and the browser code from section 5, and watch the answer appear on a web page.
+- [ ] Call the API with `curl -N` and `"stream": true`, and read the raw `event:` and `data:` lines.
 
 ---
 
@@ -263,31 +420,34 @@ No. The whole answer takes about the same time. The user just starts reading the
 **Q3. Is each streamed chunk a separate request?**
 No. All the events belong to one request. You send one request and receive many events back.
 
-**Q4. What does "event" mean in streaming?**
-An event is one small message in the stream, with a type and some data. For example, a ContentBlockDelta event holds a chunk of text, such as "Quantum".
+**Q4. What does "event" mean in streaming, and which event holds the text?**
+An event is one small message in the stream, with a type and some data. The ContentBlockDelta events hold the text, such as "Quantum". Many of them arrive during one answer.
 
-**Q5. Which event holds the text to show the user?**
-ContentBlockDelta. Many of these arrive during one answer, and each holds the next small piece of text.
+**Q5. What technology does the Claude API use to stream?**
+Server-Sent Events (SSE), a web standard on plain HTTP. The API keeps one reply open and writes each event into it as an `event:` line and a `data:` line. It doesn't use SignalR or WebSockets.
 
-**Q6. What is the difference between "stream=True" and "client.messages.stream()"?**
+**Q6. How do I pass the stream on to the users of my web app?**
+Your server reads the chunks from Claude and forwards each one to the browser at once, using SSE, WebSockets, or SignalR. The browser talks only to your server, so your API key stays secret.
+
+**Q7. What is the difference between "stream=True" and "client.messages.stream()"?**
 `stream=True` on `create()` gives you every raw event to handle yourself. `client.messages.stream()` is an SDK helper with shortcuts, such as `text_stream` for only the text and `get_final_message()` for the full message.
 
-**Q7. How do I get the full answer when I stream?**
+**Q8. How do I get the full answer when I stream?**
 Call `stream.get_final_message()` after the loop. It returns the complete message, with the text, stop reason, and token usage.
 
-**Q8. Does streaming cost more?**
+**Q9. Does streaming cost more?**
 No. You pay for the same input and output tokens as a normal request.
 
-**Q9. What happens if the stream breaks halfway?**
+**Q10. What happens if the stream breaks halfway?**
 The user may have seen part of the answer already. Your app should show an error and offer a retry, and not save the partial answer as if it were complete.
 
-**Q10. (Exam angle) Users of a chat app complain that answers take 20 seconds to appear. What do you change?**
+**Q11. (Exam angle) Users of a chat app complain that answers take 20 seconds to appear. What do you change?**
 Turn on streaming and forward each text chunk to the app as it arrives. The full answer takes the same time, but the first words appear within a second or two. (Solution Design & Architecture)
 
-**Q11. (Exam angle) A team streams answers but must also save every full answer and its token usage. How do they do both?**
+**Q12. (Exam angle) A team streams answers but must also save every full answer and its token usage. How do they do both?**
 Use `client.messages.stream()`, send `text_stream` chunks to users, then call `get_final_message()` and save that message and its `usage`. (Integration)
 
-**Q12. (Exam angle) Long answers with a large "max_tokens" keep failing with timeout errors. What do you recommend?**
+**Q13. (Exam angle) Long answers with a large "max_tokens" keep failing with timeout errors. What do you recommend?**
 Use streaming. Data then flows during generation, so the connection doesn't sit idle until a timeout ends it. The SDKs require streaming for very large `max_tokens` values. (Integration)
 
 ---

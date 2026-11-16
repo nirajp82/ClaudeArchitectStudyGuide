@@ -209,6 +209,47 @@ SupportTicket(name='Priya Shah', email='priya@example.com', order_id='A-1042', i
 | The problem | A free-text sentence | One of your four categories: `damaged` |
 | `json.loads()` works on the answer | No | Yes, or use `parsed_output` directly |
 
+#### The same idea without a class
+
+Without Pydantic, you write the schema yourself as a dictionary and pass it in `output_config`. Here it asks only for the customer's first and last name:
+
+```python
+import json
+
+response = client.messages.create(
+    model="claude-opus-5-5",
+    max_tokens=1000,
+    messages=[{"role": "user", "content": f"Get the customer's name from this email:\n\n{email_text}"}],
+    output_config={
+        "format": {
+            "type": "json_schema",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "first_name": {"type": "string"},
+                    "last_name": {"type": "string"}
+                },
+                "required": ["first_name", "last_name"],
+                "additionalProperties": False
+            }
+        }
+    },
+)
+
+customer = json.loads(response.content[0].text)
+print(customer)   # {'first_name': 'Priya', 'last_name': 'Shah'}
+```
+
+- `"type": "object"` means the answer is a JSON object, the `{ ... }` kind. `"properties"` lists its fields, and `"string"` means text.
+- `"required"` lists the fields that must appear. `"additionalProperties": False` forbids any other field.
+- Here you get plain JSON text, so `json.loads()` turns it into a Python dictionary yourself.
+
+| | Pydantic class with `parse()` | Dictionary with `create()` |
+|---|---|---|
+| You write | A short class | The schema by hand |
+| You get back | A ready object in `parsed_output` | JSON text to read with `json.loads()` |
+| Use it when | You write Python, which is most of the time | Your language has no class helper, or the schema comes from a file |
+
 #### How the API enforces the schema
 
 While the model writes, the API only lets it choose tokens that keep the answer valid for the schema (this is called *constrained decoding*). An opening sentence, a fence, or a fifth category would break the schema, so the model can't write them.

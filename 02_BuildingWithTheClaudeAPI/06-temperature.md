@@ -38,10 +38,16 @@
 The model writes one token (a small piece of text) at a time, in three steps:
 
 1. **Tokenization:** cut your input, such as "What do you think", into tokens.
-2. **Prediction:** give every possible next token a chance, such as "about" 30%, "would" 20%, and "of" 10%.
+2. **Prediction:** give every possible next token a **probability**, its chance of being picked. The course writes it as a number from 0 to 1, such as 0.3, which means 30%. For "What do you think", "about" gets 0.3 (30%), "would" 0.2 (20%), and "of" 0.1 (10%). All the probabilities add up to 1 (100%).
 3. **Sampling:** pick one token at random, using those chances. Then repeat for the next token.
 
-Temperature changes the chances in step 3. At low temperature, "about" gets nearly 100%. At high temperature, the seven words in the example get between 9% and 23% each.
+Temperature reshapes these probabilities before the pick in step 3:
+
+| Next word | about | would | of | is | when | makes | we |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| The model's probabilities | 30% | 20% | 10% | 10% | 10% | 5% | 5% |
+| Low temperature | 100% | 0% | 0% | 0% | 0% | 0% | 0% |
+| High temperature | 23% | 18% | 15% | 12% | 12% | 11% | 9% |
 
 #### When to use which temperature
 

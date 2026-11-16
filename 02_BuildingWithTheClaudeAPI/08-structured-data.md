@@ -56,14 +56,20 @@ The rule: find what the model naturally wraps your content in. Use the opening a
 
 #### When to use which way of getting clean data
 
-- **Use prefill plus a stop sequence** on older models that accept prefill, such as `claude-haiku-4-5`, the model this course uses. For example, a JSON rule generator built on Haiku 4.5.
-- **Use structured outputs** (the `output_config.format` setting with a JSON schema) on current models, such as `claude-opus-5-5` or `claude-sonnet-5-5`. Prefill returns a 400 error there. Structured outputs also guarantee the JSON matches your schema.
-- **Use a system prompt instruction** ("Answer with the content only, with no introduction") when you only want to skip the opening sentence and don't need machine-readable data.
+The prefill trick is the old way. On newer models you can't use it, and you don't need it, because structured outputs do the job better.
+
+| Model | Can you prefill? | How to get clean JSON |
+|---|---|---|
+| Older models, such as `claude-haiku-4-5` (the course's model) | Yes | Prefill ` ```json ` and stop on ` ``` ` |
+| Claude Opus 4.6, Sonnet 4.6, and every newer model, such as `claude-sonnet-5-5` | No. A prefilled last assistant message fails with a 400 error. | Use structured outputs: the `output_config.format` setting with a JSON schema. No prefill and no stop sequence are needed. |
+
+- **Use structured outputs** for anything new that your code must parse as JSON. They also guarantee the JSON matches your schema, which the prefill trick never did.
+- **Use a system prompt instruction** ("Answer with the content only, with no introduction") when the answer is plain text, not JSON, and you only want to skip the opening sentence.
 
 #### Exam takeaways
 
 - **A web app shows generated JSON with a copy button, but users keep copying the Markdown fences and the explanation too.** Prefill the assistant message with ` ```json ` and add ` ``` ` as a stop sequence, so the answer holds only the JSON. On current models, use structured outputs instead. (Integration)
-- **A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error.** Newer models reject a prefilled last assistant message. Replace the prefill with structured outputs (`output_config.format`) or a system prompt instruction. (Claude Models, Prompting & Context Engineering)
+- **A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error.** Newer models reject a prefilled last assistant message, so the prefill must go. The team doesn't need it anymore: for JSON, they remove the prefill and the ` ``` ` stop sequence and add structured outputs (`output_config.format` with a JSON schema). For plain text, a system prompt instruction such as "Answer with no introduction" replaces the prefill. (Claude Models, Prompting & Context Engineering)
 - **A pipeline parses model JSON and sometimes crashes on a missing field.** Prefill only shapes the start of the answer. It doesn't guarantee valid or complete JSON. Validate the parsed result in code, or use structured outputs with a schema, which guarantees the shape. (Solution Design & Architecture)
 
 ---
@@ -261,6 +267,20 @@ rule = json.loads(response.content[0].text)
 - `"required"` lists the fields that must appear. `"additionalProperties": False` forbids any other field.
 - No prefill, no stop sequence, and no `.strip()` is needed. The answer is plain JSON.
 
+#### Do I still need the prefill trick on a newer model?
+
+No. On a newer model, you **can't** use the prefill, and you **don't need** it. Structured outputs do the same job better. Here is what changes in your code when you move the EventBridge generator from Haiku 4.5 to a newer model:
+
+| Part of the request | Haiku 4.5 (the course's way) | Newer model, such as `claude-sonnet-5-5` |
+|---|---|---|
+| Last message | Your prefilled assistant message ` ```json ` | Removed. The list ends with the user message. Keeping it causes the 400 error. |
+| `stop_sequences` | `["```"]` | Removed. With structured outputs the model writes no fences, so there is nothing to stop on. |
+| `output_config` | Not used | Added, with your JSON schema |
+| Cleaning the answer | `text.strip()`, then `json.loads()` | Just `json.loads()` |
+| Is the shape guaranteed? | No. Check the fields yourself. | Yes. The JSON always matches the schema. |
+
+Stop sequences themselves still work on newer models. Only the prefilled last assistant message is rejected. You simply have no reason to add ` ``` ` as a stop sequence once structured outputs remove the fences.
+
 | Way | Works on | Shape guaranteed? | Use it when |
 |---|---|---|---|
 | Prefill + stop sequence | Older models, such as Haiku 4.5 | No | You follow this course, or you maintain code on an older model |
@@ -419,8 +439,8 @@ No, the answer holds only the new text the model wrote after your prefill. It of
 **Q6. Does this trick work for things other than JSON?**
 Yes. Use it for code, CSV data, or lists. Prefill the opening wrapper the model would use, such as ` ```python `, and stop on the closing one, such as ` ``` `.
 
-**Q7. Does prefill work on every Claude model?**
-No. It works on older models such as `claude-haiku-4-5`. Claude Opus 4.6, Sonnet 4.6, and every newer model reject a prefilled last assistant message with a 400 error.
+**Q7. Do I still need prefill and stop sequences on newer Claude models?**
+No. Prefill works only on older models such as `claude-haiku-4-5`. Claude Opus 4.6, Sonnet 4.6, and every newer model reject a prefilled last assistant message with a 400 error. On those models, you get clean JSON with structured outputs instead, so you need neither the prefill nor the ` ``` ` stop sequence.
 
 **Q8. What does "structured outputs" mean?**
 It is an API setting, `output_config.format`, where you give a JSON schema. The API then makes sure the answer is JSON with exactly those fields. It replaces prefill for JSON on current models.
@@ -435,7 +455,7 @@ Not as two separate blocks with prefill. The stop sequence fires when the first 
 On a model that accepts prefill, prefill ` ```json ` and add ` ``` ` as a stop sequence, so only the JSON comes back. On current models, use structured outputs with a JSON schema. (Integration)
 
 **Q12. (Exam angle) A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error. What do you tell them?**
-Newer models don't accept a prefilled last assistant message. Replace the prefill with structured outputs (`output_config.format`) for JSON, or with a system prompt instruction to skip any introduction. (Claude Models, Prompting & Context Engineering)
+Newer models don't accept a prefilled last assistant message, so the prefill must go, and they don't need it anymore. For JSON, remove the prefill and the ` ``` ` stop sequence, and add structured outputs (`output_config.format` with a JSON schema). The API then returns plain JSON that always matches the schema. For plain text, replace the prefill with a system prompt instruction such as "Answer with no introduction." (Claude Models, Prompting & Context Engineering)
 
 **Q13. (Exam angle) A data pipeline parses model JSON and sometimes crashes on a missing field. What do you recommend?**
 Prefill and stop sequences shape the answer but don't guarantee valid or complete JSON. Validate the parsed data and handle errors, or switch to structured outputs, which guarantee the schema. Also check `stop_reason` for `"max_tokens"`, which means the JSON was cut off. (Solution Design & Architecture)

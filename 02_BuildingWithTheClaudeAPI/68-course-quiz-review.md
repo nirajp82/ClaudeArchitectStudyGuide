@@ -121,3 +121,31 @@ Users of your chat app stare at a loading spinner for 20 seconds, then the whole
 | Use a different web browser | ❌ Wrong | The browser isn't the cause. Without streaming, your server has nothing to show until the full answer is ready. |
 
 **Domain:** Solution Design & Architecture. **My notes:** [Lesson 7](07-response-streaming.md).
+
+### Q9. The first thing the model does with your text
+
+When the model processes your text, what does it do first?
+
+| Option | Right or wrong | Why |
+|---|---|---|
+| Breaks the text into small pieces called tokens | ✅ Right | The model works with numbers, not letters. So it first splits the text into tokens, such as "pizza" or " top" and "pings", and turns each token into a number. This step is called *tokenization*. |
+| Translates the text into another language | ❌ Wrong | The model reads your language directly. There is no translation step. |
+| Writes a response straight away | ❌ Wrong | It can't write anything until it has turned your text into tokens and processed them. |
+| Checks whether the content is appropriate | ❌ Wrong | Safety checks exist, but they are not the first step of how the model reads text. Tokenization comes first. |
+
+**Domain:** Claude Models, Prompting & Context Engineering. **My notes:** [Deep dive: how does Claude know what to say next?](01-deep-dive-inside-the-model.md).
+
+### Q10. Where to keep the API key for a web app
+
+You're building a web app that calls the Claude API. Where do you keep the API key?
+
+| Option | Right or wrong | Why |
+|---|---|---|
+| On your server, where users can't reach it | ✅ Right | The browser sends requests to your server, and only your server calls the Claude API with the key. Users never see the key. |
+| In the mobile app that users install | ❌ Wrong | Anyone can unpack an installed app and read the key out of it. |
+| In a text file on the user's computer | ❌ Wrong | The user, or any program on that computer, can open the file and copy the key. |
+| In the JavaScript code that users download | ❌ Wrong | Everything sent to a browser is public. Even shrunk or scrambled code still contains the key. |
+
+A leaked key lets anyone run requests on your account and bill you for them. If a key leaks, delete it in the Console and create a new one.
+
+**Domain:** Integration. **My notes:** [Lesson 1](01-accessing-the-api.md) and [Lesson 2](02-getting-an-api-key.md).

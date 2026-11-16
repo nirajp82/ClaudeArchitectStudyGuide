@@ -28,7 +28,7 @@
 
 ### Revision summary
 
-- **Temperature:** a setting from 0.0 to 1.0 that controls how predictable or creative the model's answers are. The default is 1.0.
+- **Temperature:** a setting from 0.0 to 1.0 that controls how predictable or creative the model's answers are. The default is 1.0. The name comes from physics: cold molecules stay locked in one place, like ice, and hot ones jump around, like steam. In the same way, 0.0 is cold (the model sticks to one word) and 1.0 is hot (it jumps between many).
 - **Low temperature (near 0):** the model almost always picks the most likely next word. Answers are consistent.
 - **High temperature (near 1):** the chances spread more evenly across words, so less likely words get picked more often. Answers vary more.
 - **Newer models:** Claude models from 4.7 onward return an error for any temperature except the default 1.0. On those models, steer the answer with your prompt instead.
@@ -106,6 +106,13 @@ Then it adds the picked token and repeats the three steps for the next one.
 ### 2. What temperature does
 
 **Temperature** is a number from 0.0 to 1.0 that reshapes the chances before the model picks. Think of it as a creativity dial.
+
+**Why is it called "temperature"?** The name and the math come from physics. Think of water molecules. In ice (cold), every molecule stays locked in its one most stable spot. In steam (hot), molecules jump around into all kinds of positions. The model's word choices behave the same way:
+
+- **Cold = 0.0 (low temperature):** the choice "freezes" onto the single most likely word.
+- **Hot = 1.0 (high temperature):** the choice "boils" and jumps around among many words.
+
+Scientists use the same formula for molecules and for word chances, so AI researchers kept the physics name.
 
 ![Low temperature: "about" gets 100% and every other token 0%, giving more deterministic output. High temperature: the chances spread out to 23%, 18%, 15%, 12%, 12%, 11%, and 9%, giving more random output](images/06-low-vs-high-temperature.png)
 
@@ -252,37 +259,40 @@ The course also mentions **effort**. Effort is a different setting. It controls 
 **Q1. What does "temperature" mean for the Claude API?**
 It is a setting from 0.0 to 1.0 that controls how predictable the answers are. Low values make the model stick to the most likely words. High values let less likely words be picked more often.
 
-**Q2. What is the default temperature?**
+**Q2. Why is the setting called "temperature", and is 1 hot or cold?**
+The name comes from physics. Cold molecules stay locked in one spot, like ice, and hot ones jump around, like steam. **0.0 is the coldest setting**: the model freezes onto the most likely word. **1.0 is the hottest**: the model jumps between many words.
+
+**Q3. What is the default temperature?**
 1.0. If you don't set temperature, the model uses the chances exactly as it calculated them.
 
-**Q3. What does "sampling" mean?**
+**Q4. What does "sampling" mean?**
 It is the last step of picking a word: the model chooses one token at random, using the chances it worked out. Temperature changes those chances before the pick.
 
-**Q4. Does temperature 0 always give the same answer?**
+**Q5. Does temperature 0 always give the same answer?**
 No. It makes answers much more consistent, but Anthropic doesn't promise identical output. Check important output in code.
 
-**Q5. Which temperature should I use for extracting data from documents?**
+**Q6. Which temperature should I use for extracting data from documents?**
 A low one, 0.0 to 0.3, because there is one right answer and you want the same result each time.
 
-**Q6. Which temperature should I use for brainstorming?**
+**Q7. Which temperature should I use for brainstorming?**
 A high one, 0.8 to 1.0, because you want many different ideas.
 
-**Q7. Does a higher temperature cost more?**
+**Q8. Does a higher temperature cost more?**
 No. Price depends on tokens, not temperature. A higher temperature can sometimes produce longer answers, which use more output tokens.
 
-**Q8. Why does my request fail when I set temperature on a newer model?**
+**Q9. Why does my request fail when I set temperature on a newer model?**
 Claude models from 4.7 onward accept only the default of 1.0. Remove the setting, and guide the answer with your prompt instead.
 
-**Q9. What is the difference between temperature and effort?**
+**Q10. What is the difference between temperature and effort?**
 Temperature controls how random the word choices are. Effort controls how much work the model puts into an answer, such as how much it thinks first.
 
-**Q10. (Exam angle) A data-extraction pipeline returns slightly different fields for the same document. What do you recommend?**
+**Q11. (Exam angle) A data-extraction pipeline returns slightly different fields for the same document. What do you recommend?**
 Use a low temperature on models that accept it, and give clear examples of the output format. Validate every result in code, because even temperature 0 doesn't guarantee identical answers. (Claude Models, Prompting & Context Engineering)
 
-**Q11. (Exam angle) After moving to a newer Claude model, requests that set temperature 0.2 start failing. How do you fix them?**
+**Q12. (Exam angle) After moving to a newer Claude model, requests that set temperature 0.2 start failing. How do you fix them?**
 Claude models from 4.7 onward accept only the default temperature. Remove the setting, and get consistency from the prompt, examples, and output checks. (Integration)
 
-**Q12. (Exam angle) A brainstorming tool keeps suggesting the same few ideas. What do you change?**
+**Q13. (Exam angle) A brainstorming tool keeps suggesting the same few ideas. What do you change?**
 On a model that accepts temperature, raise it toward 1.0. On any model, ask for several ideas in one request, and say how they should differ. (Claude Models, Prompting & Context Engineering)
 
 ---

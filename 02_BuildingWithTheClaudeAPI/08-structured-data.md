@@ -20,10 +20,11 @@
 | 6 | [4. Cleaning and parsing the result](#4-cleaning-and-parsing-the-result) |
 | 7 | [5. Beyond JSON](#5-beyond-json) |
 | 8 | [6. The current way: structured outputs](#6-the-current-way-structured-outputs) |
-| 9 | [Architect notes](#architect-notes) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 9 | [7. Nested JSON and more than one JSON](#7-nested-json-and-more-than-one-json) |
+| 10 | [Architect notes](#architect-notes) |
+| 11 | [Recap](#recap) |
+| 12 | [My notes / practice](#my-notes--practice) |
+| 13 | [FAQ](#faq) |
 
 ---
 
@@ -268,6 +269,90 @@ rule = json.loads(response.content[0].text)
 
 ---
 
+### 7. Nested JSON and more than one JSON
+
+**Not in the course; my answer to a follow-up question.** Say your app needs two things from one answer: customer data and that customer's orders.
+
+#### Nested JSON works with both ways
+
+*Nested* JSON means objects inside objects, or lists of objects. For example, a customer object that holds an address object.
+
+- **Prefill and stop sequence:** nesting is no problem. The stop sequence ` ``` ` never matches a `}` or `]`, so the model writes the whole nested object before it stops.
+- **Structured outputs:** the schema itself can hold nested objects and lists of objects (see the example below).
+
+#### Two separate JSON blocks break the prefill trick
+
+Suppose you ask for "the customer as one JSON block, then the orders as a second JSON block." With prefill ` ```json ` and stop sequence ` ``` `, this happens:
+
+| Step | What the model writes | Result |
+|---|---|---|
+| 1 | The customer JSON, after your ` ```json ` prefill | Kept in the answer |
+| 2 | ` ``` ` to close the first block | The stop sequence fires, and the answer ends |
+| 3 | The orders JSON | Never written |
+
+So your app gets the customer data only, and the order data is lost.
+
+#### The fix: one JSON object that holds both
+
+Ask for a single object with one key per part:
+
+```json
+{
+  "customer": {"id": "C-101", "name": "Asha Rao", "email": "asha@example.com"},
+  "orders": [
+    {"order_id": "O-1", "total": 49.99},
+    {"order_id": "O-2", "total": 15.00}
+  ]
+}
+```
+
+- With prefill, the user message says: "Return the customer and their orders as one JSON object with the keys `customer` and `orders`." Then parse once and read `data["customer"]` and `data["orders"]`.
+- With structured outputs, write the same shape as a schema:
+
+```python
+schema = {
+    "type": "object",
+    "properties": {
+        "customer": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string"},
+                "name": {"type": "string"},
+                "email": {"type": "string"}
+            },
+            "required": ["id", "name", "email"],
+            "additionalProperties": False
+        },
+        "orders": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "order_id": {"type": "string"},
+                    "total": {"type": "number"}
+                },
+                "required": ["order_id", "total"],
+                "additionalProperties": False
+            }
+        }
+    },
+    "required": ["customer", "orders"],
+    "additionalProperties": False
+}
+```
+
+- `"type": "array"` with `"items"` means "a list, where every item has this shape." Here, every order has an `order_id` and a `total`.
+- Each object, including the nested ones, gets its own `required` list and `"additionalProperties": False`.
+- Pass `schema` in `output_config` exactly as in section 6.
+
+| Need | Use it when | How |
+|---|---|---|
+| One combined object | The parts belong together, such as a customer and their orders | One JSON object with a key per part (recommended) |
+| Two separate requests | The parts are unrelated, or each one is large | One request per JSON |
+| Tags, no stop sequence | You must keep separate blocks on an older model | Ask for each JSON inside its own tags, such as `<customer>` and `<orders>`, then cut them out in code |
+
+---
+
 ### Architect notes
 
 #### Reliability
@@ -328,28 +413,31 @@ It means you write the first part of the model's answer yourself, as the last me
 **Q4. Why do prefill and stop sequence work well together?**
 The prefill ` ```json ` makes the model skip the introduction and start with JSON. The stop sequence ` ``` ` ends the answer before the closing explanation. So the answer holds only the JSON.
 
-**Q5. Does the answer include my prefilled text?**
-No. The answer holds only the new text the model wrote after your prefill. Join them yourself if you need the full text.
+**Q5. Does the answer include my prefilled text, and why does it start with a line break?**
+No, the answer holds only the new text the model wrote after your prefill. It often starts with a line break because the model writes a new line after ` ```json `. Remove it with `text.strip()` before you call `json.loads()`.
 
-**Q6. Why does my answer start with a line break?**
-The model usually writes a new line after ` ```json `, just as a person would. Remove it with `text.strip()` before you call `json.loads()`.
-
-**Q7. Does this trick work for things other than JSON?**
+**Q6. Does this trick work for things other than JSON?**
 Yes. Use it for code, CSV data, or lists. Prefill the opening wrapper the model would use, such as ` ```python `, and stop on the closing one, such as ` ``` `.
 
-**Q8. Does prefill work on every Claude model?**
+**Q7. Does prefill work on every Claude model?**
 No. It works on older models such as `claude-haiku-4-5`. Claude Opus 4.6, Sonnet 4.6, and every newer model reject a prefilled last assistant message with a 400 error.
 
-**Q9. What does "structured outputs" mean?**
+**Q8. What does "structured outputs" mean?**
 It is an API setting, `output_config.format`, where you give a JSON schema. The API then makes sure the answer is JSON with exactly those fields. It replaces prefill for JSON on current models.
 
-**Q10. (Exam angle) A web app shows generated JSON with a copy button, but users keep copying Markdown fences and an explanation. How do you fix the output?**
+**Q9. Does prefill with a stop sequence work for nested JSON?**
+Yes. Nested JSON means objects inside objects, or lists of objects, such as a customer with an address inside it. The stop sequence ` ``` ` never matches a `}` or `]`, so the model writes the whole nested object before it stops. Structured outputs handle nesting too: the schema just describes the inner objects.
+
+**Q10. Can one answer return two JSONs, such as customer data and order data?**
+Not as two separate blocks with prefill. The stop sequence fires when the first block closes, so only the customer data comes back. Instead, ask for one object that holds both, such as `{"customer": {...}, "orders": [...]}`, then read `data["customer"]` and `data["orders"]`. With structured outputs, describe that same combined shape in the schema.
+
+**Q11. (Exam angle) A web app shows generated JSON with a copy button, but users keep copying Markdown fences and an explanation. How do you fix the output?**
 On a model that accepts prefill, prefill ` ```json ` and add ` ``` ` as a stop sequence, so only the JSON comes back. On current models, use structured outputs with a JSON schema. (Integration)
 
-**Q11. (Exam angle) A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error. What do you tell them?**
+**Q12. (Exam angle) A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error. What do you tell them?**
 Newer models don't accept a prefilled last assistant message. Replace the prefill with structured outputs (`output_config.format`) for JSON, or with a system prompt instruction to skip any introduction. (Claude Models, Prompting & Context Engineering)
 
-**Q12. (Exam angle) A data pipeline parses model JSON and sometimes crashes on a missing field. What do you recommend?**
+**Q13. (Exam angle) A data pipeline parses model JSON and sometimes crashes on a missing field. What do you recommend?**
 Prefill and stop sequences shape the answer but don't guarantee valid or complete JSON. Validate the parsed data and handle errors, or switch to structured outputs, which guarantee the schema. Also check `stop_reason` for `"max_tokens"`, which means the JSON was cut off. (Solution Design & Architecture)
 
 ---

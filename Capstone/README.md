@@ -143,7 +143,7 @@ Add-Content .gitignore ".env"
 code .env
 ```
 
-Put these two lines in `.env`, using your own key from the Claude Console. You created it in [lesson 2 of the API course](../02_BuildingWithTheClaudeAPI/02-getting-an-api-key.md).
+Put these two lines in `.env`, using your own key from the Claude Console. You created it in [lesson 2 of the API course](../02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/02-getting-an-api-key.md).
 
 ```text
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 | `load_dotenv()` | Copies the two lines from `.env` into the program's settings, so the key never appears in the code. |
 | `client = Anthropic()` | Creates the connection to the API. It finds `ANTHROPIC_API_KEY` by itself. |
 | `MODEL = ...` | Reads the model name from `.env`. Haiku is the cheapest current model, so it is right for learning. |
-| `client.messages.create(...)` | Sends one request: which model to use, the longest reply allowed (`max_tokens`, where a token is a word piece), and your message. This is the call from [lesson 3](../02_BuildingWithTheClaudeAPI/03-making-a-request.md). |
+| `client.messages.create(...)` | Sends one request: which model to use, the longest reply allowed (`max_tokens`, where a token is a word piece), and your message. This is the call from [lesson 3](../02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/03-making-a-request.md). |
 | `response.content[0].text` | Takes the text of the reply out of the response. |
 | `if __name__ == "__main__":` | Runs the last line only when you start this file directly, not when another file imports `ask`. |
 
@@ -214,7 +214,7 @@ Do each milestone right after the course chapter in the "Do it after" column. Th
 
 | # | Dates | Do it after | Cookbook phase | What you add | Done when | Status |
 |:---:|:---|:---|:---:|:---|:---|:---|
-| M0 | Nov 16 | [API course lesson 3, Making a request](../02_BuildingWithTheClaudeAPI/03-making-a-request.md) | 0 | The project and your first API call | The first session above is complete | Not started |
+| M0 | Nov 16 | [API course lesson 3, Making a request](../02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/03-making-a-request.md) | 0 | The project and your first API call | The first session above is complete | Not started |
 | M1 | Nov 17 – Nov 19 | API chapter 1, Accessing Claude with the API (lessons 4–8) | 1 | A system prompt, retries in `retry.py`, and replies in a fixed JSON shape | A failed request is tried again, and you can explain why | Not started |
 | M2 | Nov 20 – Nov 22 | Chapter 2, Prompt evaluation (lessons 9–14) | 2 | The first 10 test questions in `cases.jsonl` and `run_evals.py` | One command prints a score out of 10 | Not started |
 | M3 | Nov 23 – Nov 24 | Chapter 3, Prompt engineering techniques (lessons 15–19) | 3 | Documents and instructions wrapped in XML tags in the system prompt | You reran the tests and wrote down whether the score changed | Not started |

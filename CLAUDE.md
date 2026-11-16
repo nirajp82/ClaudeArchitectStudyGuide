@@ -10,13 +10,14 @@ These rules apply to every lesson note, every time. The gold-standard example is
 
 I'll paste a lesson's **video transcript** and/or its **written course text**, sometimes with screenshots. Then:
 
-1. **Work out the file.** Check the course folder's `README.md` progress table for the lesson number and file name. The file is `0X-lesson-name.md`, directly in the course folder.
+1. **Work out the file.** Check the course folder's `README.md` progress table for the lesson number and file name. The file is `0X-lesson-name.md`, in the chapter's folder (see section 6).
 2. **Treat the transcript as a checklist, not a draft.** It tells you *what* the lesson covers. Your job is to explain it far more clearly than the course does. Don't just tidy up the transcript.
 3. **Check facts that need to be exact.** For commands, settings, keyboard shortcuts, or install steps, check the official docs (for Claude Code: `https://code.claude.com/docs`). Don't guess. Also check whether the course's technique still works on current models. If it doesn't, follow "When the course is out of date" in section 2.
 4. **Write the file** using the template in section 6.
 5. **Save the images** (section 4).
 6. **Update the links:**
    - In the course `README.md`, link the lesson and mark it ✅ Done.
+   - In the chapter `README.md`, link the lesson and add its short summary and exam takeaways.
    - In the previous lesson, check the "Next" link in **both** its header and footer.
 7. **Commit and push every time** you finish a lesson or a change to one, without asking. Use a short commit message that names the lesson. If a file changed on disk since you last read it, re-read it and build on my version first.
 8. **Reply briefly** (section 7).
@@ -227,17 +228,24 @@ These rules apply to FAQ questions **and** "Test yourself" questions. Write each
 ### File layout
 
 ```text
-<NN>_<CourseName>/             e.g. 01_ClaudeCode101/, next course 02_ClaudePlatform101/
-├── README.md                  course index: progress table, links, to-dos
-├── images/                    lesson images: 0X-short-name.png (the only subfolder)
-├── 01-lesson-name.md          one file per lesson, numbered in course order
-├── 02-lesson-name.md
-└── NN-course-quiz-review.md   missed quiz questions and the correct reasoning
+<NN>_<CourseName>/                e.g. 02_BuildingWithTheClaudeAPI/
+├── README.md                     course index: chapter table, progress table, links, to-dos
+├── images/                       lesson images for all chapters: 0X-short-name.png
+├── 01-chapter-name/              one folder per chapter, e.g. 01-accessing-claude-with-the-api/
+│   ├── README.md                 chapter summary, exam takeaways, quiz review
+│   ├── 01-lesson-name.md         one file per lesson, numbered across the whole course
+│   └── 02-lesson-name.md
+├── 02-chapter-name/              e.g. 02-prompt-evaluation/
+└── NN-course-quiz-review.md      final assessment only
 ```
 
-- **No chapter subfolders.** Every lesson file sits directly in the course folder.
+- **One folder per chapter**, named with the chapter number and name in lowercase with hyphens. Lesson numbers run through the whole course, so chapter 2 of the API course starts at lesson 9.
+- **Exception:** `01_ClaudeCode101/` keeps its lessons directly in the course folder, with no chapter folders.
+- **Links from a lesson:** the middle navigation cell is `[📚 Chapter index](README.md)` (the chapter README). The course index is `../README.md`, and images are `../images/NN-short-name.png`. The last lesson of a chapter links "Next" into the next chapter's folder.
+- **The chapter README** follows `02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/README.md`: a lessons table, one short summary per lesson ending with a "Full lesson →" link, the chapter's exam takeaways, and the chapter quiz review. When a lesson is done, add its summary and exam takeaways there. When the chapter quiz is done, add it there. A summary on an outdated topic gives the current way first.
+- **A new chapter** gets its folder and a stub README (lessons table plus empty sections) when the previous chapter is finished.
 - File names: lowercase, hyphens, numbered in course order: `05-explore-plan-code-commit.md`.
-- A new course gets the same structure and a `README.md` like `01_ClaudeCode101/README.md`.
+- A new course gets the same structure and a `README.md` like `02_BuildingWithTheClaudeAPI/README.md`.
 
 ### Lesson template
 

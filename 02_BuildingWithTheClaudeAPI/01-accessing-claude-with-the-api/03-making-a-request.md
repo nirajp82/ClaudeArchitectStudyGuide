@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Getting an API key](02-getting-an-api-key.md) | [📚 Course index](README.md) | [Multi-Turn conversations →](04-multi-turn-conversations.md) |
+| [← Getting an API key](02-getting-an-api-key.md) | [📚 Chapter index](README.md) | [Multi-Turn conversations →](04-multi-turn-conversations.md) |
 
 ---
 
@@ -163,7 +163,7 @@ Line by line:
 
 `client.messages.create()` sends one request to the Claude API and waits until the whole answer comes back.
 
-![The client.messages.create call with callouts for model, max_tokens, and messages](images/03-create-function.png)
+![The client.messages.create call with callouts for model, max_tokens, and messages](../images/03-create-function.png)
 
 | Setting | Callout in the picture | What to know |
 |---|---|---|
@@ -202,7 +202,7 @@ Things to notice:
 
 The `messages` list is a written record of a chat, like the one in this picture.
 
-![A chat window: the user message asks "What is quantum computing?" and the assistant message is the AI's answer](images/03-user-and-assistant-messages.png)
+![A chat window: the user message asks "What is quantum computing?" and the assistant message is the AI's answer](../images/03-user-and-assistant-messages.png)
 
 | Role | Who writes it | In the picture |
 |---|---|---|
@@ -416,4 +416,4 @@ An unpinned install pulled a new major SDK version with breaking changes. Pin th
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Getting an API key](02-getting-an-api-key.md) | [📚 Course index](README.md) | [Multi-Turn conversations →](04-multi-turn-conversations.md) |
+| [← Getting an API key](02-getting-an-api-key.md) | [📚 Chapter index](README.md) | [Multi-Turn conversations →](04-multi-turn-conversations.md) |

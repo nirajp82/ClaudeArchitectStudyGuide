@@ -4,35 +4,44 @@
 
 **Exam relevance:** This course covers prompting, tool use, RAG, caching, MCP, and agents. It feeds most exam domains, especially Integration, Solution Design & Architecture, and Claude Models, Prompting & Context Engineering. See the [study plan](../readme.md).
 
-Every lesson is one notes file directly in this folder, named `NN-lesson-name.md`, with an FAQ at the end. Lessons are numbered across the whole course, so chapter 2 starts at lesson 9. Quizzes have no number; missed quiz questions go in `68-course-quiz-review.md`. From this course onward, every lesson also has an **Architect notes** section with cost, speed, limits, security, and production facts the course leaves out.
+Each chapter has its own folder, such as `01-accessing-claude-with-the-api/`. Inside it, every lesson is one notes file named `NN-lesson-name.md`, with an FAQ at the end. The folder's `README.md` sums up the whole chapter for revision, gathers its exam takeaways, and holds the chapter quiz review. Lessons are numbered across the whole course, so chapter 2 starts at lesson 9. Images for all chapters stay in the shared `images/` folder. From this course onward, every lesson also has an **Architect notes** section with cost, speed, limits, security, and production facts the course leaves out.
+
+## Chapters
+
+| # | Chapter | Chapter summary | Status |
+|:---:|:---|:---|:---:|
+| 1 | Accessing Claude with the API (lessons 1–8) | [01-accessing-claude-with-the-api/README.md](01-accessing-claude-with-the-api/README.md) | ✅ Done |
+| 2 | Prompt evaluation (lessons 9–14) | [02-prompt-evaluation/README.md](02-prompt-evaluation/README.md) | ⬜ Next |
+
+Later chapters get their folder when their first lesson is written.
 
 ## Progress
 
 | # | Chapter | Lesson | Notes | Status |
 |---|---|---|---|---|
-| 1 | Accessing Claude with the API | Accessing the API | [01-accessing-the-api.md](01-accessing-the-api.md) | ✅ Done |
-| — | Accessing Claude with the API | Deep dive: how does Claude know what to say next? (extra reading) | [01-deep-dive-inside-the-model.md](01-deep-dive-inside-the-model.md) | ✅ Done |
-| 2 | Accessing Claude with the API | Getting an API key | [02-getting-an-api-key.md](02-getting-an-api-key.md) | ✅ Done |
-| 3 | Accessing Claude with the API | Making a request | [03-making-a-request.md](03-making-a-request.md) | ✅ Done |
-| 4 | Accessing Claude with the API | Multi-Turn conversations | [04-multi-turn-conversations.md](04-multi-turn-conversations.md) | ✅ Done |
-| 5 | Accessing Claude with the API | System prompts | [05-system-prompts.md](05-system-prompts.md) | ✅ Done |
-| 6 | Accessing Claude with the API | Temperature | [06-temperature.md](06-temperature.md) | ✅ Done |
-| 7 | Accessing Claude with the API | Response streaming | [07-response-streaming.md](07-response-streaming.md) | ✅ Done |
-| 8 | Accessing Claude with the API | Structured data | [08-structured-data.md](08-structured-data.md) | ✅ Done |
-| — | Accessing Claude with the API | Quiz on accessing Claude with the API | [68-course-quiz-review.md](68-course-quiz-review.md#quiz-on-accessing-claude-with-the-api) | ✅ Done |
+| 1 | Accessing Claude with the API | Accessing the API | [01-accessing-the-api.md](01-accessing-claude-with-the-api/01-accessing-the-api.md) | ✅ Done |
+| — | Accessing Claude with the API | Deep dive: how does Claude know what to say next? (extra reading) | [01-deep-dive-inside-the-model.md](01-accessing-claude-with-the-api/01-deep-dive-inside-the-model.md) | ✅ Done |
+| 2 | Accessing Claude with the API | Getting an API key | [02-getting-an-api-key.md](01-accessing-claude-with-the-api/02-getting-an-api-key.md) | ✅ Done |
+| 3 | Accessing Claude with the API | Making a request | [03-making-a-request.md](01-accessing-claude-with-the-api/03-making-a-request.md) | ✅ Done |
+| 4 | Accessing Claude with the API | Multi-Turn conversations | [04-multi-turn-conversations.md](01-accessing-claude-with-the-api/04-multi-turn-conversations.md) | ✅ Done |
+| 5 | Accessing Claude with the API | System prompts | [05-system-prompts.md](01-accessing-claude-with-the-api/05-system-prompts.md) | ✅ Done |
+| 6 | Accessing Claude with the API | Temperature | [06-temperature.md](01-accessing-claude-with-the-api/06-temperature.md) | ✅ Done |
+| 7 | Accessing Claude with the API | Response streaming | [07-response-streaming.md](01-accessing-claude-with-the-api/07-response-streaming.md) | ✅ Done |
+| 8 | Accessing Claude with the API | Structured data | [08-structured-data.md](01-accessing-claude-with-the-api/08-structured-data.md) | ✅ Done |
+| — | Accessing Claude with the API | Quiz on accessing Claude with the API | [Chapter 1 README, quiz review](01-accessing-claude-with-the-api/README.md#quiz-review) | ✅ Done |
 | 9 | Prompt evaluation | Prompt evaluation | `09-prompt-evaluation.md` | ⬜ |
 | 10 | Prompt evaluation | A typical eval workflow | `10-a-typical-eval-workflow.md` | ⬜ |
 | 11 | Prompt evaluation | Generating test datasets | `11-generating-test-datasets.md` | ⬜ |
 | 12 | Prompt evaluation | Running the eval | `12-running-the-eval.md` | ⬜ |
 | 13 | Prompt evaluation | Model based grading | `13-model-based-grading.md` | ⬜ |
 | 14 | Prompt evaluation | Code based grading | `14-code-based-grading.md` | ⬜ |
-| — | Prompt evaluation | Quiz on prompt evaluation | Quiz review file | ⬜ |
+| — | Prompt evaluation | Quiz on prompt evaluation | Chapter 2 README, quiz review | ⬜ |
 | 15 | Prompt engineering techniques | Prompt engineering | `15-prompt-engineering.md` | ⬜ |
 | 16 | Prompt engineering techniques | Being clear and direct | `16-being-clear-and-direct.md` | ⬜ |
 | 17 | Prompt engineering techniques | Being specific | `17-being-specific.md` | ⬜ |
 | 18 | Prompt engineering techniques | Structure with XML tags | `18-structure-with-xml-tags.md` | ⬜ |
 | 19 | Prompt engineering techniques | Providing examples | `19-providing-examples.md` | ⬜ |
-| — | Prompt engineering techniques | Quiz on prompt engineering techniques | Quiz review file | ⬜ |
+| — | Prompt engineering techniques | Quiz on prompt engineering techniques | Chapter README, quiz review | ⬜ |
 | 20 | Tool use with Claude | Introducing tool use | `20-introducing-tool-use.md` | ⬜ |
 | 21 | Tool use with Claude | Project overview | `21-project-overview.md` | ⬜ |
 | 22 | Tool use with Claude | Tool functions | `22-tool-functions.md` | ⬜ |
@@ -45,7 +54,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | 29 | Tool use with Claude | Fine grained tool calling | `29-fine-grained-tool-calling.md` | ⬜ |
 | 30 | Tool use with Claude | The text edit tool | `30-the-text-edit-tool.md` | ⬜ |
 | 31 | Tool use with Claude | The web search tool | `31-the-web-search-tool.md` | ⬜ |
-| — | Tool use with Claude | Quiz on tool use with Claude | Quiz review file | ⬜ |
+| — | Tool use with Claude | Quiz on tool use with Claude | Chapter README, quiz review | ⬜ |
 | 32 | RAG and Agentic Search | Introducing Retrieval Augmented Generation | `32-introducing-rag.md` | ⬜ |
 | 33 | RAG and Agentic Search | Text chunking strategies | `33-text-chunking-strategies.md` | ⬜ |
 | 34 | RAG and Agentic Search | Text embeddings | `34-text-embeddings.md` | ⬜ |
@@ -61,7 +70,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | 44 | Features of Claude | Rules of prompt caching | `44-rules-of-prompt-caching.md` | ⬜ |
 | 45 | Features of Claude | Prompt caching in action | `45-prompt-caching-in-action.md` | ⬜ |
 | 46 | Features of Claude | Code execution and the Files API | `46-code-execution-and-the-files-api.md` | ⬜ |
-| — | Features of Claude | Quiz on features of Claude | Quiz review file | ⬜ |
+| — | Features of Claude | Quiz on features of Claude | Chapter README, quiz review | ⬜ |
 | 47 | Model Context Protocol | Introducing MCP | `47-introducing-mcp.md` | ⬜ |
 | 48 | Model Context Protocol | MCP clients | `48-mcp-clients.md` | ⬜ |
 | 49 | Model Context Protocol | Project setup | `49-project-setup.md` | ⬜ |
@@ -72,7 +81,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | 54 | Model Context Protocol | Accessing resources | `54-accessing-resources.md` | ⬜ |
 | 55 | Model Context Protocol | Defining prompts | `55-defining-prompts.md` | ⬜ |
 | 56 | Model Context Protocol | Prompts in the client | `56-prompts-in-the-client.md` | ⬜ |
-| — | Model Context Protocol | Quiz on Model Context Protocol | Quiz review file | ⬜ |
+| — | Model Context Protocol | Quiz on Model Context Protocol | Chapter README, quiz review | ⬜ |
 | 57 | Anthropic apps | Anthropic apps: Claude Code and computer use | `57-anthropic-apps.md` | ⬜ |
 | 58 | Anthropic apps | Claude Code setup | `58-claude-code-setup.md` | ⬜ |
 | 59 | Anthropic apps | Claude Code in action | `59-claude-code-in-action.md` | ⬜ |
@@ -84,7 +93,7 @@ Every lesson is one notes file directly in this folder, named `NN-lesson-name.md
 | 65 | Agents and workflows | Agents and tools | `65-agents-and-tools.md` | ⬜ |
 | 66 | Agents and workflows | Environment inspection | `66-environment-inspection.md` | ⬜ |
 | 67 | Agents and workflows | Workflows vs agents | `67-workflows-vs-agents.md` | ⬜ |
-| — | Agents and workflows | Quiz on Agents and Workflows | Quiz review file | ⬜ |
+| — | Agents and workflows | Quiz on Agents and Workflows | Chapter README, quiz review | ⬜ |
 | — | Final assessment | Final Assessment | `68-course-quiz-review.md` | ⬜ |
 
 Files are created as each lesson is completed. Paste the transcript or course text after each lesson to add its notes.
@@ -95,7 +104,7 @@ Files are created as each lesson is completed. Paste the transcript or course te
 
 ## When you finish this course
 
-1. [ ] Take each chapter quiz and the final assessment. Record every missed or guessed question, and the correct reasoning, in `68-course-quiz-review.md`.
+1. [ ] Take each chapter quiz and the final assessment. Record every chapter quiz question, and the correct reasoning, in the Quiz review section of that chapter's README. Record the final assessment in `68-course-quiz-review.md`.
 2. [ ] Collect the **completion badge**.
 3. [ ] Practice: build capstone v1 and v2 (document Q&A with citations, prompt caching, and the first 10–20 eval questions). See the [capstone plan](../Capstone/README.md#the-milestones).
 4. [ ] Mark this course as done in the study plan.
@@ -104,11 +113,16 @@ Files are created as each lesson is completed. Paste the transcript or course te
 
 ```text
 02_BuildingWithTheClaudeAPI/
-├── README.md                 ← this index
-├── images/                   ← screenshots used in the lessons
-├── 01-accessing-the-api.md
-├── 02-getting-an-api-key.md
-├── ...
-├── 67-workflows-vs-agents.md
-└── 68-course-quiz-review.md
+├── README.md                          ← this index
+├── images/                            ← screenshots used in all lessons
+├── 01-accessing-claude-with-the-api/  ← chapter 1
+│   ├── README.md                      ← chapter summary, exam takeaways, quiz review
+│   ├── 01-accessing-the-api.md
+│   ├── ...
+│   └── 08-structured-data.md
+├── 02-prompt-evaluation/              ← chapter 2
+│   ├── README.md
+│   └── 09-prompt-evaluation.md ...
+├── ...                                ← one folder per chapter
+└── 68-course-quiz-review.md           ← final assessment only
 ```

@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| Start of course | [📚 Course index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
+| Start of course | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
 
 ---
 
@@ -105,7 +105,7 @@ The response also holds the answer text, in a message with the role `assistant`,
 
 **The running example:** a user types **"What is quantum computing?"** into your chat app and presses Send. This lesson follows that one question all the way through.
 
-![Chat window with the user's message "What is quantum computing?" and a Send button](images/01-chat-window.png)
+![Chat window with the user's message "What is quantum computing?" and a Send button](../images/01-chat-window.png)
 
 ---
 
@@ -146,7 +146,7 @@ Things to notice:
 - The API key appears only on the line from your server to the Claude API. The app never sees it.
 - Your server sits in the middle of both directions. That makes it the right place to log usage, check errors, and decide what the app should show.
 
-![Step 1: a web or mobile app sends "What is quantum computing?" to your server](images/01-request-to-server.png)
+![Step 1: a web or mobile app sends "What is quantum computing?" to your server](../images/01-request-to-server.png)
 
 ---
 
@@ -170,7 +170,7 @@ Here is what goes wrong if you put the key in your app:
 
 Your server receives the text "What is quantum computing?". It puts the text inside a message with the role `user`, and puts that message inside a list called `messages`. It is a list because later requests carry the whole conversation, one message after another ([lesson 4](04-multi-turn-conversations.md)).
 
-![The user's text placed inside a "user" message, which sits inside a list of messages](images/01-request-to-api.png)
+![The user's text placed inside a "user" message, which sits inside a list of messages](../images/01-request-to-api.png)
 
 #### With the Python SDK
 
@@ -258,7 +258,7 @@ The results are then combined through more math to help predict the next token. 
 
 The course treats each word as one token to keep things simple. In reality, a long or rare word is often cut into several tokens.
 
-![The question "What is quantum computing?" cut into five tokens](images/01-tokenization.png)
+![The question "What is quantum computing?" cut into five tokens](../images/01-tokenization.png)
 
 #### 2. Turning each piece into numbers (Embedding)
 
@@ -291,7 +291,7 @@ A real embedding table is different in two ways:
 
 "Quantum" is like "bank." Its saved row mixes several meanings: something in physics, something very small, and a kind of computing.
 
-![The word "quantum" linked to its four meanings and its Latin root "quantus"](images/01-embedding-quantum.png)
+![The word "quantum" linked to its four meanings and its Latin root "quantus"](../images/01-embedding-quantum.png)
 
 #### 3. Checking the neighbours (Contextualization)
 
@@ -312,7 +312,7 @@ Not in the course:
 - A token looks at **all** the tokens before it, not only the one next to it. It can't look at the tokens after it, because the model reads and writes from left to right. So it is "computing" that looks back at "quantum" and takes on the meaning of the pair. The course says "quantum" looks at "computing," but the result is the same.
 - The model repeats this checking many times in a row. Each round is called a *layer*, and each round makes the meaning sharper.
 
-![Columns of numbers for each word, with arcs showing words influencing each other](images/01-contextualization.png)
+![Columns of numbers for each word, with arcs showing words influencing each other](../images/01-contextualization.png)
 
 #### 4. Writing the answer one piece at a time (Generation)
 
@@ -320,7 +320,7 @@ Not in the course:
 
 **Example:** here are the chances for the first token of the answer:
 
-![Chances for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](images/01-generation-probabilities.png)
+![Chances for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](../images/01-generation-probabilities.png)
 
 The model usually picks a likely token, but not always the most likely one. Here it picks "Quantum" most often, but sometimes it picks "Great." That is why the same question can get slightly different answers. A setting called *temperature* controls how often it picks a less likely token ([lesson 6](06-temperature.md)).
 
@@ -355,7 +355,7 @@ flowchart TD
     D -- No --> A
 ```
 
-![The answer's tokens ending in an end-of-sequence token, with the three stop checks](images/01-stop-checks.png)
+![The answer's tokens ending in an end-of-sequence token, with the three stop checks](../images/01-stop-checks.png)
 
 #### The response your server receives
 
@@ -380,9 +380,9 @@ flowchart TD
 
 Your server takes the text from `content` and sends it to the app, and the app shows it under the user's question.
 
-![The response flowing from the Anthropic API back to the SDK on your server, with the answer in an "assistant" message](images/01-api-response.png)
+![The response flowing from the Anthropic API back to the SDK on your server, with the answer in an "assistant" message](../images/01-api-response.png)
 
-![The full round trip: chat app, your server's SDK, the Anthropic API, and back](images/01-full-flow.png)
+![The full round trip: chat app, your server's SDK, the Anthropic API, and back](../images/01-full-flow.png)
 
 #### Common mix-ups
 
@@ -447,7 +447,7 @@ The answer was cut off because it hit your length limit. It may be incomplete.
 #### Design trade-offs
 
 - Model names change. The course uses `claude-haiku-4-5`, and newer models such as `claude-haiku-5-5` exist. Keep the model name in one setting instead of typing it in many places, so upgrading is a one-line change.
-- Because answers vary, don't write code that expects the exact same text twice. Check answers with tests on many inputs, called *evaluations* ([lesson 9](09-prompt-evaluation.md)).
+- Because answers vary, don't write code that expects the exact same text twice. Check answers with tests on many inputs, called *evaluations* ([lesson 9](../02-prompt-evaluation/09-prompt-evaluation.md)).
 
 ---
 
@@ -516,4 +516,4 @@ Log the `usage` field (input and output tokens) from every response, and multipl
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| Start of course | [📚 Course index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
+| Start of course | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |

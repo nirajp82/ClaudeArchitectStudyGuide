@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← System prompts](05-system-prompts.md) | [📚 Course index](README.md) | [Response streaming →](07-response-streaming.md) |
+| [← System prompts](05-system-prompts.md) | [📚 Chapter index](README.md) | [Response streaming →](07-response-streaming.md) |
 
 ---
 
@@ -97,7 +97,7 @@ Temperature changes only the *chances* of different answers. A high temperature 
 
 When you send "What do you think", the model goes through three steps for every token it writes. The full math is in the [deep dive](01-deep-dive-inside-the-model.md#step-5-score-every-word-and-pick-one).
 
-![The inputs "What", "do", "you", "think" pass through the model's layers to a list of possible next tokens with their selection probabilities: about 0.3, would 0.2, of 0.1, is 0.1, when 0.1, makes 0.05, we 0.05](images/06-next-token-probabilities.png)
+![The inputs "What", "do", "you", "think" pass through the model's layers to a list of possible next tokens with their selection probabilities: about 0.3, would 0.2, of 0.1, is 0.1, when 0.1, makes 0.05, we 0.05](../images/06-next-token-probabilities.png)
 
 1. **Tokenization:** the model cuts "What do you think" into tokens.
 2. **Prediction:** it gives every possible next token a chance (a *probability*).
@@ -105,7 +105,7 @@ When you send "What do you think", the model goes through three steps for every 
 
 Then it adds the picked token and repeats the three steps for the next one.
 
-![The same probabilities as a bar chart: about 30%, would 20%, of 10%, is 10%, when 10%, makes 5%, we 5%](images/06-probability-bar-chart.png)
+![The same probabilities as a bar chart: about 30%, would 20%, of 10%, is 10%, when 10%, makes 5%, we 5%](../images/06-probability-bar-chart.png)
 
 ---
 
@@ -120,7 +120,7 @@ Then it adds the picked token and repeats the three steps for the next one.
 
 Scientists use the same formula for molecules and for word chances, so AI researchers kept the physics name.
 
-![Low temperature: "about" gets 100% and every other token 0%, giving more deterministic output. High temperature: the chances spread out to 23%, 18%, 15%, 12%, 12%, 11%, and 9%, giving more random output](images/06-low-vs-high-temperature.png)
+![Low temperature: "about" gets 100% and every other token 0%, giving more deterministic output. High temperature: the chances spread out to 23%, 18%, 15%, 12%, 12%, 11%, and 9%, giving more random output](../images/06-low-vs-high-temperature.png)
 
 | Next word | about | would | of | is | when | makes | we |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -136,7 +136,7 @@ Things to notice:
 
 The course shows an interactive demo with a slider. At 0.49, "about" has about 60%, and every other word is under 10%:
 
-![LLM Temperature Parameter Demo with the slider at 0.49: "about" near 60%, and "would", "of", "is", "when", "makes", and "we" each under 10%](images/06-temperature-demo.png)
+![LLM Temperature Parameter Demo with the slider at 0.49: "about" near 60%, and "would", "of", "is", "when", "makes", and "we" each under 10%](../images/06-temperature-demo.png)
 
 **Warning:** The course says temperature 0.0 is "completely deterministic." In practice, even at 0.0, Anthropic doesn't promise identical answers for identical requests. Treat low temperature as "much more consistent," not "always the same."
 
@@ -146,7 +146,7 @@ The course shows an interactive demo with a slider. At 0.49, "about" has about 6
 
 Match the temperature to the job. Tasks with one right answer need low temperature. Tasks where variety is the point need high temperature.
 
-![Temperature ranges from less creative to more creative: low (0.0 to 0.3) for factual responses, coding assistance, data extraction, and content moderation; medium (0.4 to 0.7) for summarization, educational content, problem-solving, and creative writing with constraints; high (0.8 to 1.0) for brainstorming, creative writing, marketing content, and joke generation](images/06-temperature-ranges.png)
+![Temperature ranges from less creative to more creative: low (0.0 to 0.3) for factual responses, coding assistance, data extraction, and content moderation; medium (0.4 to 0.7) for summarization, educational content, problem-solving, and creative writing with constraints; high (0.8 to 1.0) for brainstorming, creative writing, marketing content, and joke generation](../images/06-temperature-ranges.png)
 
 | Range | Use it when | Examples |
 |---|---|---|
@@ -226,7 +226,7 @@ The course also mentions **effort**. Effort is a different setting. It controls 
 #### Reliability
 
 - Never rely on temperature alone for consistent output. Validate output in code, such as checking that JSON matches your format, and retry when it doesn't.
-- To compare prompts fairly, test each one on many inputs, not one run. Random picking can make one lucky run look better than it is ([lesson 9](README.md)).
+- To compare prompts fairly, test each one on many inputs, not one run. Random picking can make one lucky run look better than it is ([lesson 9](../README.md)).
 
 #### Migration
 
@@ -305,4 +305,4 @@ On a model that accepts temperature, raise it toward 1.0. On any model, ask for 
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← System prompts](05-system-prompts.md) | [📚 Course index](README.md) | [Response streaming →](07-response-streaming.md) |
+| [← System prompts](05-system-prompts.md) | [📚 Chapter index](README.md) | [Response streaming →](07-response-streaming.md) |

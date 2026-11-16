@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Temperature](06-temperature.md) | [📚 Course index](README.md) | [Structured data →](08-structured-data.md) |
+| [← Temperature](06-temperature.md) | [📚 Chapter index](README.md) | [Structured data →](08-structured-data.md) |
 
 ---
 
@@ -93,11 +93,11 @@ The Claude API streams with *Server-Sent Events* (SSE). SSE is plain HTTP: one r
 
 In a normal request ([lesson 1](01-accessing-the-api.md)), your server sends the user's message to the API and waits for the complete answer. Only then does it send anything back to the app.
 
-![The chat app sends "What is quantum computing?" to our server, which sends it to Claude as a user message; the assistant message comes back the same way, while the app shows "..."](images/07-standard-request.png)
+![The chat app sends "What is quantum computing?" to our server, which sends it to Claude as a user message; the assistant message comes back the same way, while the app shows "..."](../images/07-standard-request.png)
 
 The model writes one token at a time, so a long answer takes a while. During that time, the user sees only "...".
 
-![The same round trip, with a note that Claude can take 10 to 30 seconds to generate a full response](images/07-long-wait.png)
+![The same round trip, with a note that Claude can take 10 to 30 seconds to generate a full response](../images/07-long-wait.png)
 
 ---
 
@@ -110,7 +110,7 @@ With streaming on, the API doesn't wait for the full answer:
 3. Your server forwards each piece to the app as it arrives.
 4. The app adds each piece to the screen, so the answer builds up word by word.
 
-![With streaming enabled: Claude sends an initial response, then separate events carrying "Quantum", "computing", and "is..." that our server forwards to the app; all of these events are parts of a single request](images/07-streaming-events.png)
+![With streaming enabled: Claude sends an initial response, then separate events carrying "Quantum", "computing", and "is..." that our server forwards to the app; all of these events are parts of a single request](../images/07-streaming-events.png)
 
 Things to notice:
 
@@ -125,7 +125,7 @@ Things to notice:
 
 Each event has a type that tells your code what it holds:
 
-![The stream event types from Claude in order: MessageStart, ContentBlockStart, three ContentBlockDelta events containing the actual generated text, ContentBlockStop, MessageDelta, and MessageStop](images/07-event-types.png)
+![The stream event types from Claude in order: MessageStart, ContentBlockStart, three ContentBlockDelta events containing the actual generated text, ContentBlockStop, MessageDelta, and MessageStop](../images/07-event-types.png)
 
 | Event | What it means | What your code usually does |
 |---|---|---|
@@ -166,7 +166,7 @@ for event in stream:
 - `for event in stream:` handles each event as it arrives, in order.
 - `print(event)` shows the raw event. The output starts with a `RawMessageStartEvent`, then a `RawContentBlockStartEvent`, then many delta events.
 
-![Notebook output of the stream=True code: a RawMessageStartEvent with an empty content list, stop_reason None, and usage of 18 input tokens, then a RawContentBlockStartEvent with an empty text block](images/07-raw-event-output.png)
+![Notebook output of the stream=True code: a RawMessageStartEvent with an empty content list, stop_reason None, and usage of 18 input tokens, then a RawContentBlockStartEvent with an empty text block](../images/07-raw-event-output.png)
 
 Things to notice in the output: the first event already shows `input_tokens=18`, but `stop_reason` is still `None` and the text is empty, because the model has not written anything yet. The text arrives in the delta events that follow.
 
@@ -454,4 +454,4 @@ Use streaming. Data then flows during generation, so the connection doesn't sit 
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Temperature](06-temperature.md) | [📚 Course index](README.md) | [Structured data →](08-structured-data.md) |
+| [← Temperature](06-temperature.md) | [📚 Chapter index](README.md) | [Structured data →](08-structured-data.md) |

@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Accessing the API](01-accessing-the-api.md) | [📚 Course index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
+| [← Accessing the API](01-accessing-the-api.md) | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
 
 ---
 
@@ -629,4 +629,4 @@ Every input token goes through every layer, and attention looks back at every ea
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Accessing the API](01-accessing-the-api.md) | [📚 Course index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
+| [← Accessing the API](01-accessing-the-api.md) | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |

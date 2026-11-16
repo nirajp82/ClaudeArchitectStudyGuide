@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Multi-Turn conversations](04-multi-turn-conversations.md) | [📚 Course index](README.md) | [Temperature →](06-temperature.md) |
+| [← Multi-Turn conversations](04-multi-turn-conversations.md) | [📚 Chapter index](README.md) | [Temperature →](06-temperature.md) |
 
 ---
 
@@ -85,7 +85,7 @@ A good tutor prompt says what the model should do (give hints first, walk throug
 
 Without guidance, the model gives a generic, helpful answer. For a math question, that usually means the full solution. That is fine for an adult checking homework. It is bad for a student who needs to learn.
 
-![Math Tutor Specialist: responses should first give hints, patiently walk the student through a solution, and show solutions for similar problems; they should not give a direct answer at once or tell the student to use a calculator](images/05-math-tutor-requirements.png)
+![Math Tutor Specialist: responses should first give hints, patiently walk the student through a solution, and show solutions for similar problems; they should not give a direct answer at once or tell the student to use a calculator](../images/05-math-tutor-requirements.png)
 
 A good math tutor should:
 
@@ -128,7 +128,7 @@ What each part does:
 - `Do not directly answer...` and `Guide them...` are rules for every answer.
 - `system=system_prompt` sends the prompt in its own setting. It is separate from `messages`, which holds only `user` and `assistant` messages ([lesson 4](04-multi-turn-conversations.md)).
 
-![System prompts customize Claude's tone and style of response: they provide guidance on how to respond, make Claude respond the way someone in the role would, and help keep Claude on task](images/05-system-prompt-benefits.png)
+![System prompts customize Claude's tone and style of response: they provide guidance on how to respond, make Claude respond the way someone in the role would, and help keep Claude on task](../images/05-system-prompt-benefits.png)
 
 The three benefits from the course:
 
@@ -219,7 +219,7 @@ answer = chat(messages, system=system)
 #### Cost and speed
 
 - The system prompt counts as input tokens on every request. A 1,000-token system prompt in a 10-turn chat is billed 10 times.
-- Keep the system prompt identical from request to request. Then prompt caching can reuse it at a lower price ([lessons 43–45](README.md)). Putting a timestamp or user name in it changes the text every time and stops the reuse.
+- Keep the system prompt identical from request to request. Then prompt caching can reuse it at a lower price ([lessons 43–45](../README.md)). Putting a timestamp or user name in it changes the text every time and stops the reuse.
 
 #### Security
 
@@ -325,4 +325,4 @@ The system prompt is billed as input on every request. Trim it to what the job n
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Multi-Turn conversations](04-multi-turn-conversations.md) | [📚 Course index](README.md) | [Temperature →](06-temperature.md) |
+| [← Multi-Turn conversations](04-multi-turn-conversations.md) | [📚 Chapter index](README.md) | [Temperature →](06-temperature.md) |

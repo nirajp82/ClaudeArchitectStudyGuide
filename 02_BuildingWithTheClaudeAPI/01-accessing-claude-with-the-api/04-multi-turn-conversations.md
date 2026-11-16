@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Making a request](03-making-a-request.md) | [📚 Course index](README.md) | [System prompts →](05-system-prompts.md) |
+| [← Making a request](03-making-a-request.md) | [📚 Chapter index](README.md) | [System prompts →](05-system-prompts.md) |
 
 ---
 
@@ -78,7 +78,7 @@ The helpers change the list itself, so the same `messages` list grows with every
 
 **The running example:** a user asks "Define quantum computing in one sentence". Then they ask "Write another sentence". The second question only makes sense if the model can see the first one.
 
-![Chat window: the user asks "What's quantum computing? Answer in one sentence.", the AI answers, the user says "Write another sentence", and the AI answers about applications of quantum computing](images/04-chat-window.png)
+![Chat window: the user asks "What's quantum computing? Answer in one sentence.", the AI answers, the user says "Write another sentence", and the AI answers about applications of quantum computing](../images/04-chat-window.png)
 
 #### Who's who
 
@@ -95,7 +95,7 @@ The helpers change the list itself, so the same `messages` list grows with every
 
 The Claude API is *stateless*: it keeps nothing between requests. Each request is handled as if it were the very first one. This is the same fact from the deep dive: answering only reads the model's saved numbers and never changes them ([deep dive](01-deep-dive-inside-the-model.md)).
 
-![The Anthropic API and Claude do not store any messages. To have a conversation, you need to manually maintain a list of messages in your code, and provide that list with each follow-up request.](images/04-no-stored-messages.png)
+![The Anthropic API and Claude do not store any messages. To have a conversation, you need to manually maintain a list of messages in your code, and provide that list with each follow-up request.](../images/04-no-stored-messages.png)
 
 Here is what goes wrong if your code sends only the newest message:
 
@@ -121,11 +121,11 @@ Each message in the list is a small dictionary (a Python set of name-value pairs
 
 **Request 1** holds one message. The model's answer comes back, and your code adds it to the list as an `assistant` message:
 
-![Messages in request: one user message "Define quantum computing in one sentence" goes to Claude, and an assistant reply "Quantum computing is a method..." comes back](images/04-first-request.png)
+![Messages in request: one user message "Define quantum computing in one sentence" goes to Claude, and an assistant reply "Quantum computing is a method..." comes back](../images/04-first-request.png)
 
 **Request 2** holds all three messages: the first question, the model's first answer, and the follow-up:
 
-![Messages in request: the user question, the assistant reply, and the follow-up "Write another sentence" all go to Claude together](images/04-follow-up-request.png)
+![Messages in request: the user question, the assistant reply, and the follow-up "Write another sentence" all go to Claude together](../images/04-follow-up-request.png)
 
 This is the exact `messages` list your code sends in request 2:
 
@@ -237,7 +237,7 @@ To keep chatting, repeat the last three steps: add `final_answer` as an assistan
 #### Cost
 
 - Every request resends the whole history as input tokens. A 20-turn chat sends turn 1's text 20 times. So the cost of the whole chat grows much faster than the number of turns.
-- Prompt caching lets the API reuse the unchanged start of the conversation at a lower price ([lessons 43–45](README.md)). Keep earlier messages exactly as they were, because any change to an early message stops the reuse.
+- Prompt caching lets the API reuse the unchanged start of the conversation at a lower price ([lessons 43–45](../README.md)). Keep earlier messages exactly as they were, because any change to an early message stops the reuse.
 - Log `usage.input_tokens` on each turn to watch the growth. Prices change, so check the current pricing page.
 
 #### Limits
@@ -254,7 +254,7 @@ To keep chatting, repeat the last three steps: add `final_answer` as an assistan
 #### Design trade-offs
 
 - In a web app, the list must survive between page loads. Save it in a database or session store, keyed by conversation, not in a variable that disappears.
-- In later lessons, answers can hold more than text, such as tool calls. Then you add the whole `content` from the response, not just `content[0].text` ([lesson 26](README.md)).
+- In later lessons, answers can hold more than text, such as tool calls. Then you add the whole `content` from the response, not just `content[0].text` ([lesson 26](../README.md)).
 
 ---
 
@@ -319,4 +319,4 @@ In the app's own storage, because the API needs the history sent with each reque
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Making a request](03-making-a-request.md) | [📚 Course index](README.md) | [System prompts →](05-system-prompts.md) |
+| [← Making a request](03-making-a-request.md) | [📚 Chapter index](README.md) | [System prompts →](05-system-prompts.md) |

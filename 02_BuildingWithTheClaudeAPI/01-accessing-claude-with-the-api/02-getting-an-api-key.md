@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Accessing the API](01-accessing-the-api.md) | [📚 Course index](README.md) | [Making a request →](03-making-a-request.md) |
+| [← Accessing the API](01-accessing-the-api.md) | [📚 Chapter index](README.md) | [Making a request →](03-making-a-request.md) |
 
 ---
 
@@ -106,19 +106,19 @@ A **workspace** is a folder inside your Anthropic account that groups API keys, 
 
 **Step 1. Log in to the Console.** Go to `platform.claude.com` and log in. You land on the dashboard.
 
-![The Claude Console dashboard with "Create a prompt", "Generate a prompt" and "Get API Key" buttons](images/02-console-dashboard.png)
+![The Claude Console dashboard with "Create a prompt", "Generate a prompt" and "Get API Key" buttons](../images/02-console-dashboard.png)
 
 **Step 2. Click "Get API Key".** It is the rightmost of the three buttons at the top right.
 
-![The dashboard with the "Get API Key" button highlighted](images/02-get-api-key-button.png)
+![The dashboard with the "Get API Key" button highlighted](../images/02-get-api-key-button.png)
 
 **Step 3. Click "Create Key".** It is at the top right of the API keys page.
 
-![The "Create Key" button at the right of the API keys page](images/02-create-key-button.png)
+![The "Create Key" button at the right of the API keys page](../images/02-create-key-button.png)
 
 **Step 4. Choose the workspace and name the key.** Pick **Default** as the workspace. Type a name that tells you later what the key is for, such as "Anthropic Course." Then click **Add**.
 
-![The Create API key dialog with workspace "Default" and the name "Anthropic Course"](images/02-create-key-dialog.png)
+![The Create API key dialog with workspace "Default" and the name "Anthropic Course"](../images/02-create-key-dialog.png)
 
 **Step 5. Copy the key.** A pop-up shows the full key, which looks like `sk-ant-api03-` followed by a long random string. Copy it now and store it (section 3). This is the only time the Console shows it.
 
@@ -315,4 +315,4 @@ Disable or delete the key at once, create a replacement and deploy it, and check
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Accessing the API](01-accessing-the-api.md) | [📚 Course index](README.md) | [Making a request →](03-making-a-request.md) |
+| [← Accessing the API](01-accessing-the-api.md) | [📚 Chapter index](README.md) | [Making a request →](03-making-a-request.md) |

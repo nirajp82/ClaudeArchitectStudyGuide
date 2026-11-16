@@ -4,7 +4,7 @@
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Response streaming](07-response-streaming.md) | [📚 Course index](README.md) | [Prompt evaluation →](09-prompt-evaluation.md) |
+| [← Response streaming](07-response-streaming.md) | [📚 Chapter index](README.md) | [Prompt evaluation →](../02-prompt-evaluation/09-prompt-evaluation.md) |
 
 ---
 
@@ -82,7 +82,7 @@ The Python SDK also has `client.messages.parse()`, which takes a Pydantic class 
 - **AWS EventBridge** is an Amazon Web Services service that watches for events, such as a server starting. A **rule** is a small piece of JSON that says which events to catch.
 - **EC2 instances** are virtual servers rented from Amazon.
 
-![The EventBridge Rule Generator app: the input "Rule to monitor EC2 instances", a Generate button, and a dark box with clean JSON and a copy button](images/08-eventbridge-rule-generator.png)
+![The EventBridge Rule Generator app: the input "Rule to monitor EC2 instances", a Generate button, and a dark box with clean JSON and a copy button](../images/08-eventbridge-rule-generator.png)
 
 #### Who's who
 
@@ -300,7 +300,7 @@ rule = json.loads(text.strip())                # remove leftover line breaks, th
 
 The prefill makes the model think it already opened a JSON block, so it writes only JSON. When it tries to close the block with ` ``` `, the stop sequence ends the answer. The course's `chat()` helper just gains a `stop_sequences` option that it passes on as `params["stop_sequences"]`.
 
-![The request holds the stop sequence ```, the user message "Generate an Event Bridge rule as JSON", and the prefilled assistant message ```json. Claude thinks "I need to write a full rule and describe it", then "Oh, I've already started the JSON part!", then "All done with the json, I'll close it with ```"](images/08-prefill-and-stop-sequence.png)
+![The request holds the stop sequence ```, the user message "Generate an Event Bridge rule as JSON", and the prefilled assistant message ```json. Claude thinks "I need to write a full rule and describe it", then "Oh, I've already started the JSON part!", then "All done with the json, I'll close it with ```"](../images/08-prefill-and-stop-sequence.png)
 
 **Warning:** On Claude Opus 4.6, Sonnet 4.6, and every newer model, a prefilled last assistant message fails with a 400 error. Stop sequences still work there, but you no longer need them for JSON. The trick also never guaranteed valid JSON, and two JSON blocks in one answer lose the second one, because the stop sequence fires when the first block closes.
 
@@ -396,4 +396,4 @@ Use structured outputs and list the field under `required`, so it is always pres
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Response streaming](07-response-streaming.md) | [📚 Course index](README.md) | [Prompt evaluation →](09-prompt-evaluation.md) |
+| [← Response streaming](07-response-streaming.md) | [📚 Chapter index](README.md) | [Prompt evaluation →](../02-prompt-evaluation/09-prompt-evaluation.md) |

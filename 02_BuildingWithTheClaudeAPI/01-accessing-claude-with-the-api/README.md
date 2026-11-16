@@ -163,7 +163,7 @@ Your app runs on an older model, such as `claude-haiku-4-5`. It needs raw JSON w
 | Ask the model very nicely to return only JSON | ❌ Wrong | The instruction helps, but nothing enforces it. The model can still add fences or a sentence. |
 | Use a very high temperature | ❌ Wrong | High temperature makes answers more varied, not cleaner. |
 
-**Domain:** Integration. **My notes:** [Lesson 8, section 5](08-structured-data.md#5-the-courses-way-prefill-and-stop-sequences-older-models-only).
+**Domain:** Integration. **My notes:** [Lesson 8, section 4](08-structured-data.md#4-the-courses-way-prefill-and-stop-sequences-older-models-only).
 
 ### Q2. Clean JSON on a current model
 
@@ -176,7 +176,7 @@ Your app runs on a current model, such as `claude-opus-5-5`. It needs raw JSON w
 | Ask the model very nicely to return only JSON | ❌ Wrong | Nothing enforces it, so fences or a sentence can still appear. |
 | Use a very high temperature | ❌ Wrong | It makes answers more varied, not cleaner. Current models also reject a temperature setting. |
 
-**Domain:** Integration. **My notes:** [Lesson 8, section 2](08-structured-data.md#2-structured-outputs-the-current-way).
+**Domain:** Integration. **My notes:** [Lesson 8, section 2](08-structured-data.md#2-with-a-schema-structured-outputs).
 
 ### Q3. Consistent factual answers on an older model (the course's version)
 

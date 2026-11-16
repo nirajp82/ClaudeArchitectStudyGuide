@@ -82,16 +82,34 @@ The shop's code asks the model to pull out the details. Then it saves them in th
 
 ### 1. Without a schema: what comes back
 
-Your code just asks for JSON:
+Your code puts the whole email, the full message the customer wrote, in a variable. Then it just asks for JSON:
 
 ```python
+# The full text of the customer's email, not only their email address
+email_text = """Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived
+with a cracked lid. I'd like a refund please. - Priya Shah, priya@example.com"""
+
 response = client.messages.create(
     model="claude-opus-5-5",
     max_tokens=1000,
-    messages=[{"role": "user", "content": f"Pull the customer details out of this support email as JSON:\n\n{email}"}],
+    messages=[{"role": "user", "content": f"Pull the customer details out of this support email as JSON:\n\n{email_text}"}],
 )
 print(response.content[0].text)
 ```
+
+- `email_text` holds the whole email: the order, the problem, the refund request, the name, and the address.
+- The `f` before the prompt makes it an *f-string*: Python replaces `{email_text}` with the whole email before sending. `\n\n` adds a blank line between the instruction and the email.
+
+So the model receives this exact user message:
+
+```text
+Pull the customer details out of this support email as JSON:
+
+Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived
+with a cracked lid. I'd like a refund please. - Priya Shah, priya@example.com
+```
+
+The model reads that text the way you would. It looks nothing up: it can't see your inbox or order system. From training on huge amounts of emails and JSON, it recognises `priya@example.com` as an email address, the name at the end as the sender, and `#A-1042` as an order number. Your prompt never names the fields, so the model invents them.
 
 A typical answer looks like this:
 
@@ -143,13 +161,14 @@ class SupportTicket(BaseModel):
     issue: Literal["damaged", "late", "wrong_item", "other"]
     wants_refund: bool
 
-email = """Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived
+# The full text of the customer's email, not only their email address
+email_text = """Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived
 with a cracked lid. I'd like a refund please. - Priya Shah, priya@example.com"""
 
 response = client.messages.parse(
     model="claude-opus-5-5",
     max_tokens=1000,
-    messages=[{"role": "user", "content": f"Pull the support ticket details out of this email:\n\n{email}"}],
+    messages=[{"role": "user", "content": f"Pull the support ticket details out of this email:\n\n{email_text}"}],
     output_format=SupportTicket,
 )
 
@@ -162,7 +181,7 @@ print(ticket.wants_refund)  # True
 ```
 
 - `class SupportTicket(BaseModel)` lists the fields the ticket system needs. Every field is required.
-- `str` means text, and `bool` means `True` or `False`.
+- `str` means text, and `bool` means `True` or `False`. The class's `email` field is only the address, such as `priya@example.com`. The `email_text` variable is the whole message.
 - `Literal["damaged", "late", "wrong_item", "other"]` means `issue` must be exactly one of those four words.
 - `client.messages.parse()` works like `messages.create()`, but `output_format=SupportTicket` adds the schema. It is sent in the `output_config.format` setting.
 - The `if` line stops early when the answer was cut off or refused, because then it may not match the schema.
@@ -279,34 +298,37 @@ The prefill makes the model think it already opened a JSON block, so it writes o
 **Q1. Why does the model add text around the JSON I asked for?**
 It is trained to be helpful in a chat, so it adds a friendly sentence and puts code in Markdown blocks. That suits a person, but not code that needs to read the data.
 
-**Q2. What does "structured outputs" mean?**
+**Q2. How does the model pull the customer details out of the email?**
+Your code puts the whole email text into the prompt, so the model reads it like you would. From training on huge amounts of text, it recognises the name, the address, and the order number. It looks nothing up, and without a schema it invents its own field names.
+
+**Q3. What does "structured outputs" mean?**
 It is an API feature where you send a JSON schema with the request, in the `output_config.format` setting. The API then returns plain JSON that always matches the schema.
 
-**Q3. What does "JSON schema" mean?**
+**Q4. What does "JSON schema" mean?**
 It is a description of a JSON shape: which fields exist, the type of each one, and which ones are required. For example, "`issue` must be one of `damaged`, `late`, `wrong_item`, or `other`."
 
-**Q4. Why use a Pydantic class instead of writing the schema by hand?**
+**Q5. Why use a Pydantic class instead of writing the schema by hand?**
 A class is shorter and easier to read. `client.messages.parse()` turns it into the JSON schema for you and returns a ready Python object in `response.parsed_output`.
 
-**Q5. How does the API make the model follow the schema?**
+**Q6. How does the API make the model follow the schema?**
 While the model writes, the API only lets it choose tokens that keep the answer valid for the schema. So an opening sentence, a fence, or a missing field can't happen.
 
-**Q6. Do structured outputs guarantee that the data is correct?**
+**Q7. Do structured outputs guarantee that the data is correct?**
 They guarantee the shape: valid JSON, every required field, and the right types. They don't guarantee the values are true, and a `"max_tokens"` or `"refusal"` stop can leave the answer unfinished. Check `stop_reason` and the values that matter.
 
-**Q7. Can one answer return two kinds of data, such as customer data and order data?**
+**Q8. Can one answer return two kinds of data, such as customer data and order data?**
 Yes. Put both in one class, for example with a `customer` field and an `orders: list[Order]` field. One request then returns both, already in the right shape.
 
-**Q8. Do I still need prefill and stop sequences on newer Claude models?**
+**Q9. Do I still need prefill and stop sequences on newer Claude models?**
 No. Claude Opus 4.6, Sonnet 4.6, and every newer model reject a prefilled last assistant message with a 400 error. Structured outputs replace the whole trick for JSON.
 
-**Q9. (Exam angle) A web app shows generated JSON with a copy button, but users keep copying Markdown fences and an explanation. How do you fix the output?**
+**Q10. (Exam angle) A web app shows generated JSON with a copy button, but users keep copying Markdown fences and an explanation. How do you fix the output?**
 Use structured outputs with a JSON schema in `output_config.format`, for example through `client.messages.parse()`. The answer is then plain JSON with nothing around it, ready to copy. (Integration)
 
-**Q10. (Exam angle) A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error. What do you tell them?**
+**Q11. (Exam angle) A team moves prefill code from Haiku 4.5 to a newer model, and every request now fails with a 400 error. What do you tell them?**
 Newer models don't accept a prefilled last assistant message, and they don't need it. Remove the prefill and the ` ``` ` stop sequence, and use structured outputs. For plain-text answers, use a system prompt instruction instead. (Claude Models, Prompting & Context Engineering)
 
-**Q11. (Exam angle) A data pipeline parses model JSON and sometimes crashes on a missing field. What do you recommend?**
+**Q12. (Exam angle) A data pipeline parses model JSON and sometimes crashes on a missing field. What do you recommend?**
 Use structured outputs, so every required field is always present. Also check `stop_reason` for `"max_tokens"`, which means the answer was cut off, and validate the values the pipeline depends on. (Solution Design & Architecture)
 
 ---

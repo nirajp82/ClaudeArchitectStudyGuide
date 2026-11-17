@@ -226,7 +226,7 @@ The course also mentions **effort**. Effort is a different setting. It controls 
 #### Reliability
 
 - Never rely on temperature alone for consistent output. Validate output in code, such as checking that JSON matches your format, and retry when it doesn't.
-- To compare prompts fairly, test each one on many inputs, not one run. Random picking can make one lucky run look better than it is ([lesson 9](../README.md)).
+- To compare prompts fairly, test each one on many inputs, not one run. Random picking can make one lucky run look better than it is ([lesson 9](../02-prompt-evaluation/09-prompt-evaluation.md)).
 
 #### Migration
 

@@ -26,11 +26,11 @@ This page will sum up the whole chapter for revision once its lessons are done. 
 
 ### 9. Prompt evaluation
 
-- **Prompt engineering** is a set of techniques for writing a better prompt, such as sample answers (multishot prompting) and XML tags.
-- **Prompt evaluation** is automated testing that measures a prompt: code runs it on many test inputs and scores every answer.
-- **Three choices after drafting a prompt:** test it once, test it a few times and patch a corner case, or run it through an evaluation pipeline and improve it by the score.
-- **Options 1 and 2 are traps.** Real users send inputs you never imagined, such as empty, mixed-topic, or foreign-language messages.
-- **An evaluation pipeline costs more time and money,** but it finds weak spots before users do and lets you compare prompt versions by number.
+- **Prompt engineering** means changing the words of a prompt to make it better, such as adding a few sample questions with their right answers.
+- **Prompt evaluation** means checking a prompt with a score: code sends it many test questions and counts the right answers, such as "41 of 50."
+- **Three ways to check a new prompt:** try it once, try a few and fix what you find, or score it on a whole test set and improve it until the score is good.
+- **Trying once or a few times is a trap.** Real users send messages you never imagined, such as empty ones, two problems in one, or other languages.
+- **Scoring on a test set costs more time and money,** but it finds problems before users do and shows which prompt version really is better.
 
 [Full lesson →](09-prompt-evaluation.md)
 

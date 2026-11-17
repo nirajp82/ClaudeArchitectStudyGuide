@@ -202,12 +202,7 @@ Then your code averages the scores:
 
 The course shows 7.66 because it cuts off the extra digits instead of rounding. Either way, this one number is the score for prompt version 1.
 
-This lesson doesn't say *how* the grader decides. There are two common kinds:
-
-| Grader | How it scores | Use it when |
-|---|---|---|
-| **Code** | Checks a fixed rule, such as "the answer contains 4" | There is one exact right answer ([lesson 14](14-code-based-grading.md)) |
-| **A model** | A second request asks a model to score the answer against written rules | Quality needs judgment, such as "is this oatmeal answer helpful?" ([lesson 13](13-model-based-grading.md)) |
+This lesson doesn't say *how* the grader decides. Lessons [13](13-model-based-grading.md) and [14](14-code-based-grading.md) build a grader that is another model and one that is plain code.
 
 ---
 
@@ -263,8 +258,7 @@ Now you can:
 #### Reliability of the score
 
 - Model answers vary between runs ([lesson 6](../01-accessing-claude-with-the-api/06-temperature.md)). On three questions, the jump from 7.67 to 8.7 could be partly luck. Use more questions, and rerun before trusting small differences.
-- A model grader can favor longer answers even when they are not better. Write clear scoring rules, and spot-check some scores by hand.
-- Anthropic's evaluation guide suggests grading with a different model from the one that wrote the answers.
+- A grader that is a model can favor longer answers even when they are not better. Spot-check some scores by hand.
 
 #### Design trade-offs
 

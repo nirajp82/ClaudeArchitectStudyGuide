@@ -82,6 +82,13 @@ The Claude API and Claude Code change faster than the courses. Some lessons teac
 
 **Before finishing a lesson, do a beginner read-through:** read every paragraph as someone who has never coded. For each sentence ask: *Who is doing this? Which file, and where is it? Do I know every word?* If any answer is "not sure," rewrite the sentence.
 
+**Then check the page against these four rules.** Lesson 9 of Building with the Claude API had to be rewritten because it broke all four.
+
+1. **No course term without a picture.** When the course only names a technique (for example, "multishot prompting" or "XML tags"), don't list the names. Show a 3–6 line sample prompt that uses the technique, then name it. If the lesson doesn't teach the technique, use one plain sentence and a link to the lesson that does.
+2. **The first lines must be plain.** The opening bullets of the revision summary use no term that the same bullet doesn't explain in everyday words.
+3. **Each idea appears once in the body.** Count where each main idea is explained: the big-picture table, a section, a "Remember this" box, the Architect notes. If it appears more than once, keep the clearest version. Only the revision summary, Recap, and FAQ may repeat it.
+4. **Don't teach later lessons.** If an idea belongs to a later lesson (for example, the full eval loop or how to choose a grader), write one line and a link.
+
 ### Keep it short: clear, not long
 
 Clear doesn't mean long. My other common complaint is "the whole page is too long." Aim for **250–400 lines of text per lesson**, not counting blank lines. A deep dive may go up to about 450. The revision summary gets about **40 lines of text**, with at most one table.

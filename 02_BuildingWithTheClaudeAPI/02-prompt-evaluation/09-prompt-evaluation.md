@@ -25,7 +25,12 @@
 
 ### Revision summary
 
-You wrote a prompt, and it gave a good answer once. That doesn't tell you whether it will work for real users. This lesson is about checking.
+**Why this matters.** A prompt that works on the few messages you try can still fail on real users, and the company pays for it.
+
+- **A real case:** in 2022, Air Canada's website chatbot told a grieving customer they could claim a bereavement discount after their flight. No such policy existed. In 2024, a Canadian tribunal ordered the airline to pay, because a company is responsible for what its chatbot says.
+- **A smaller case:** a support bot that sorts emails sends a billing complaint to the technical team. The customer waits days, and you only find out from an angry review.
+
+Testing a prompt on many realistic messages and scoring the answers is how you catch mistakes like these before launch. That checking is what this lesson is about.
 
 - **Prompt engineering:** ways to *write* a better prompt. One example is adding a few sample questions with their right answers to the prompt.
 - **Prompt evaluation:** a way to *check* a prompt with a score. Your code sends the prompt many test questions and counts how many answers are right. For example, it reports "41 of 50 correct."

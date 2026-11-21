@@ -116,7 +116,7 @@ uv run python -c "import json; [json.loads(l) for l in open('evaluations/cases.j
 
 ### Problem 2: Let the model write more test questions
 
-**Lesson:** 11, Generating test datasets
+**Lesson:** [11, Generating test datasets](../../02-prompt-evaluation/11-generating-test-datasets.md)
 
 **The problem:** Writing cases by hand is slow. Write `evaluations/generate_cases.py`, which asks the model for 10 new `triage` cases and saves them to `evaluations/generated_cases.jsonl`. You then read them and copy the good ones into `cases.jsonl`.
 

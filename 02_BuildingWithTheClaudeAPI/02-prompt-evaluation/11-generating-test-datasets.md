@@ -76,15 +76,32 @@ Your code describes the shape with a Python class and calls `client.messages.par
 
 **Warning:** The course gets JSON back with prefill, which Claude Haiku 5.5 and other newer models reject with a 400 error. This page uses structured outputs instead. A short note at the end of [section 3](#3-get-clean-json-back-with-structured-outputs) shows the course's way.
 
-This lesson is step 2 of the eval workflow from [lesson 10](10-a-typical-eval-workflow.md): create the test dataset. The highlighted box is what this lesson builds.
+This lesson is step 2 of the eval workflow from [lesson 10](10-a-typical-eval-workflow.md): create the test dataset. The highlighted box is what this lesson builds. It is the same picture as in [lesson 9](09-prompt-evaluation.md#how-the-pieces-fit-together), with this lesson's AWS example.
 
 ```mermaid
 flowchart LR
-    P["Prompt v1<br/>Please provide a solution<br/>to the following task: {task}"] --> E
-    D["dataset.json<br/>sample user requests<br/>(this lesson)"] --> E
-    E["Eval<br/>puts each request into {task},<br/>sends it to the model,<br/>grades the answer<br/>(lessons 12 to 14)"] --> S["Score"]
+    subgraph Local["On your laptop: testing"]
+        P["Prompt v1<br/>(the thing you will ship)"]
+        D["Dataset<br/>dataset.json<br/>(sample AWS requests,<br/>built in this lesson)"]
+        E["Eval<br/>sends every sample request<br/>through the prompt,<br/>then grades the answers"]
+        S["Score<br/>e.g. 7 of 10"]
+        P --> E
+        D --> E
+        E --> S
+        S -- "score too low:<br/>edit the prompt" --> P
+    end
+    subgraph Prod["In production: real use"]
+        P2["Final prompt"]
+        U["Real user requests"]
+        M["Model writes the code"]
+        U --> P2 --> M
+    end
+    S -- "score good enough:<br/>ship the prompt" --> P2
     style D fill:#ffe9a8,stroke:#b8860b,stroke-width:2px
 ```
+
+- **Only the prompt goes to production.** The dataset stays on your laptop. In production, real user requests take its place.
+- **The dataset stays fixed** while you edit the prompt, so the scores can be compared.
 
 Here is the prompt that will be tested later.
 

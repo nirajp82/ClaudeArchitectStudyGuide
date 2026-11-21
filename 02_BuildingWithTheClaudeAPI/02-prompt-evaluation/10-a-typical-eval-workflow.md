@@ -36,11 +36,17 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Where this lesson fits.** [Lesson 9](09-prompt-evaluation.md) showed that your prompt is your production code, and that a saved *test set* checks it the way unit tests check normal code. This lesson shows how you actually run that check.
+**1. Your prompt is your production code**
+When you build an AI-powered software feature—like an app that automatically sorts incoming customer emails into `billing`, `technical`, or `other`—your prompt is your production code. Every time a real customer sends an email, your app inserts that email into your prompt and sends it to Claude to get the right category.
 
-- **Why checking by hand fails:** you change a prompt and try it on two questions by hand. Both answers look good, so you launch it. A week later, customers complain that 1 answer in 5 (20%) is missing key steps. Two questions are too few to catch a problem that hits only 1 answer in 5.
-- **What an eval does instead:** your code sends every test question through your prompt to the model, scores every answer, and reports one final score. For an email sorter with 50 test emails, that score could be `45 / 50 = 90%`.
-- **Why the score protects you:** after every prompt change, you rerun the same test. If the score drops, the change broke something that used to work (a *regression*), and you see it before real customers do.
+**2. Why we need a test set**
+Before trusting that prompt with real users, you need a **test set** to verify that your prompt handles normal, regular, and messy edge-case inputs reliably. A prompt test case works just like a **unit test** in software development: given a specific input, you check whether you get the expected answer. In practice, this is a saved file (like `test_set.json`) of sample customer emails paired with the exact right labels you expect back.
+
+**3. How we verify it (The Eval Workflow)**
+Once your `test_set.json` is ready, how do you actually verify your prompt? You run an **eval** (short for *evaluation*)—a repeatable, automated process that runs your prompt through every test case and gives it a concrete score:
+
+* **Why hand-checking fails:** If you tweak a prompt and test it on just two questions by hand, both might look great—so you launch it. A week later, customers complain that 1 in 5 answers (20%) is missing key steps. Two test questions are too small a sample to catch a bug that happens 20% of the time.
+* **How the automated check works:** Like a school exam or a unit test runner, your evaluation script sends all 50+ emails from `test_set.json` through your prompt to Claude, compares every reply against your expected labels, and outputs a final score (e.g., `45 / 50 = 90%`). If you edit your prompt and the score drops, you catch the regression immediately *before* real customers ever see it.
 
 #### What an eval workflow is
 

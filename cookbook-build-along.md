@@ -10,9 +10,9 @@
 |:---:|:---|
 | 1 | [In short](#in-short) |
 | 2 | [What "build along" means](#what-build-along-means) |
-| 3 | [One-time setup on Windows](#one-time-setup-on-windows) |
+| 3 | [One-time setup](#one-time-setup) |
 | 4 | [The routine for every notebook](#the-routine-for-every-notebook) |
-| 5 | [The plan, phase by phase](#the-plan-phase-by-phase) |
+| 5 | [Which notebooks to run](#which-notebooks-to-run) |
 | 6 | [What to skip until after the exam](#what-to-skip-until-after-the-exam) |
 | 7 | [Keeping the cost low](#keeping-the-cost-low) |
 | 8 | [Progress tracker](#progress-tracker) |
@@ -23,8 +23,8 @@
 
 The Claude Cookbook is a free GitHub repository from Anthropic with about 110 Jupyter notebooks. Each notebook is a working code example for one technique, such as prompt caching or tool use. "Building along" means you run a notebook, change it until you understand it, and then write your own version of the technique inside your capstone project.
 
-- **When:** after each chapter of *Building with the Claude API*, do the matching phase below. The plan follows the course chapters, not calendar dates, so it still works if you fall behind or move ahead.
-- **How much:** about 20 notebooks in 8 phases, roughly 22 hours in total. These hours are part of the 5 hours a week set aside for the capstone, so the plan adds no new weekly time.
+- **When:** each capstone guide starts with an optional warm-up that names its notebooks. You open this page only for the one-time setup and the routine below.
+- **How much:** about 20 notebooks in total, roughly 22 hours, spread across the guides.
 - **What you end up with:** a working capstone (the support assistant in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md)) where every feature is backed by a Cookbook technique you have run and changed yourself.
 
 > **Remember this:** The course tells you what a technique is. The notebook shows it working. The capstone proves you can do it without help.
@@ -68,21 +68,29 @@ Keep the Cookbook **outside** this notes repository. It is a separate download o
 
 ---
 
-### One-time setup on Windows
+### One-time setup
 
-This takes about an hour. Run the commands in PowerShell.
+This takes about an hour. Run the commands in Terminal on the Mac, or in PowerShell on Windows. Start in the top folder of this study-notes repository.
 
-1. **Install uv.** uv is a tool that installs Python packages and the right Python version for a project. The Cookbook needs Python 3.11 or 3.12. Your computer has Python 3.13 (from Anaconda), which the Cookbook does not support, and uv solves this by downloading Python 3.12 just for the Cookbook folder.
+1. **Install uv, if `uv --version` prints nothing.** uv is a tool that installs Python packages and the right Python version for a project. The Cookbook needs Python 3.11 or 3.12, and uv downloads Python 3.12 just for the Cookbook folder, whatever Python your computer already has.
+
+   **Mac:**
+
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+   **Windows:**
 
    ```powershell
    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
    ```
 
-   Close and reopen PowerShell, then check that `uv --version` prints a version number.
+   Close and reopen the terminal, then check that `uv --version` prints a version number.
 
 2. **Download the Cookbook** (Git calls this *cloning*):
 
-   ```powershell
+   ```bash
    cd ..
    git clone https://github.com/anthropics/claude-cookbooks.git
    cd claude-cookbooks
@@ -90,11 +98,20 @@ This takes about an hour. Run the commands in PowerShell.
 
 3. **Install the packages.** This command creates a private Python environment in a `.venv` folder inside `claude-cookbooks` and installs everything the notebooks need, including the `anthropic` package.
 
-   ```powershell
+   ```bash
    uv sync --all-extras
    ```
 
 4. **Add your API key.** Copy the example file, then open `.env` in VS Code and replace the placeholder after `ANTHROPIC_API_KEY=` with your key from the Claude Console (lesson 2 of the API course).
+
+   **Mac:**
+
+   ```bash
+   cp .env.example .env
+   code .env
+   ```
+
+   **Windows:**
 
    ```powershell
    copy .env.example .env
@@ -105,11 +122,11 @@ This takes about an hour. Run the commands in PowerShell.
 
    **Warning:** never paste your key into a notebook cell. Notebooks are often shared or committed, and a key inside one is easy to leak. The notebooks read the key from `.env` with a library called `python-dotenv`.
 
-5. **Set up VS Code.** Install the **Python** and **Jupyter** extensions from Microsoft (Extensions panel, Ctrl+Shift+X). Then open the folder with `code .`.
+5. **Set up VS Code.** Install the **Python** and **Jupyter** extensions from Microsoft (Extensions panel: Ctrl+Shift+X on Windows, Cmd+Shift+X on the Mac). Then open the folder with `code .`. On the Mac, if `code` is not found, open VS Code, press Cmd+Shift+P, and run **Shell Command: Install 'code' command in PATH** once.
 
-6. **Choose the kernel.** A **kernel** is the Python program that runs a notebook's cells. Open any notebook, click **Select Kernel** in the top right, and choose the `.venv` environment inside `claude-cookbooks`. If you pick Anaconda's Python instead, cells fail with "module not found" errors.
+6. **Choose the kernel.** A **kernel** is the Python program that runs a notebook's cells. Open any notebook, click **Select Kernel** in the top right, and choose the `.venv` environment inside `claude-cookbooks`. If you pick another Python, such as Anaconda's, cells fail with "module not found" errors.
 
-7. **Test it.** Open `misc\how_to_enable_json_mode.ipynb` and run the first few cells with Shift+Enter. If a reply from the model appears, the setup works.
+7. **Test it.** Open `misc/how_to_enable_json_mode.ipynb` and run the first few cells with Shift+Enter. If a reply from the model appears, the setup works.
 
 **Tip:** many notebooks start with a `%pip install ...` cell. Skip it, because `uv sync` already installed those packages.
 
@@ -125,135 +142,35 @@ flowchart LR
     B --> C[3. Change<br/>one thing]
     C --> D[4. Break it<br/>on purpose]
     D --> E[5. Rebuild it<br/>in the capstone]
-    E --> F[6. Test it<br/>add eval cases]
-    F --> G[7. Log it<br/>decision journal]
+    E --> F[6. Test it<br/>with the guide]
+    F --> G[7. Tick it<br/>in the tracker]
 ```
 
 1. **Read it first, without running anything (10 minutes).** The Cookbook saves every notebook with its results already shown, so you can see what each cell produces without spending money. Write down in one sentence what problem the notebook solves.
 2. **Run it, one cell at a time.** Before each cell, guess what it will print. If the result surprises you, stop and find out why. Ask Claude Code, for example: "Explain cell 7 of `misc/prompt_caching.ipynb` line by line."
-3. **Change one thing and predict the result.** Each phase below lists a suggested change. Write your prediction down before you run the cell, then compare.
+3. **Change one thing and predict the result.** Each guide's warm-up suggests a change under **Try this**. Write your prediction down before you run the cell, then compare.
 4. **Break it on purpose.** Remove a required field, send a bad input, or make a tool raise an error. Read the exact error message. The exam asks what happens when things fail, and this step is how you learn it.
-5. **Rebuild the technique in the capstone, from memory.** Close the notebook. Write your own version in the capstone file named in the phase. Look back at the notebook only when you are stuck, and write down what you had to look up.
-6. **Test it.** Add at least one case to `evaluations\cases.jsonl` (the capstone's test questions) that checks the new feature.
-7. **Log it.** Add one entry to `docs\decision-journal.md` in the capstone folder with three lines: what you tried, what you expected, and what happened. Then tick the notebook in section 8.
+5. **Rebuild the technique in the capstone, from memory.** Close the notebook and solve the matching problems in the capstone guide. Look back at the notebook only when you are stuck.
+6. **Test it.** The guide's problems include eval cases and tests for each feature.
+7. **Tick it** in the progress tracker at the end of this page.
 
 ---
 
-### The plan, phase by phase
+### Which notebooks to run
 
-Do each phase after you finish the matching course chapter. File names in the "Build in the capstone" rows match the file layout in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md#where-the-files-go).
+You don't need to come back to this page after the setup. Each capstone guide lists its own notebooks in an "Optional warm-up" step under "Before you start", with links and a "Try this" exercise. This table is only an overview.
 
-| Phase | Do it after | Notebooks | Hours | Capstone result |
-|:---:|---|---:|---:|---|
-| 0 | Now | Setup only | 1 | Cookbook runs; capstone folder exists |
-| 1 | API course chapter 1 (lessons 1–8) | 2 | 2 | Client with retries and JSON output |
-| 2 | Chapter 2, Prompt evaluation | 2 | 3 | First 10 eval cases and an eval script |
-| 3 | Chapter 3, Prompt engineering | 1 | 1 | System prompt with XML tags |
-| 4 | Chapter 4, Tool use | 4 | 4 | Ticket lookup and approved ticket creation |
-| 5 | Chapter 5, RAG | 1 (+1 optional) | 3 | Answers from documents |
-| 6 | Chapter 6, Features of Claude | 3 | 3 | Citations and prompt caching, measured |
-| 7 | Chapter 9, Agents and workflows | 3 | 3 | A workflow pattern and a safety filter |
-| 8 | Cloud course and ADR week | 3 | 2 | Cost, latency, and batch measurements |
-
-Chapters 7 (MCP) and 8 (Anthropic apps) have no Cookbook phase, because the Cookbook has no matching notebooks. Use the MCP documentation pages listed in the MCP course row of the [study plan](readme.md) instead.
-
-#### Phase 0: setup (now)
-
-- Do the one-time setup above.
-- Create the capstone folder by following problem 1 of [capstone guide 1](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-1-set-up-the-project-and-make-your-first-api-call).
-- **Done when:** the JSON mode notebook returns a reply, and the capstone folder has a `.gitignore` that lists `.env` and `.venv`.
-
-#### Phase 1: calling the API and getting structured output
-
-| Notebook | What it teaches |
+| Capstone guide | Notebooks in its warm-up |
 |---|---|
-| [`misc/how_to_enable_json_mode.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/how_to_enable_json_mode.ipynb) | How to make the model answer in JSON by asking for it in the prompt |
-| [`tool_use/extracting_structured_json.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/extracting_structured_json.ipynb) | A more reliable way: describe the JSON shape as a tool, so the API checks the fields |
-
-- **Change:** ask for one extra field in the JSON, such as `"priority"`. **Break:** make the prompt ask for JSON but give it text that has no answer, and see what comes back.
-- **Build in the capstone:** `app\client.py` (one function that sends a question and returns the reply) and `app\retry.py` (retries a failed request with a growing wait between tries, called *exponential backoff*).
-- **Done when:** you can explain why the tool method is more reliable than asking for JSON in the prompt.
-
-#### Phase 2: evaluations
-
-An **eval** (evaluation) is a set of test questions with known good answers that you run against your app to measure its quality.
-
-| Notebook | What it teaches |
-|---|---|
-| [`misc/building_evals.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/building_evals.ipynb) | Three ways to grade answers: with code, with a model, and by a person |
-| [`misc/generate_test_cases.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/generate_test_cases.ipynb) | Using the model to write test questions for you |
-
-- **Change:** grade the same answers with code and then with a model, and compare where they disagree.
-- **Build in the capstone:** the first 10 cases in `evaluations\cases.jsonl` and a small script that runs them and saves the scores in `evaluations\results\`.
-- **Done when:** you can say when to grade with code (exact facts, such as a ticket number) and when to grade with a model (open answers, such as "is this polite?").
-
-#### Phase 3: prompting
-
-| Notebook | What it teaches |
-|---|---|
-| [`misc/metaprompt.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/metaprompt.ipynb) | Using the model to draft a strong first prompt for a task |
-
-- **Build in the capstone:** a system prompt that wraps documents in `<documents>` tags and instructions in `<instructions>` tags. Rerun your 10 eval cases and record whether the score changed.
-
-#### Phase 4: tool use
-
-A **tool** is a function in your code that the model can ask your app to run, such as "look up ticket 1042." The model never runs the function itself; your code does.
-
-| Notebook | What it teaches |
-|---|---|
-| [`tool_use/calculator_tool.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/calculator_tool.ipynb) | The smallest complete tool loop: define, call, return the result |
-| [`tool_use/customer_service_agent.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/customer_service_agent.ipynb) | Several tools for a support agent: very close to your capstone |
-| [`tool_use/tool_choice.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/tool_choice.ipynb) | Forcing, allowing, or blocking tool use with the `tool_choice` setting |
-| [`tool_use/parallel_tools.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/parallel_tools.ipynb) | Getting several tool calls in one turn to save time |
-
-- **Change:** add a second tool to the calculator example. **Break:** make your tool function raise an error, and send the error back to the model as the tool result. Watch how the model responds.
-- **Build in the capstone:** `app\tools.py` with `lookup_ticket` (read only) and `create_ticket` (a write). Before `create_ticket` runs, your code prints the planned ticket and waits for you to type `yes` (the *approval gate*). Add `tests\test_tools.py` with one test per tool.
-- **Done when:** you can explain why the write needs approval and the lookup doesn't: a lookup changes nothing, but a wrong ticket reaches a real person.
-
-#### Phase 5: retrieval (RAG)
-
-**RAG** (retrieval-augmented generation) means your app first finds the document passages that match the question, then sends only those passages to the model along with the question.
-
-| Notebook | What it teaches |
-|---|---|
-| [`capabilities/retrieval_augmented_generation/guide.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/capabilities/retrieval_augmented_generation/guide.ipynb) | Building basic RAG, measuring it, and improving it step by step |
-| [`capabilities/contextual-embeddings/guide.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/capabilities/contextual-embeddings/guide.ipynb) (optional) | Contextual retrieval: adding a short summary to each chunk to improve search |
-
-- **Extra key needed:** both notebooks use Voyage AI for *embeddings* (lists of numbers that capture what a text means, used to find similar passages). You need a free `VOYAGE_API_KEY` in `.env`. The optional notebook also needs a Cohere key. If you don't want extra accounts, read these notebooks without running them and use the BM25 keyword search from lesson 37 of the API course in your capstone.
-- **Build in the capstone:** retrieval over 5–10 fictional documents in `sample_documents\`. Add 3 eval cases whose answer is **not** in the documents, and check that the app says so.
-
-#### Phase 6: citations, PDFs, and prompt caching
-
-| Notebook | What it teaches |
-|---|---|
-| [`misc/using_citations.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/using_citations.ipynb) | Getting answers that point to the exact sentence they came from |
-| [`misc/pdf_upload_summarization.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/pdf_upload_summarization.ipynb) | Sending a PDF to the model |
-| [`misc/prompt_caching.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/prompt_caching.ipynb) | Saving the unchanging start of a prompt so later requests cost less and return faster |
-
-- **Change:** in the caching notebook, put something that changes (such as the time) at the start of the prompt, and watch the cache stop working. This shows why the stable part must come first.
-- **Build in the capstone:** citations in every answer, and caching for the system prompt and documents. Record the cache hit rate and the cost per question, with and without caching, in `evaluations\results\benchmark.json`.
-
-#### Phase 7: agent patterns and safety
-
-| Notebook | What it teaches |
-|---|---|
-| [`patterns/agents/basic_workflows.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/patterns/agents/basic_workflows.ipynb) | Chaining, routing, and running steps in parallel |
-| [`patterns/agents/evaluator_optimizer.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/patterns/agents/evaluator_optimizer.ipynb) | One model call writes an answer and a second call checks and improves it |
-| [`misc/building_moderation_filter.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/building_moderation_filter.ipynb) | Using the model to screen user messages before your app acts on them |
-
-- **Build in the capstone:** a router that sends each question either to document search or to the ticket tools, and a filter that refuses misuse requests. Add 3 misuse cases to the evals.
-- **Done when:** you can explain when a fixed workflow is better than an agent that decides its own steps (it is cheaper, faster, and easier to test).
-
-#### Phase 8: cost, speed, and batch processing
-
-| Notebook | What it teaches |
-|---|---|
-| [`misc/batch_processing.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/batch_processing.ipynb) | The Message Batches API: about half the price, with results within 24 hours |
-| [`cost_optimization/cost_optimization.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/cost_optimization/cost_optimization.ipynb) | A checklist for cutting cost while measuring the pass rate |
-| [`latency_optimization/latency_optimization.ipynb`](https://github.com/anthropics/claude-cookbooks/blob/main/latency_optimization/latency_optimization.ipynb) | Ways to make answers arrive faster, measured |
-
-- These two optimization notebooks are long (77 and 101 cells). Read them first and run only the sections that match your capstone, because running everything costs more.
-- **Build in the capstone:** run your eval set through the Batches API once. Compare cost and latency for Haiku and one larger model. Use the numbers in your ADR on model choice.
+| [Guide 1: Accessing Claude with the API](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md) | `how_to_enable_json_mode`, `extracting_structured_json` |
+| [Guide 2: Prompt evaluation](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/02-prompt-evaluation.md) | `building_evals`, `generate_test_cases` |
+| [Guide 3: Prompt engineering techniques](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/03-prompt-engineering-techniques.md) | `metaprompt` |
+| [Guide 4: Tool use with Claude](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/04-tool-use-with-claude.md) | `calculator_tool`, `customer_service_agent`, `tool_choice`, `parallel_tools` |
+| [Guide 5: RAG and agentic search](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/05-rag-and-agentic-search.md) | `retrieval_augmented_generation/guide`, and optionally `contextual-embeddings/guide` |
+| [Guide 6: Features of Claude](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/06-features-of-claude.md) | `using_citations`, `pdf_upload_summarization`, `prompt_caching` |
+| Guides 7 and 8 | None. The Cookbook has no notebooks for MCP or Claude Code. |
+| [Guide 9: Agents and workflows](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/09-agents-and-workflows.md) | `basic_workflows`, `evaluator_optimizer`, `building_moderation_filter` |
+| [Guide 10: Final measurements and write-ups](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/10-final-measurements-and-write-ups.md) | `batch_processing`, `cost_optimization`, `latency_optimization` |
 
 ---
 
@@ -279,12 +196,12 @@ A **tool** is a function in your code that the model can ask your app to run, su
 
 ### Progress tracker
 
-- [ ] Phase 0: setup and capstone folder
-- [ ] Phase 1: `how_to_enable_json_mode`, `extracting_structured_json`
-- [ ] Phase 2: `building_evals`, `generate_test_cases`
-- [ ] Phase 3: `metaprompt`
-- [ ] Phase 4: `calculator_tool`, `customer_service_agent`, `tool_choice`, `parallel_tools`
-- [ ] Phase 5: `retrieval_augmented_generation/guide` (optional: `contextual-embeddings/guide`)
-- [ ] Phase 6: `using_citations`, `pdf_upload_summarization`, `prompt_caching`
-- [ ] Phase 7: `basic_workflows`, `evaluator_optimizer`, `building_moderation_filter`
-- [ ] Phase 8: `batch_processing`, `cost_optimization`, `latency_optimization`
+- [ ] Setup: the JSON mode notebook returns a reply
+- [ ] Guide 1: `how_to_enable_json_mode`, `extracting_structured_json`
+- [ ] Guide 2: `building_evals`, `generate_test_cases`
+- [ ] Guide 3: `metaprompt`
+- [ ] Guide 4: `calculator_tool`, `customer_service_agent`, `tool_choice`, `parallel_tools`
+- [ ] Guide 5: `retrieval_augmented_generation/guide` (optional: `contextual-embeddings/guide`)
+- [ ] Guide 6: `using_citations`, `pdf_upload_summarization`, `prompt_caching`
+- [ ] Guide 9: `basic_workflows`, `evaluator_optimizer`, `building_moderation_filter`
+- [ ] Guide 10: `batch_processing`, `cost_optimization`, `latency_optimization`

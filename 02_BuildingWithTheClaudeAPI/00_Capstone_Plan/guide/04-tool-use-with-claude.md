@@ -67,7 +67,16 @@ sequenceDiagram
 
 1. Run `git pull`, and finish [guide 3](03-prompt-engineering-techniques.md).
 2. Read your notes for chapter 4 when they exist (see the [course index](../../README.md)).
-3. Optional: do [Cookbook phase 4](../../../cookbook-build-along.md#phase-4-tool-use). The `customer_service_agent` notebook there is very close to this guide.
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`calculator_tool`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/calculator_tool.ipynb) | The smallest complete tool loop: define, call, return the result |
+   | [`customer_service_agent`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/customer_service_agent.ipynb) | Several tools for a support agent; very close to this guide |
+   | [`tool_choice`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/tool_choice.ipynb) | Letting, forcing, or stopping tool use with the `tool_choice` setting |
+   | [`parallel_tools`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/parallel_tools.ipynb) | Several tool calls in one reply, to save time |
+
+   **Try this:** make a tool function raise an error, send the error back as the tool result, and watch how the model responds.
 
 ---
 

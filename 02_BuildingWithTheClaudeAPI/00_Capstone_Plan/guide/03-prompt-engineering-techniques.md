@@ -43,7 +43,13 @@ The prompts from guide 1 work on easy questions. In this guide you add hard test
 
 1. Run `git pull`, and finish [guide 2](02-prompt-evaluation.md).
 2. Read your notes for chapter 3 when they exist (see the [course index](../../README.md)).
-3. Optional: do [Cookbook phase 3](../../../cookbook-build-along.md#phase-3-prompting).
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`metaprompt`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/metaprompt.ipynb) | Using the model to draft a strong first prompt for a task |
+
+   **Try this:** let it draft a system prompt for Northwind, run your eval on it, and compare the score with your own prompt.
 
 **The rule for this whole guide:** change one thing, run `uv run python -m evaluations.run_evals`, add a row to `scores.md`, and keep the change only if the score holds or rises.
 

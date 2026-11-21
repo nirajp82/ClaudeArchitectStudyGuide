@@ -48,7 +48,15 @@ This guide adds the model's special features one at a time, each where it really
 
 1. Run `git pull`, and finish [guide 5](05-rag-and-agentic-search.md).
 2. Read your notes for chapter 6 when they exist (see the [course index](../../README.md)).
-3. Optional: do [Cookbook phase 6](../../../cookbook-build-along.md#phase-6-citations-pdfs-and-prompt-caching).
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`using_citations`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/using_citations.ipynb) | Answers that point to the exact sentence they came from |
+   | [`pdf_upload_summarization`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/pdf_upload_summarization.ipynb) | Sending a PDF to the model |
+   | [`prompt_caching`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/prompt_caching.ipynb) | Saving the unchanging start of a prompt so later requests cost less |
+
+   **Try this:** in the caching notebook, put the current time at the start of the prompt and watch the cache stop working.
 
 ---
 

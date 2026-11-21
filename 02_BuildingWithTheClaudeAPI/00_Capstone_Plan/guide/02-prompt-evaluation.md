@@ -54,7 +54,14 @@ flowchart LR
 
 1. Run `git pull`, and finish [guide 1](01-accessing-claude-with-the-api.md).
 2. Read the [chapter 2 summary](../../02-prompt-evaluation/README.md).
-3. Optional: do [Cookbook phase 2](../../../cookbook-build-along.md#phase-2-evaluations).
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`building_evals`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/building_evals.ipynb) | Three ways to grade answers: with code, with a model, and by a person |
+   | [`generate_test_cases`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/generate_test_cases.ipynb) | Using the model to write test questions for you |
+
+   **Try this:** grade the same answers with code and then with a model, and note where they disagree.
 4. Create the empty file `evaluations/__init__.py`, so other files can import from the `evaluations` folder. On the Mac, run `touch evaluations/__init__.py`. On Windows, run `New-Item evaluations\__init__.py`.
 
 ---

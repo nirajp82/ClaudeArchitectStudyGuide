@@ -51,7 +51,16 @@ All paths are relative to the capstone folder, `02_BuildingWithTheClaudeAPI/00_C
 
 1. Run `git pull` in the study-notes repository, so you have the newest notes.
 2. Read the [chapter 1 summary](../../01-accessing-claude-with-the-api/README.md) if a lesson feels unclear.
-3. Optional: do [Cookbook phase 1](../../../cookbook-build-along.md#phase-1-calling-the-api-and-getting-structured-output) first to see working examples.
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`how_to_enable_json_mode`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/how_to_enable_json_mode.ipynb) | The old way: asking for JSON in the prompt |
+   | [`extracting_structured_json`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/extracting_structured_json.ipynb) | A more reliable way: describing the JSON shape as a tool |
+
+   **Try this:** ask for one extra field, such as `priority`. Then give it text that has no answer, and see what comes back.
+
+   Problem 7 of this guide teaches the current way, structured outputs, which is more reliable than both notebooks.
 
 **How to use this guide:** read each problem and try to solve it yourself first. Open the answer only when you are stuck or when you have finished and want to check. Typing the code yourself, rather than pasting it, makes you read every line.
 

@@ -56,7 +56,16 @@ flowchart LR
 
 1. Run `git pull`, and finish [guide 4](04-tool-use-with-claude.md).
 2. Read your notes for chapter 5 when they exist (see the [course index](../../README.md)).
-3. Optional: do [Cookbook phase 5](../../../cookbook-build-along.md#phase-5-retrieval-rag).
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`retrieval_augmented_generation/guide`](https://github.com/anthropics/claude-cookbooks/blob/main/capabilities/retrieval_augmented_generation/guide.ipynb) | Building basic RAG, measuring it, and improving it step by step |
+   | [`contextual-embeddings/guide (extra)`](https://github.com/anthropics/claude-cookbooks/blob/main/capabilities/contextual-embeddings/guide.ipynb) | Adding a short summary to each chunk to improve search |
+
+   **Try this:** compare the notebook's search results before and after one improvement, and note which questions changed.
+
+   Both notebooks need a Voyage AI key for embeddings, and the second also needs a Cohere key. If you don't want extra accounts, read them without running them.
 4. Install the keyword search package: `uv add rank-bm25`.
 
 ---

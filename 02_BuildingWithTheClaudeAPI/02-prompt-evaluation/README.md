@@ -8,7 +8,11 @@
 
 ---
 
-**Capstone for this chapter:** [Guide 2, Prompt evaluation](../00_Capstone_Plan/guide/02-prompt-evaluation.md). Do it after you finish the chapter.
+**After this chapter, practise it:**
+
+1. Read the lesson notes on this page, then take the chapter quiz.
+2. Open **[capstone guide 2](../00_Capstone_Plan/guide/02-prompt-evaluation.md)** and solve its problems. Everything you need is on that one page: an optional warm-up with example notebooks, the problems, and the hidden step-by-step answers.
+3. When you finish, mark guide 2 as done in the [capstone index](../00_Capstone_Plan/README.md#the-chapter-guides).
 
 This page will sum up the whole chapter for revision once its lessons are done. Each lesson summary will end with a link to the full lesson notes.
 

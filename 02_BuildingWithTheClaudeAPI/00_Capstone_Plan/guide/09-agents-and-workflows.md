@@ -54,7 +54,15 @@ You build three classic workflows (routing, chaining, parallel checks), make the
 
 1. Run `git pull`, and finish [guide 8](08-anthropic-apps.md).
 2. Read your notes for chapter 9 when they exist (see the [course index](../../README.md)).
-3. Optional: do [Cookbook phase 7](../../../cookbook-build-along.md#phase-7-agent-patterns-and-safety).
+3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`basic_workflows`](https://github.com/anthropics/claude-cookbooks/blob/main/patterns/agents/basic_workflows.ipynb) | Chaining, routing, and running steps in parallel |
+   | [`evaluator_optimizer`](https://github.com/anthropics/claude-cookbooks/blob/main/patterns/agents/evaluator_optimizer.ipynb) | One call writes an answer, a second checks and improves it |
+   | [`building_moderation_filter`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/building_moderation_filter.ipynb) | Screening messages before your app acts on them |
+
+   **Try this:** change the routing notebook's categories to Northwind's four routes and test it on a few questions.
 
 ---
 

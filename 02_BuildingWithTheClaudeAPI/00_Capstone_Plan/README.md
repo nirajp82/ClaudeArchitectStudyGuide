@@ -72,7 +72,7 @@ App:  The company documents don't cover that.
 | Your app | This folder, on whichever computer you use | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main --role customer` starts the chat |
 | The Claude API and the model | Anthropic's servers | Reads the question and the documents your app sends, then replies or asks for a tool | It replies "call `lookup_ticket` with 1042" |
 | Claude Code | Terminal (Mac) or PowerShell (Windows), opened in this folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
-| The Cookbook | `claude-cookbooks/`, a folder next to this repository (see the [Cookbook build-along plan](../../cookbook-build-along.md#where-the-folders-sit)) | Working examples that you study before each guide | `tool_use/customer_service_agent.ipynb` |
+| The Cookbook | `claude-cookbooks/`, a folder next to this repository (see the [Cookbook build-along plan](../../cookbook-build-along.md#where-the-folders-sit)) | Example notebooks for each guide's optional warm-up | `tool_use/customer_service_agent.ipynb` |
 
 ---
 
@@ -81,29 +81,30 @@ App:  The company documents don't cover that.
 Each guide has the same parts:
 
 1. **What you build in this chapter:** the files you create and a "done when" check.
-2. **Problems:** one or more per course lesson, with a link to the lesson. Each problem states the task and how to check your solution.
-3. **The step-by-step answer:** hidden under "Show the step-by-step answer". Try the problem first, then open the answer to check or when you are stuck.
-4. **An architect scenario:** a design problem from a different business, an online shop, asked the way the exam asks it. The same shop returns in every guide.
-5. **Commit your work:** the commands to test and save your progress.
+2. **Before you start:** a short checklist, including an optional warm-up with example notebooks from the Claude Cookbook.
+3. **Problems:** one or more per course lesson, with a link to the lesson. Each problem states the task and how to check your solution.
+4. **The step-by-step answer:** hidden under "Show the step-by-step answer". Try the problem first, then open the answer to check or when you are stuck.
+5. **An architect scenario:** a design problem from a different business, an online shop, asked the way the exam asks it. The same shop returns in every guide.
+6. **Commit your work:** the commands to test and save your progress.
 
 ---
 
 ### The chapter guides
 
-Do each guide right after the course chapter in the "Do it after" column. A chapter name becomes a link to your notes once you have written notes for its first lesson. "Cookbook phase" points to the [Cookbook build-along plan](../../cookbook-build-along.md#the-plan-phase-by-phase), which lists optional notebooks to study first.
+Do each guide right after the course chapter in the "Do it after" column. A chapter name becomes a link to your notes once you have written notes for its first lesson.
 
-| # | Do it after | Capstone guide | Cookbook phase | What you build | Status |
-|:---:|:---|:---|:---:|:---|:---|
-| 1 | [Chapter 1, Accessing Claude with the API (lessons 1–8)](../01-accessing-claude-with-the-api/README.md) | [Guide 1](guide/01-accessing-claude-with-the-api.md) | 0, 1 | Setup, chat with memory, roles, streaming, JSON triage, retries | Not started |
-| 2 | [Chapter 2, Prompt evaluation (lessons 9–14)](../02-prompt-evaluation/README.md) | [Guide 2](guide/02-prompt-evaluation.md) | 2 | Test cases, an eval runner, code and model graders | Not started |
-| 3 | Chapter 3, Prompt engineering techniques (lessons 15–19) | [Guide 3](guide/03-prompt-engineering-techniques.md) | 3 | Hard cases and better prompts, measured one technique at a time | Not started |
-| 4 | Chapter 4, Tool use with Claude (lessons 20–31) | [Guide 4](guide/04-tool-use-with-claude.md) | 4 | Ticket tools, the tool loop, the approval gate, tests, editor and web search | Not started |
-| 5 | Chapter 5, RAG and Agentic Search (lessons 32–38) | [Guide 5](guide/05-rag-and-agentic-search.md) | 5 | Documents, hybrid search, a role filter, a search tool | Not started |
-| 6 | Chapter 6, Features of Claude (lessons 39–46) | [Guide 6](guide/06-features-of-claude.md) | 6 | Thinking, images, PDFs, citations, caching, code execution | Not started |
-| 7 | Chapter 7, Model Context Protocol (lessons 47–56) | [Guide 7](guide/07-model-context-protocol.md) | none | An MCP server and your own MCP client | Not started |
-| 8 | Chapter 8, Anthropic apps (lessons 57–60) | [Guide 8](guide/08-anthropic-apps.md) | none | Claude Code rules for the project, a review, and your MCP server in Claude Code | Not started |
-| 9 | Chapter 9, Agents and workflows (lessons 61–67) | [Guide 9](guide/09-agents-and-workflows.md) | 7 | Routing, chains, parallel checks, and the four-agent incident team | Not started |
-| 10 | The whole course, plus the cloud course in the [study plan](../../readme.md) | [Guide 10](guide/10-final-measurements-and-write-ups.md) | 8 | Model comparison, batches, and the three write-ups | Not started |
+| # | Do it after | Capstone guide | What you build | Status |
+|:---:|:---|:---|:---|:---|
+| 1 | [Chapter 1, Accessing Claude with the API (lessons 1–8)](../01-accessing-claude-with-the-api/README.md) | [Guide 1](guide/01-accessing-claude-with-the-api.md) | Setup, chat with memory, roles, streaming, JSON triage, retries | Not started |
+| 2 | [Chapter 2, Prompt evaluation (lessons 9–14)](../02-prompt-evaluation/README.md) | [Guide 2](guide/02-prompt-evaluation.md) | Test cases, an eval runner, code and model graders | Not started |
+| 3 | Chapter 3, Prompt engineering techniques (lessons 15–19) | [Guide 3](guide/03-prompt-engineering-techniques.md) | Hard cases and better prompts, measured one technique at a time | Not started |
+| 4 | Chapter 4, Tool use with Claude (lessons 20–31) | [Guide 4](guide/04-tool-use-with-claude.md) | Ticket tools, the tool loop, the approval gate, tests, editor and web search | Not started |
+| 5 | Chapter 5, RAG and Agentic Search (lessons 32–38) | [Guide 5](guide/05-rag-and-agentic-search.md) | Documents, hybrid search, a role filter, a search tool | Not started |
+| 6 | Chapter 6, Features of Claude (lessons 39–46) | [Guide 6](guide/06-features-of-claude.md) | Thinking, images, PDFs, citations, caching, code execution | Not started |
+| 7 | Chapter 7, Model Context Protocol (lessons 47–56) | [Guide 7](guide/07-model-context-protocol.md) | An MCP server and your own MCP client | Not started |
+| 8 | Chapter 8, Anthropic apps (lessons 57–60) | [Guide 8](guide/08-anthropic-apps.md) | Claude Code rules for the project, a review, and your MCP server in Claude Code | Not started |
+| 9 | Chapter 9, Agents and workflows (lessons 61–67) | [Guide 9](guide/09-agents-and-workflows.md) | Routing, chains, parallel checks, and the four-agent incident team | Not started |
+| 10 | The whole course, plus the cloud course in the [study plan](../../readme.md) | [Guide 10](guide/10-final-measurements-and-write-ups.md) | Model comparison, batches, and the three write-ups | Not started |
 
 **If you fall behind,** shorten guides 7 and 8 first, because the rest of the app doesn't depend on them. Never skip guides 2, 4, and 6. Evals, tools with approval, and caching appear across several exam domains.
 

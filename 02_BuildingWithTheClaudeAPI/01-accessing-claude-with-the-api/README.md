@@ -8,7 +8,11 @@
 
 ---
 
-**Capstone for this chapter:** [Guide 1, Accessing Claude with the API](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md). Do it after you finish the chapter.
+**After this chapter, practise it:**
+
+1. Read the lesson notes on this page, then take the chapter quiz.
+2. Open **[capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md)** and solve its problems. Everything you need is on that one page: an optional warm-up with example notebooks, the problems, and the hidden step-by-step answers.
+3. When you finish, mark guide 1 as done in the [capstone index](../00_Capstone_Plan/README.md#the-chapter-guides).
 
 This page sums up the whole chapter for revision. Each lesson summary ends with a link to the full lesson notes. Where the course teaches a way that newer models reject, the summary gives the current way first.
 

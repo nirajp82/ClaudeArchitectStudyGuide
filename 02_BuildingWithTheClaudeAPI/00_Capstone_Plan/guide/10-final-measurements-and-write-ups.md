@@ -45,7 +45,15 @@ The app is built. This guide turns it into evidence: measured cost, speed, and q
 ### Before you start
 
 1. Run `git pull`, and finish [guide 9](09-agents-and-workflows.md).
-2. Optional: do [Cookbook phase 8](../../../cookbook-build-along.md#phase-8-cost-speed-and-batch-processing).
+2. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+
+   | Notebook | What it teaches |
+   |---|---|
+   | [`batch_processing`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/batch_processing.ipynb) | The Message Batches API: about half the price, results within 24 hours |
+   | [`cost_optimization`](https://github.com/anthropics/claude-cookbooks/blob/main/cost_optimization/cost_optimization.ipynb) | A checklist for cutting cost while measuring the pass rate |
+   | [`latency_optimization`](https://github.com/anthropics/claude-cookbooks/blob/main/latency_optimization/latency_optimization.ipynb) | Ways to make answers arrive faster, measured |
+
+   **Try this:** the two optimization notebooks are long, so read them first and run only the sections that match your app.
 
 ---
 
@@ -105,7 +113,7 @@ Consider Sonnet for the incident team's investigator, where the harder reasoning
 
 ### Problem 2: Run the eval as a batch at half price
 
-**Lesson:** not a course lesson. The Message Batches API is in [Cookbook phase 8](../../../cookbook-build-along.md#phase-8-cost-speed-and-batch-processing).
+**Lesson:** not a course lesson. The `batch_processing` notebook in the warm-up above shows the Message Batches API working.
 
 **The problem:** The eval doesn't need answers instantly. Write `evaluations/batch_answers.py`, which sends every `answer` and `scope` case to the **Message Batches API**. A batch costs about half the normal price, and its results arrive within 24 hours, often much sooner.
 

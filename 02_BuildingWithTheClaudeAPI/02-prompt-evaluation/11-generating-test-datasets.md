@@ -40,6 +40,33 @@ Do the guide's problems in order, after you finish the chapter, because each one
 3. Before you go live, you check that the prompt works. That check is an **eval**.
 4. An eval needs something to test the prompt with: a list of sample requests. That list is the **dataset**, and this lesson builds it.
 
+The highlighted box is what this lesson builds. It is the same picture as in [lesson 9](09-prompt-evaluation.md#how-the-pieces-fit-together).
+
+```mermaid
+flowchart LR
+    subgraph Local["On your laptop: testing"]
+        P["Prompt v1<br/>(the thing you will ship)"]
+        D["Dataset<br/>dataset.json<br/>(sample AWS requests,<br/>built in this lesson)"]
+        E["Eval<br/>sends every sample request<br/>through the prompt,<br/>then grades the answers"]
+        S["Score<br/>e.g. 7 of 10"]
+        P --> E
+        D --> E
+        E --> S
+        S -- "score too low:<br/>edit the prompt" --> P
+    end
+    subgraph Prod["In production: real use"]
+        P2["Final prompt"]
+        U["Real user requests"]
+        M["Model writes the code"]
+        U --> P2 --> M
+    end
+    S -- "score good enough:<br/>ship the prompt" --> P2
+    style D fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
+- **Only the prompt goes to production.** In production, real user requests take the dataset's place.
+- **The dataset stays fixed while you edit the prompt,** so the scores can be compared.
+
 An eval has three parts:
 
 - **The prompt:** the thing you will ship to production. For example, "Please provide a solution to the following task: {task}".
@@ -84,33 +111,6 @@ Typing 100 sample requests by hand is slow, so the course has a model write them
 | **The prompt** | The thing being tested | "Please provide a solution to the following task: {task}" | Yes |
 | **The dataset** | The list of sample requests to test it with | `dataset.json`, with requests like "Write a regex that matches an EC2 instance ID" | No |
 | **The grader** | Decides whether each answer is good | Lessons 13 and 14 | No |
-
-The highlighted box is what this lesson builds. It is the same picture as in [lesson 9](09-prompt-evaluation.md#how-the-pieces-fit-together), with this lesson's example.
-
-```mermaid
-flowchart LR
-    subgraph Local["On your laptop: testing"]
-        P["Prompt v1<br/>(the thing you will ship)"]
-        D["Dataset<br/>dataset.json<br/>(sample AWS requests,<br/>built in this lesson)"]
-        E["Eval<br/>sends every sample request<br/>through the prompt,<br/>then grades the answers"]
-        S["Score<br/>e.g. 7 of 10"]
-        P --> E
-        D --> E
-        E --> S
-        S -- "score too low:<br/>edit the prompt" --> P
-    end
-    subgraph Prod["In production: real use"]
-        P2["Final prompt"]
-        U["Real user requests"]
-        M["Model writes the code"]
-        U --> P2 --> M
-    end
-    S -- "score good enough:<br/>ship the prompt" --> P2
-    style D fill:#ffe9a8,stroke:#b8860b,stroke-width:2px
-```
-
-- **Only the prompt goes to production.** In production, real user requests take the dataset's place.
-- **The dataset stays fixed while you edit the prompt,** so the scores can be compared.
 
 #### A concrete run with two requests
 

@@ -160,7 +160,7 @@ Chapters 7 (MCP) and 8 (Anthropic apps) have no Cookbook phase, because the Cook
 #### Phase 0: setup (now)
 
 - Do the one-time setup above.
-- Create the capstone folder by following "Start here: your first session" in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md#start-here-your-first-session).
+- Create the capstone folder by following problem 1 of [capstone guide 1](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-1-set-up-the-project-and-make-your-first-api-call).
 - **Done when:** the JSON mode notebook returns a reply, and the capstone folder has a `.gitignore` that lists `.env` and `.venv`.
 
 #### Phase 1: calling the API and getting structured output

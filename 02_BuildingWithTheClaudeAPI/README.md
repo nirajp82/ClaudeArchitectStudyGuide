@@ -8,12 +8,12 @@ Each chapter has its own folder, such as `01-accessing-claude-with-the-api/`. In
 
 ## Chapters
 
-| # | Chapter | Chapter summary | Status |
-|:---:|:---|:---|:---:|
-| 1 | Accessing Claude with the API (lessons 1–8) | [01-accessing-claude-with-the-api/README.md](01-accessing-claude-with-the-api/README.md) | ✅ Done |
-| 2 | Prompt evaluation (lessons 9–14) | [02-prompt-evaluation/README.md](02-prompt-evaluation/README.md) | In progress |
+| # | Chapter | Chapter summary | Capstone guide | Status |
+|:---:|:---|:---|:---|:---:|
+| 1 | Accessing Claude with the API (lessons 1–8) | [01-accessing-claude-with-the-api/README.md](01-accessing-claude-with-the-api/README.md) | [Guide 1](00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md) | ✅ Done |
+| 2 | Prompt evaluation (lessons 9–14) | [02-prompt-evaluation/README.md](02-prompt-evaluation/README.md) | [Guide 2](00_Capstone_Plan/guide/02-prompt-evaluation.md) | In progress |
 
-Later chapters get their folder when their first lesson is written.
+Later chapters get their folder when their first lesson is written. Every chapter has a capstone guide in [00_Capstone_Plan/guide/](00_Capstone_Plan/README.md#the-chapter-guides): do it after the chapter.
 
 ## Progress
 
@@ -106,7 +106,7 @@ Files are created as each lesson is completed. Paste the transcript or course te
 
 1. [ ] Take each chapter quiz and the final assessment. Record every chapter quiz question, and the correct reasoning, in the Quiz review section of that chapter's README. Record the final assessment in `68-course-quiz-review.md`.
 2. [ ] Collect the **completion badge**.
-3. [ ] Practice: build capstone v1 and v2 (document Q&A with citations, prompt caching, and the first 10–20 eval questions). See the [capstone plan](00_Capstone_Plan/README.md#the-milestones).
+3. [ ] Practice: finish capstone guides 1 to 10. See the [capstone plan](00_Capstone_Plan/README.md#the-chapter-guides).
 4. [ ] Mark this course as done in the study plan.
 
 ## Folder layout

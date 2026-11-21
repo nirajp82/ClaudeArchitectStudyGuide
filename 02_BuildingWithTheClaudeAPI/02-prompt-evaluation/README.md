@@ -8,6 +8,8 @@
 
 ---
 
+**Capstone for this chapter:** [Guide 2, Prompt evaluation](../00_Capstone_Plan/guide/02-prompt-evaluation.md). Do it after you finish the chapter.
+
 This page will sum up the whole chapter for revision once its lessons are done. Each lesson summary will end with a link to the full lesson notes.
 
 ## Lessons in this chapter

@@ -19,6 +19,7 @@ I'll paste a lesson's **video transcript** and/or its **written course text**, s
    - In the course `README.md`, link the lesson and mark it ✅ Done.
    - In the chapter `README.md`, link the lesson and add its short summary and exam takeaways.
    - In the previous lesson, check the "Next" link in **both** its header and footer.
+   - **Capstone links (Building with the Claude API only):** each chapter has a guide in `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/guide/`. When a chapter's README is created, add a "Capstone for this chapter" line linking its guide. When a lesson file is created, turn the guide's plain "Lesson:" name for it into a link, and link the chapter name in the capstone README's guide table. When the last lesson of a chapter is written, add a "My notes / practice" checkbox that links the guide. If a lesson teaches something the guide doesn't cover, or the guide's problem no longer matches the lesson, update the guide.
 7. **Commit and push every time** you finish a lesson or a change to one, without asking. Use a short commit message that names the lesson. If a file changed on disk since you last read it, re-read it and build on my version first.
 8. **Reply briefly** (section 7).
 

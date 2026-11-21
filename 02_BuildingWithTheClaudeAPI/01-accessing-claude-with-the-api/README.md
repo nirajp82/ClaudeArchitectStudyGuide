@@ -8,6 +8,8 @@
 
 ---
 
+**Capstone for this chapter:** [Guide 1, Accessing Claude with the API](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md). Do it after you finish the chapter.
+
 This page sums up the whole chapter for revision. Each lesson summary ends with a link to the full lesson notes. Where the course teaches a way that newer models reject, the summary gives the current way first.
 
 **On this page**

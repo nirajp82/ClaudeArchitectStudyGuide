@@ -331,6 +331,7 @@ The prefill makes the model think it already opened a JSON block, so it writes o
 - [ ] Run the full `SupportTicket` example and print `parsed_output`.
 - [ ] Change the email so the kettle arrives late, and check that `issue` becomes `late`.
 - [ ] Send a prefill request to a newer model, read the 400 error, then fix it with structured outputs.
+- [ ] End of chapter 1: work through [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md).
 
 ---
 

@@ -6,6 +6,13 @@
 |:---|:---:|---:|
 | [← Structured data](../01-accessing-claude-with-the-api/08-structured-data.md) | [📚 Chapter index](README.md) | [A typical eval workflow →](10-a-typical-eval-workflow.md) |
 
+**Practice this lesson:** in [capstone guide 2](../00_Capstone_Plan/guide/02-prompt-evaluation.md), solve:
+
+- [Problem 1: Write your first test questions by hand](../00_Capstone_Plan/guide/02-prompt-evaluation.md#problem-1-write-your-first-test-questions-by-hand)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

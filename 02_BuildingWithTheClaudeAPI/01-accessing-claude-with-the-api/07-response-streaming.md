@@ -6,6 +6,13 @@
 |:---|:---:|---:|
 | [← Temperature](06-temperature.md) | [📚 Chapter index](README.md) | [Structured data →](08-structured-data.md) |
 
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
+
+- [Problem 6: Show the answer as it is written](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-6-show-the-answer-as-it-is-written)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

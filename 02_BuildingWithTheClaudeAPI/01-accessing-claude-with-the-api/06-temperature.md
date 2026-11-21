@@ -6,6 +6,13 @@
 |:---|:---:|---:|
 | [← System prompts](05-system-prompts.md) | [📚 Chapter index](README.md) | [Response streaming →](07-response-streaming.md) |
 
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
+
+- [Problem 5: See how much the answers vary](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-5-see-how-much-the-answers-vary)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

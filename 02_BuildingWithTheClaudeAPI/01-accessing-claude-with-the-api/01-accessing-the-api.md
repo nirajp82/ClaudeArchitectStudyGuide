@@ -6,6 +6,13 @@
 |:---|:---:|---:|
 | Start of course | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
 
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
+
+- [Problem 1: Set up the project and make your first API call](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-1-set-up-the-project-and-make-your-first-api-call)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

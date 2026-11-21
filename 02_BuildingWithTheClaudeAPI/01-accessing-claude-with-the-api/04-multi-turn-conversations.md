@@ -6,6 +6,13 @@
 |:---|:---:|---:|
 | [← Making a request](03-making-a-request.md) | [📚 Chapter index](README.md) | [System prompts →](05-system-prompts.md) |
 
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
+
+- [Problem 2: A chat that remembers the conversation](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-2-a-chat-that-remembers-the-conversation)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

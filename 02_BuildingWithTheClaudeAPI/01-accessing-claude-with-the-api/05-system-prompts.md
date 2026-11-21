@@ -6,6 +6,14 @@
 |:---|:---:|---:|
 | [← Multi-Turn conversations](04-multi-turn-conversations.md) | [📚 Chapter index](README.md) | [Temperature →](06-temperature.md) |
 
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
+
+- [Problem 3: Give the assistant a job with a system prompt](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-3-give-the-assistant-a-job-with-a-system-prompt)
+- [Problem 4: Answer differently for a customer and a technician](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-4-answer-differently-for-a-customer-and-a-technician)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

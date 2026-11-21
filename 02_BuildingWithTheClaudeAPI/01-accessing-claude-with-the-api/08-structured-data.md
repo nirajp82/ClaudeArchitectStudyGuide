@@ -6,6 +6,15 @@
 |:---|:---:|---:|
 | [← Response streaming](07-response-streaming.md) | [📚 Chapter index](README.md) | [Prompt evaluation →](../02-prompt-evaluation/09-prompt-evaluation.md) |
 
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
+
+- [Problem 7: Turn a customer message into clean JSON](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-7-turn-a-customer-message-into-clean-json)
+- [Problem 8: Try again when a request fails](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-8-try-again-when-a-request-fails)
+- [Architect scenario: sorting 1,000 shop emails a day](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#architect-scenario-sorting-1000-shop-emails-a-day)
+
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
+
 ---
 
 **On this page**

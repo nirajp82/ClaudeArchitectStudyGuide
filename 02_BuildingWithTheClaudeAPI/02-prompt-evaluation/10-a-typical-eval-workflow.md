@@ -36,7 +36,11 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this matters.** You change a prompt and try it on two questions. The answers look nicer, so you ship it. A week later, customers complain that 1 answer in 5 is now missing key steps. You never saw it, because two questions can't show a problem that hits 1 answer in 5. An eval would have shown the score drop before launch.
+**Where this lesson fits.** [Lesson 9](09-prompt-evaluation.md) showed that your prompt is your production code, and that a saved *test set* checks it the way unit tests check normal code. This lesson shows how you actually run that check.
+
+- **Why checking by hand fails:** you change a prompt and try it on two questions by hand. Both answers look good, so you launch it. A week later, customers complain that 1 answer in 5 (20%) is missing key steps. Two questions are too few to catch a problem that hits only 1 answer in 5.
+- **What an eval does instead:** your code sends every test question through your prompt to the model, scores every answer, and reports one final score. For an email sorter with 50 test emails, that score could be `45 / 50 = 90%`.
+- **Why the score protects you:** after every prompt change, you rerun the same test. If the score drops, the change broke something that used to work (a *regression*), and you see it before real customers do.
 
 #### What an eval workflow is
 
@@ -100,6 +104,17 @@ The five steps form a loop. You go around it once for every version of the promp
 The slide's step names are the course terms. In plain words, they are: write the prompt, write the test questions, get the answers, score the answers, change and repeat. Many ready-made eval tools exist, free and paid, but the course builds its own so you see every step.
 
 **The running example:** the course tests a general question-answering prompt on three questions: "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?"
+
+#### The same loop for lesson 9's email sorter
+
+The five steps work for any prompt, including the email sorter from [lesson 9](09-prompt-evaluation.md). That prompt sorts each customer email into `billing`, `technical`, or `other`.
+
+1. Your eval code reads `test_set.json`, which holds 50 sample emails, each with the label you expect back.
+2. It sends each email through your prompt to the model and saves the label the model returns.
+3. It compares each returned label with the expected one. A simple code check works here, because there is one exact right label.
+4. It reports the final score, such as `45 / 50 = 90%`.
+
+This is how a *unit test runner* works for normal code: one program runs every test and reports how many passed. The only difference is how each answer is scored. An email label is either right or wrong, so the score is a count. A free-text answer, such as an oatmeal recipe, needs a grader that gives a score from 1 to 10, so the score is an average.
 
 #### Who's who
 
@@ -327,28 +342,31 @@ It is the list of test questions. Each one goes into the prompt's `{question}` s
 **Q3. What does "baseline" mean in an eval?**
 It is the score of your first prompt version. Every later version is compared with it to see whether a change helped.
 
-**Q4. Why does an eval need so many test questions?**
+**Q4. What does "regression" mean in an eval?**
+A regression is a change that breaks something that used to work. For example, a prompt edit drops the email sorter's score from 45 of 50 to 40 of 50. Rerunning the same test after every change catches it before customers see it.
+
+**Q5. Why does an eval need so many test questions?**
 With few questions, one lucky or unlucky answer moves the average a lot. With 3 questions, one answer going from 4 to 9 raises the average by 1.67. With 100 questions it raises it by only 0.05. Many questions also cover more of the kinds of things real users ask.
 
-**Q5. What does "grader" mean?**
+**Q6. What does "grader" mean?**
 It is whatever scores each answer. It reads the question and the answer and gives a score, such as 1 to 10.
 
-**Q6. How does a grader decide on a score?**
+**Q7. How does a grader decide on a score?**
 A code grader checks a fixed rule, such as "the answer contains 4." A model grader gets a second prompt asking it to score the answer from 1 to 10, and replies with a number.
 
-**Q7. Why does the grader need the question as well as the answer?**
+**Q8. Why does the grader need the question as well as the answer?**
 An answer is only good or bad for a given question. "Add hot water to dry oatmeal" is a weak answer to "How do I make oatmeal?" because it leaves out amounts and times.
 
-**Q8. Why must the questions and the grader stay the same between runs?**
+**Q9. Why must the questions and the grader stay the same between runs?**
 So that only the prompt changes. If the questions or the grader also change, you can't tell which change moved the score.
 
-**Q9. (Exam angle) A team changes a prompt and says the new version "feels better." What do you ask for?**
+**Q10. (Exam angle) A team changes a prompt and says the new version "feels better." What do you ask for?**
 An eval: run both versions on the same dataset with the same grader, and compare the average scores. (Claude Models, Prompting & Context Engineering)
 
-**Q10. (Exam angle) An eval shows a higher score, but the team also changed the test questions. Is the result valid?**
+**Q11. (Exam angle) An eval shows a higher score, but the team also changed the test questions. Is the result valid?**
 No. Keep the dataset and grader fixed, and change only the prompt, so the score difference comes from the prompt alone. (Solution Design & Architecture)
 
-**Q11. (Exam angle) A new prompt raises the average score, but answers are now three times longer. What else do you check?**
+**Q12. (Exam angle) A new prompt raises the average score, but answers are now three times longer. What else do you check?**
 Check cost and speed, because longer answers use more output tokens and take longer. Also check that the grader isn't simply rewarding length. (Solution Design & Architecture)
 
 ---

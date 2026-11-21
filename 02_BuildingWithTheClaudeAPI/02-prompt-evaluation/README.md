@@ -55,7 +55,7 @@ This page will sum up the whole chapter for revision once its lessons are done. 
 - **A test dataset is the list of sample inputs** an eval sends through the prompt. Here each item is `{"task": "..."}`, such as "Write a regex that matches an EC2 instance ID."
 - **A fast, cheap model such as Claude Haiku can write the tasks.** The prompt names the topic, shows the shape, keeps tasks small, and says how many to write.
 - **Use structured outputs to get clean JSON.** `client.messages.parse(..., output_format=Dataset)` returns the list in a fixed shape. The list sits in a `tasks` field, because the top level must be an object.
-- **The course's prefill and stop sequence trick is outdated.** It works only on older models such as `claude-haiku-4-5`. Claude Haiku 5.5 and newer models reject prefill with a 400 error.
+- **Check `stop_reason`.** If it is `"max_tokens"`, the answer was cut off, so ask for fewer tasks per request. The course's prefill trick is outdated: newer models reject it.
 - **Read the tasks, then save them once** to `dataset.json` with `json.dump(dataset, f, indent=2)`. Every prompt version is tested on that same file.
 
 [Full lesson →](11-generating-test-datasets.md)
@@ -70,7 +70,7 @@ This page will sum up the whole chapter for revision once its lessons are done. 
 - **A new prompt scores higher but makes answers three times longer.** Check cost and speed too, and make sure the grader isn't just rewarding length. (Solution Design & Architecture) [Lesson 10](10-a-typical-eval-workflow.md)
 
 - **A team needs 200 test inputs by tomorrow.** Have a small, cheap model such as Haiku generate them in batches with structured outputs, then have a person review a sample. (Claude Models, Prompting & Context Engineering) [Lesson 11](11-generating-test-datasets.md)
-- **A dataset generator that used prefill fails with a 400 error after a model upgrade.** Remove the prefill and use structured outputs with an object at the top level. (Integration) [Lesson 11](11-generating-test-datasets.md)
+- **A generator asked for 500 test tasks in one request returns a cut-off answer.** It hit `max_tokens`. Check `stop_reason` and ask for smaller batches, such as 25 tasks per request. (Solution Design & Architecture) [Lesson 11](11-generating-test-datasets.md)
 - **Scores jump because the test cases are regenerated before each run.** Generate the dataset once, save it under version control, and reuse it. (Solution Design & Architecture) [Lesson 11](11-generating-test-datasets.md)
 
 ## Quiz review

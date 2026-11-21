@@ -23,12 +23,11 @@ Do the guide's problems in order, after you finish the chapter, because each one
 | 3 | [1. What goes in the test dataset](#1-what-goes-in-the-test-dataset) |
 | 4 | [2. The prompt that asks the model for test tasks](#2-the-prompt-that-asks-the-model-for-test-tasks) |
 | 5 | [3. Get clean JSON back with structured outputs](#3-get-clean-json-back-with-structured-outputs) |
-| 6 | [4. The course's way: prefill and stop sequences (older models only)](#4-the-courses-way-prefill-and-stop-sequences-older-models-only) |
-| 7 | [5. Check the tasks and save them to a file](#5-check-the-tasks-and-save-them-to-a-file) |
-| 8 | [Architect notes](#architect-notes) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 6 | [4. Check the tasks and save them to a file](#4-check-the-tasks-and-save-them-to-a-file) |
+| 7 | [Architect notes](#architect-notes) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
@@ -53,9 +52,12 @@ The prompt being tested helps users write code for Amazon Web Services (AWS), Am
 
 #### Getting clean JSON back
 
-- **Current way, structured outputs:** your code describes the shape with a Python class and calls `client.messages.parse(..., output_format=YourClass)`. The answer always matches the shape, and `response.parsed_output` holds it ready to use.
-- **The course's way, prefill and stop sequences:** your code adds an assistant message containing ` ```json ` and stops the answer at ` ``` `. This works only on older models such as `claude-haiku-4-5`. Newer models, including Claude Haiku 5.5, reject a prefilled assistant message with a 400 error.
+Your code describes the shape with a Python class and calls `client.messages.parse(..., output_format=YourClass)`. This is called *structured outputs*.
+
+- The answer always matches the shape, and `response.parsed_output` holds it ready to use.
 - Structured outputs need an object at the top level, so wrap the list of tasks in a field, such as `{"tasks": [...]}`.
+- Check that `response.stop_reason` is `"end_turn"`. If it is `"max_tokens"`, the answer was cut off, so ask for fewer tasks per request.
+- The course uses an older trick called prefill instead. Claude Haiku 5.5 and other newer models reject it, so don't use it.
 
 #### Saving the dataset
 
@@ -65,14 +67,14 @@ The prompt being tested helps users write code for Amazon Web Services (AWS), Am
 #### Exam takeaways
 
 - **A team needs 200 test inputs for a new prompt by tomorrow.** Have a small, cheap model such as Haiku generate them with structured outputs, then have a person review a sample before using them. (Claude Models, Prompting & Context Engineering)
-- **A dataset generator that used prefill fails with a 400 error after a model upgrade.** Newer models reject prefill. Use structured outputs with a schema whose top level is an object holding the list. (Integration)
+- **A generator asked for 500 test tasks in one request returns an answer that is cut off.** The answer hit the `max_tokens` limit. Check `stop_reason`, and ask for smaller batches, such as 25 tasks per request on one subtopic each. (Solution Design & Architecture)
 - **Scores jump between runs, and the team regenerates the test cases before each run.** Generate the dataset once, save it to a file under version control, and reuse it, so only the prompt changes between runs. (Solution Design & Architecture)
 
 ---
 
 ### The big picture
 
-**Warning:** The course gets clean JSON with prefill and stop sequences. Claude Haiku 5.5 and other newer models reject prefill with a 400 error. This page teaches structured outputs first and covers the course's way in [section 4](#4-the-courses-way-prefill-and-stop-sequences-older-models-only).
+**Warning:** The course gets JSON back with prefill, which Claude Haiku 5.5 and other newer models reject with a 400 error. This page uses structured outputs instead. A short note at the end of [section 3](#3-get-clean-json-back-with-structured-outputs) shows the course's way.
 
 This lesson is step 2 of the eval workflow from [lesson 10](10-a-typical-eval-workflow.md): create the test dataset. Here is the prompt that will be tested later.
 
@@ -217,52 +219,18 @@ You get one Python task, one JSON task, and one regex task, as asked. **boto3** 
 
 > **Remember this:** Describe the shape, and the API keeps the model to it.
 
----
-
-### 4. The course's way: prefill and stop sequences (older models only)
-
-The course uses the trick from lesson 8. It works only on older models such as `claude-haiku-4-5`.
+**Note on the course's way:** the course gets clean JSON by adding a last assistant message that starts the answer for the model (a *prefill*), and by cutting the answer off at the closing ` ``` ` (a *stop sequence*):
 
 ```python
-messages = []
-add_user_message(messages, prompt)
-add_assistant_message(messages, "```json")          # the prefill
-text = chat(messages, stop_sequences=["```"])       # stop at the closing fence
-return json.loads(text)
+add_assistant_message(messages, "```json")       # prefill: newer models reject this
+text = chat(messages, stop_sequences=["```"])
 ```
 
-- The **prefill** is an assistant message your code adds at the end. The model thinks it has already opened a JSON block, so it writes only JSON.
-- The **stop sequence** ` ``` ` ends the answer when the model tries to close the block. `chat()` is the course's helper that passes `stop_sequences` to the API.
-
-<details>
-<summary>Show the course's helper functions</summary>
-
-These are the same helpers from [lesson 4](../01-accessing-claude-with-the-api/04-multi-turn-conversations.md) and lesson 8. `add_user_message()` and `add_assistant_message()` add one message to the list. `chat()` sends the list and returns the answer text.
-
-```python
-def add_user_message(messages, text):
-    messages.append({"role": "user", "content": text})
-
-def add_assistant_message(messages, text):
-    messages.append({"role": "assistant", "content": text})
-
-def chat(messages, system=None, temperature=1.0, stop_sequences=[]):
-    params = {"model": model, "max_tokens": 1000, "messages": messages, "temperature": temperature}
-    if system:
-        params["system"] = system
-    if stop_sequences:
-        params["stop_sequences"] = stop_sequences
-    response = client.messages.create(**params)
-    return response.content[0].text
-```
-
-</details>
-
-Why it changed: Claude Haiku 5.5, Sonnet 4.6, Opus 4.6, and every newer model reject a prefilled last assistant message with a 400 error. The trick also never guaranteed valid JSON. Structured outputs replace it. See [lesson 8, section 4](../01-accessing-claude-with-the-api/08-structured-data.md#4-the-courses-way-prefill-and-stop-sequences-older-models-only) for the full explanation.
+This works only on older models such as `claude-haiku-4-5`. Claude Haiku 5.5 and other newer models return a 400 error, so use structured outputs. [Lesson 8](../01-accessing-claude-with-the-api/08-structured-data.md#4-the-courses-way-prefill-and-stop-sequences-older-models-only) explains the old trick.
 
 ---
 
-### 5. Check the tasks and save them to a file
+### 4. Check the tasks and save them to a file
 
 First, read every task. Ask three questions:
 
@@ -324,7 +292,7 @@ Why save it? Every prompt version must be tested on the same tasks ([lesson 10](
 
 - A test dataset is the list of sample inputs an eval sends through your prompt. Here, each item is `{"task": "..."}`.
 - A fast, cheap model such as Claude Haiku can write the tasks for you. You still read and fix them.
-- Structured outputs return the list in a fixed shape. The course's prefill trick works only on older models.
+- Structured outputs return the list in a fixed shape that your code can read without errors.
 - Save the list to `dataset.json` once, and reuse it for every prompt version.
 
 ---
@@ -334,7 +302,7 @@ Why save it? Every prompt version must be tested on the same tasks ([lesson 10](
 - [ ] Run `generate_dataset()` with Claude Haiku 5.5 and structured outputs, and print the 3 tasks.
 - [ ] Change the prompt to ask for 12 tasks, 4 of each kind, and count the kinds in the result.
 - [ ] Save the list to `dataset.json` and open the file to check it.
-- [ ] Send the course's prefill version to `claude-haiku-5-5` and read the 400 error.
+- [ ] Ask for 50 tasks with `max_tokens=300`, print `response.stop_reason`, and see what a cut-off answer looks like.
 
 ---
 
@@ -361,8 +329,8 @@ It is an API feature where you send a description of the data shape with your re
 **Q7. Why is the list of tasks wrapped inside a `tasks` field?**
 Structured outputs need an object at the top level, not a bare list. So the shape is `{"tasks": [...]}`, and your code takes the list out of the `tasks` field.
 
-**Q8. Can I still use prefill and stop sequences to get JSON?**
-Only on older models such as `claude-haiku-4-5`. Claude Haiku 5.5 and other newer models reject a prefilled assistant message with a 400 error. Use structured outputs instead.
+**Q8. The course uses "prefill" to get JSON. Should I?**
+No. Prefill works only on older models such as `claude-haiku-4-5`, and Claude Haiku 5.5 and other newer models reject it with a 400 error. Use structured outputs instead.
 
 **Q9. Why save the dataset to a file instead of generating it each time?**
 Every prompt version must be tested on the same tasks. New tasks each run could change the score even when the prompt didn't change.
@@ -370,8 +338,8 @@ Every prompt version must be tested on the same tasks. New tasks each run could 
 **Q10. (Exam angle) A team needs 200 test inputs for a new prompt by tomorrow. What do you recommend?**
 Have a small, cheap model such as Haiku generate them in batches with structured outputs. Then have a person review a sample for topic, variety, and realistic edge cases. (Claude Models, Prompting & Context Engineering)
 
-**Q11. (Exam angle) A dataset generator that used prefill started failing with a 400 error after a model upgrade. How do you fix it?**
-Newer models reject a prefilled last assistant message. Remove the prefill and the stop sequence, and use structured outputs with a schema whose top level is an object holding the list. (Integration)
+**Q11. (Exam angle) A generator asked for 500 test tasks in one request, and the answer comes back cut off. What do you recommend?**
+The answer hit the `max_tokens` limit. Check `stop_reason` on every response, and ask for smaller batches, such as 25 tasks per request on one subtopic each, which also gives more varied tasks. (Solution Design & Architecture)
 
 **Q12. (Exam angle) Eval scores jump between runs, and the team regenerates the test cases before each run. What do you tell them?**
 Generate the dataset once, save it to a file in version control, and reuse it. Then only the prompt changes between runs, so the scores can be compared. (Solution Design & Architecture)

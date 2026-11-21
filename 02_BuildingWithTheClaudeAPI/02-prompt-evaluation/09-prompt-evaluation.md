@@ -34,7 +34,7 @@ Testing a prompt on many realistic messages and scoring the answers is how you c
 
 - **Prompt engineering:** ways to *write* a better prompt. One example is adding a few sample questions with their right answers to the prompt.
 - **Prompt evaluation:** a way to *check* a prompt with a score. Your code sends the prompt many test questions and counts how many answers are right. For example, it reports "41 of 50 correct."
-- **They work together.** You change the prompt with engineering, then check with evaluation whether the change really helped.
+- **They work together.** *engineering** is crafting the prompt; **evaluation** is grading how well it works. 
 
 #### Three ways to check a new prompt
 

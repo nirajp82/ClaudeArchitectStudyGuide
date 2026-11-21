@@ -1,19 +1,17 @@
-# Lesson 10 — A typical eval workflow
+# Lesson 1 — Accessing the API
 
-Your prompt acts as production code in an AI feature, and your test set works like unit tests to check it before launch. An **eval workflow** is the repeatable loop you run to measure how well that prompt scores.
-
-**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Lesson page:** [A typical eval workflow](https://academy.claude.com/courses/building-with-the-claude-api/a-typical-eval-workflow) &nbsp;·&nbsp; **Chapter 2:** Prompt evaluation &nbsp;·&nbsp; **Completed:** November 16, 2026
+**Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Lesson page:** [Accessing the API](https://academy.claude.com/courses/building-with-the-claude-api/accessing-the-api) &nbsp;·&nbsp; **Chapter 1:** Accessing Claude with the API &nbsp;·&nbsp; **Completed:** November 1, 2026
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Prompt evaluation](09-prompt-evaluation.md) | [📚 Chapter index](README.md) | [Generating test datasets →](11-generating-test-datasets.md) |
+| Start of course | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |
 
-**Practice this lesson:** in [capstone guide 2](../00_Capstone_Plan/guide/02-prompt-evaluation.md), solve:
+**Practice this lesson:** in [capstone guide 1](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md), solve:
 
-- [Problem 1: Write your first test questions by hand](../00_Capstone_Plan/guide/02-prompt-evaluation.md#problem-1-write-your-first-test-questions-by-hand)
-- [Problem 6: Change the prompt and prove it got better](../00_Capstone_Plan/guide/02-prompt-evaluation.md#problem-6-change-the-prompt-and-prove-it-got-better)
+- [Problem 1: Set up the project and make your first API call](../00_Capstone_Plan/guide/01-accessing-claude-with-the-api.md#problem-1-set-up-the-project-and-make-your-first-api-call)
 
-Solve the guide's problems in order after finishing the chapter, because each problem builds on the one before.
+Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
+
 
 ---
 
@@ -23,337 +21,506 @@ Solve the guide's problems in order after finishing the chapter, because each pr
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [1. Step 1: Write the first prompt](#1-step-1-write-the-first-prompt) |
-| 4 | [2. Step 2: Write the test questions](#2-step-2-write-the-test-questions) |
-| 5 | [3. Step 3: Get the model's answers](#3-step-3-get-the-models-answers) |
-| 6 | [4. Step 4: Score each answer](#4-step-4-score-each-answer) |
-| 7 | [5. Step 5: Change the prompt and test again](#5-step-5-change-the-prompt-and-test-again) |
-| 8 | [Architect notes](#architect-notes) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 3 | [Who's who](#whos-who) |
+| 4 | [1. The five steps of a request](#1-the-five-steps-of-a-request) |
+| 5 | [2. Why your app needs a server](#2-why-your-app-needs-a-server) |
+| 6 | [3. What a request contains](#3-what-a-request-contains) |
+| 7 | [4. What happens inside the model](#4-what-happens-inside-the-model) |
+| 8 | [5. When the model stops, and what comes back](#5-when-the-model-stops-and-what-comes-back) |
+| 9 | [Architect notes](#architect-notes) |
+| 10 | [Recap](#recap) |
+| 11 | [My notes / practice](#my-notes--practice) |
+| 12 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
 
-**Why this matters.** You edit a prompt and test it on two questions. Both answers look good, so you ship the change. A week later, users report that 1 in 5 answers (20%) misses key steps. Testing only two questions cannot catch a bug that hits 20% of the time. Running an eval on a larger test set catches the score drop before launch.
+- **The round trip:** your app sends the user's question to your own server. Your server adds the secret API key and sends it to Anthropic. The answer comes back the same way.
+- **The API key:** proves a request comes from your account, which pays for it. It lives only on your server.
+- **The request:** every request carries the key, a `model`, a `messages` list, and `max_tokens`.
+- **Inside the model:** the model cuts the text into tokens, turns them into numbers, fits the numbers to the sentence, and writes the answer one token at a time.
+- **The response:** the answer, the token counts (`usage`), and why the model stopped (`stop_reason`).
 
-#### What an eval workflow is
+#### The five steps of every request
 
-An **eval** (short for evaluation) tests a prompt and returns a score. The **eval workflow** is the fixed sequence of steps you run to measure that score. It works like a school exam:
+1. **Request to server:** your web or mobile app (the *client*) sends the user's text to your own server.
+2. **Request to Anthropic API:** your server sends the text to Anthropic's servers at `api.anthropic.com`, with your secret API key attached.
+3. **Model processing:** the model reads the text and writes an answer.
+4. **Response to server:** Anthropic's servers send the answer back to your server.
+5. **Response to client:** your server passes the answer to the app, and the app shows it to the user.
 
-| School exam | Prompt eval |
-|---|---|
-| Exam paper with fixed questions for everyone | Test questions (called the **eval dataset**) |
-| Student writes answers | Model answers each question using your prompt |
-| Teacher grades each answer out of 10 | **Grader** scores each answer from 1 to 10 |
-| Average exam grade | Prompt's average score |
-| Change teaching, then give the same exam again | Change the prompt, then rerun the same test questions |
+Anyone who has your app can read the code inside it, whether it is a web page or a phone app. A key in that code can be copied and used to run up charges on your account. So only your server holds the key.
 
-The five workflow steps:
+#### What every request must contain
 
-1. **Write the first prompt.** Add a `{question}` slot for each test question. This first version sets your **baseline** score for later comparisons.
-2. **Write the test questions.** Collect realistic sample questions that real users will send.
-3. **Get the model's answers.** Loop through the test questions, insert each one into `{question}`, send the prompt to the model, and save each answer.
-4. **Score each answer.** Have a grader score every answer, then average the scores into one number.
-5. **Change the prompt and test again.** Keep the same questions and grader, update the prompt, and rerun. A higher average means the edit helped.
+Your server calls the API through an official **SDK** (a ready-made code library) or with plain HTTP. Official SDKs exist for Python, TypeScript and JavaScript, Java, Go, Ruby, C#, and PHP. Every request needs four things:
 
-#### Why you need many test questions
+1. **API key:** proves who is asking, such as `sk-ant-...`. It goes in the `Authorization: Bearer` header, or in the older `x-api-key` header, which still works.
+2. **`model`:** which Claude model answers, such as `claude-haiku-4-5`.
+3. **`messages`:** the conversation so far, as a list. The user's text sits in a message with the role `user`.
+4. **`max_tokens`:** a hard limit on how many tokens the answer may have, such as `1000`.
 
-* **Small tests swing easily:** On 3 questions, one score jumping from 4 to 9 raises the average by 1.67 points. On 100 questions, that same change moves the average by only 0.05. Small samples let luck look like progress.
-* **Users send varied inputs:** Real traffic includes math, how-to requests, facts, vague prompts, and unusual edge cases. Three test items cannot cover those patterns.
-* **Real evals scale up:** Production evals use tens to thousands of questions. You can write them yourself or generate drafts with a model ([lesson 11](11-generating-test-datasets.md)).
+**Use an SDK** when your server's language has one, such as the `anthropic` package for Python. It adds the headers, retries failed requests, and gives you typed results. **Use plain HTTP** (for example, `curl`) when your language has no SDK, or for a quick test from the terminal.
 
-#### How an answer gets a score
+#### What happens inside the model
 
-A **grader** reads a question and its answer and assigns a score. Three options exist:
+The model works only with numbers. Long before your request, **training** saved three things inside it, and no request changes them:
 
-* **Code:** Runs a fixed rule, such as checking whether an answer to `2+2` contains `4`. Fast and free, but limited to exact or rule-checkable answers.
-* **Another model:** Sends a second prompt asking a model to score an answer (for example, from 1 to 10 for helpfulness). Handles judgment calls, but costs one extra API call per item.
-* **A person:** Gives strong human judgment, but moves slowly and costs more. Use human grading to spot-check automated scores.
+1. **Vocabulary:** every **token** the model knows (a word, part of a word, or a symbol such as "?"). Each token has a fixed **token ID**, such as 5120 for `bank`.
+2. **Embedding table:** one saved row of numbers per token ID. Each number scores the token on one **trait**, such as "has to do with money."
+3. **Weights:** all the other learned numbers, which process the embedding numbers. In a real model, each result mixes all of a row's numbers, not one number per weight.
 
-#### The course's worked example
+On every request, the model runs four stages:
 
-| Question | Model's answer (Version 1) | Score |
-|---|---|:---:|
-| What's 2+2? | "2 + 2 = 4" | 10 |
-| How do I make oatmeal? | "Add hot water to dry oatmeal." | 4 |
-| How far away is the Moon? | "The Moon is about 384,400 km away." | 9 |
+1. **Tokenization:** cut the text into tokens and replace each one with its token ID.
+2. **Embedding:** go straight to each token's saved row, without searching. So `bank` gets the same row in every sentence.
+3. **Contextualization:** each token looks at the tokens before it and adjusts a copy of its numbers. In "river bank," "bank" moves to the riverside meaning. The saved row stays the same.
+4. **Generation:** give every token in the vocabulary a chance of coming next, pick a likely one, and repeat. The model doesn't always pick the most likely token, so the same question can get slightly different answers.
 
-* **Version 1** (`"Please answer the user's question"`) averages `(10 + 4 + 9) ÷ 3 = 7.67` (the course slide displays `7.66` due to truncation).
-* **Version 2** adds `"Answer the question with ample detail"` and averages `8.7`, showing a measurable gain from the added instruction.
+Every row scores the same traits, so any two tokens can be compared. Similar words, such as "cat" and "kitten", have similar rows. A word with several meanings, such as "bank", has a row that mixes them, and stage 3 settles which one you mean. Real rows have thousands of numbers, and nobody names the traits. Training worked them out from which words appear in similar sentences.
+
+#### When the model stops, and what to do
+
+After each token, the model stops if any one of three things is true. The response's `stop_reason` says which one happened.
+
+| `stop_reason` | What happened | What to do |
+|---|---|---|
+| `end_turn` | The model wrote its **end-of-sequence token**, which means "my answer is complete" | Use the answer as it is |
+| `max_tokens` | It reached your `max_tokens` limit, even mid-sentence | Treat the answer as incomplete. Raise the limit, or ask for a shorter answer. Don't show it as complete. |
+| `stop_sequence` | It wrote one of your **stop sequences** (phrases you listed in the request that mean "stop here") | Expect the answer to end early on purpose |
+
+The response also holds the answer text, in a message with the role `assistant`, and `usage`: the input tokens (your request) and output tokens (the answer). You pay for both.
 
 #### Exam takeaways
 
-* **A team says a new prompt "feels better."** Run an eval: test both versions on the same dataset with the same grader and compare the average scores. *(Claude Models, Prompting & Context Engineering)*
-* **A score rises only after the team swaps out the test questions.** The comparison is invalid. Hold the dataset and grader constant so only the prompt changes between runs. *(Solution Design & Architecture)*
-* **A new prompt raises the score, but answers become three times longer.** Check token cost, latency, and grader bias—longer outputs cost more money and take longer, and graders sometimes reward length over quality. *(Solution Design & Architecture)*
+- **A mobile team wants the app to call the Claude API directly to save one network hop.** Refuse, because an API key in app code can be extracted. Route requests through your own server, which keeps the key in a secrets store and adds user login and rate limits. The only exception is an iOS or macOS app using App Attest, which gets short-lived tokens instead of a key. (Governance, Safety & Risk Management)
+- **Users report answers that stop mid-sentence.** Check the response's `stop_reason`. If it says `max_tokens`, raise the limit or ask for shorter answers, and make the app detect cut-off answers instead of showing them as complete. (Integration)
+- **Finance asks how to estimate and track cost per conversation.** Log the `usage` field from every response, then multiply input and output tokens by the model's prices. Output tokens cost more than input tokens, so long answers drive cost. (Solution Design & Architecture)
 
 ---
 
 ### The big picture
 
-The five steps form a repeatable loop. You run one full pass for each prompt version you test.
-
-![Prompt Eval Workflow. There are many different ways to assemble a workflow and many open source and paid options, and this module assembles its own. The five steps are Draft a Prompt, Create an Eval Dataset, Feed Through Claude, Feed Through a Grader, and Change Prompt and Repeat](../images/10-eval-workflow-steps.png)
-
-In plain terms, the workflow is: write the prompt, write the test questions, collect answers, score answers, and repeat after edits. Ready-made eval tools exist, but building this loop directly makes every step clear.
-
-**The running example:** The course evaluates a general question-answering prompt on three items: `"What's 2+2?"`, `"How do I make oatmeal?"`, and `"How far away is the Moon?"`.
-
-#### Who's who
-
-| Role | Where it runs | What it does |
+| Part | In plain words | Everyday comparison |
 |---|---|---|
-| **Developer (you)** | Local environment / notebook | Writes the prompt and test questions, reviews scores, and chooses prompt edits |
-| **Eval script** | Local environment / notebook | Sends each test question, stores answers, and computes the average score |
-| **Target model** | Anthropic servers | Generates an answer for each test question (Step 3) |
-| **Grader** | Local code or a grading model call | Scores each answer from 1 to 10 (Step 4) |
+| The round trip | The question goes from the app to your server, then to Anthropic. The answer comes back the same way. | Ordering at a restaurant: you tell the waiter, and the waiter tells the kitchen. |
+| The server and the key | Only your server holds the secret key. | Only the waiter has the key to the kitchen door. Customers don't get a copy. |
+| The request | A key, a model, the messages, and a length limit. | The order slip: table number, which chef, the dish, and the portion size. |
+| Inside the model | The model turns the words into numbers, works out the meaning, and writes the answer one piece at a time. | The chef reads the order, works out what you meant, and plates one item at a time. |
+| The response | The answer, the token counts, and why the model stopped. | The plate, the bill, and a note saying "finished" or "ran out." |
+
+**The running example:** a user types **"What is quantum computing?"** into your chat app and presses Send. This lesson follows that one question all the way through.
+
+![Chat window with the user's message "What is quantum computing?" and a Send button](../images/01-chat-window.png)
 
 ---
 
-### 1. Step 1: Write the first prompt
+### Who's who
 
-Start with an initial prompt that includes a placeholder for each test question.
+| Player | Where it lives | What it does in the example |
+|---|---|---|
+| **The user** | In front of a phone or browser | Types "What is quantum computing?" and presses Send. |
+| **Your app** (the *client*) | On the user's phone or in their browser | Sends the question to your server, then shows the answer. Holds **no** API key. |
+| **Your server** | A computer you run, such as a cloud server | Receives the question, adds the API key, calls Anthropic, and passes the answer back. |
+| **The Anthropic SDK** | A code library installed on your server | Builds the request and reads the response for your server code. |
+| **The Claude API** | Anthropic's servers at `api.anthropic.com` | Checks the key, hands the request to the model, and returns the result. |
+| **The model** (Claude) | On Anthropic's servers | Reads the question and writes the answer. |
+
+---
+
+### 1. The five steps of a request
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant A as Your app (client)
+    participant S as Your server + SDK
+    participant API as Claude API
+    participant M as Model
+    U->>A: Types "What is quantum computing?"
+    A->>S: 1. Request to server (question only, no key)
+    S->>API: 2. Request to Anthropic API (key, model, messages, max_tokens)
+    API->>M: 3. Model processing
+    M-->>API: Answer text
+    API-->>S: 4. Response to server (message, usage, stop reason)
+    S-->>A: 5. Response to client (answer text)
+    A-->>U: Shows the answer
+```
+
+Things to notice:
+
+- The API key appears only on the line from your server to the Claude API. The app never sees it.
+- Your server sits in the middle of both directions. That makes it the right place to log usage, check errors, and decide what the app should show.
+
+![Step 1: a web or mobile app sends "What is quantum computing?" to your server](../images/01-request-to-server.png)
+
+---
+
+### 2. Why your app needs a server
+
+An **API key** is a long secret string, such as `sk-ant-api03-...`, that you create in the Claude Console, Anthropic's website for developers ([lesson 2](02-getting-an-api-key.md)). Anthropic uses the key to know which account sent each request and which account to bill.
+
+Here is what goes wrong if you put the key in your app:
+
+1. You publish a web page whose JavaScript code includes the key.
+2. Someone opens the browser's developer tools and reads the key in plain text. For a phone app, they unpack the app file and search it for `sk-ant`.
+3. They use your key for their own projects. You pay for every request they make, and they may use up your rate limits, so your real users get errors.
+
+> **Warning:** Anything shipped inside a browser page or a phone app is public, even if the code is shrunk or scrambled (*minified*). A key in client code is a leaked key.
+
+> **Remember this:** The app talks to your server. Only your server talks to Anthropic.
+
+---
+
+### 3. What a request contains
+
+Your server receives the text "What is quantum computing?". It puts the text inside a message with the role `user`, and puts that message inside a list called `messages`. It is a list because later requests carry the whole conversation, one message after another ([lesson 4](04-multi-turn-conversations.md)).
+
+![The user's text placed inside a "user" message, which sits inside a list of messages](../images/01-request-to-api.png)
+
+#### With the Python SDK
 
 ```python
-prompt = f"""
-Please answer the user's question:
+# server.py — runs on your server, never in the app
+import anthropic
 
-{question}
-"""
+client = anthropic.Anthropic()          # reads the key from ANTHROPIC_API_KEY
+
+def ask_claude(question):
+    response = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": question}],
+    )
+    return response.content[0].text
 ```
 
-How this snippet works:
+What each line does:
 
-* `prompt = ...` stores the prompt text in a variable.
-* `"""` defines a multi-line string.
-* The leading `f` creates a Python f-string, replacing `{question}` with the current value of `question`.
+- `import anthropic` loads the official Python SDK. You install it once with `pip install anthropic`.
+- `anthropic.Anthropic()` creates a **client**, which is an object that sends requests for you. With no arguments, it reads the key from the **environment variable** `ANTHROPIC_API_KEY`. An environment variable is a named setting stored on the server, outside your code, so the key never appears in your source files.
+- `client.messages.create(...)` sends one request to the Messages API, the part of the Claude API that handles conversations.
+- `model`, `max_tokens`, and `messages` are three of the four required fields. The SDK adds the fourth, the key, for you.
+- `response.content[0].text` reads the answer text. `content` is a list of blocks. For a plain question, the first block holds the text answer.
 
-**Warning:** Python evaluates `{question}` right when the f-string runs. Place prompt construction inside the Step 3 loop so each question gets inserted cleanly on its own pass.
+#### The same request as plain HTTP
 
-![Initial Prompt Draft. Will this be an effective prompt? We won't know until we evaluate it with some objective methodology. The code is prompt = f""" Please answer the user's question: {question} """](../images/10-initial-prompt-draft.png)
+```bash
+curl https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2026-10-21" \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "claude-haiku-4-5",
+    "max_tokens": 1000,
+    "messages": [{"role": "user", "content": "What is quantum computing?"}]
+  }'
+```
 
-You cannot tell from reading a draft alone whether it will perform well. This first version serves as your **baseline** for judging later edits.
+Not in the course, from the official Claude API documentation: a plain HTTP request also needs the `anthropic-version` header, which names the version of the API you expect. The SDK sends this header for you. The course lists SDKs for Python, TypeScript, JavaScript, Go, and Ruby. The official list also includes Java, C#, and PHP, and JavaScript code uses the TypeScript SDK.
 
 ---
 
-### 2. Step 2: Write the test questions
+### 4. What happens inside the model
 
-Test questions represent realistic user inputs that will fill `{question}` during evaluation.
+A computer can't understand words. It can only do math on numbers. So the model turns "What is quantum computing?" into numbers, works out what the question means, and then writes an answer.
 
-![Draft a Prompt, then Create an Eval Dataset. The dataset is a table with a Question column holding "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?". The eval dataset contains questions that we will merge with our prompt, and it can be assembled by hand or generated by Claude](../images/10-eval-dataset.png)
+This happens in two parts:
 
-In Python, you can start with a simple list:
+- **Before your request:** training has already built some lookup tables and saved them inside the model.
+- **During your request:** the model runs four stages that use those saved tables.
 
-```python
-dataset = [
-    "What's 2+2?",
-    "How do I make oatmeal?",
-    "How far away is the Moon?",
-]
-```
+#### Before your request: what training built
 
-#### Why three questions are not enough
+**Training** is the long process that makes the model. During training, the model reads huge amounts of text from books and websites. Training happens once, long before you use the model. It leaves three things saved inside the model on Anthropic's servers:
 
-Three questions work for learning the mechanics, but cannot support a reliable decision. See how one score change affects the average:
+| Saved in the model | What it is | Used in |
+|---|---|---|
+| **Vocabulary** | The list of every token the model knows. Each token has a fixed number called its **token ID**. For example, the token `bank` might have token ID 5120. The vocabulary is made just before training starts. | Stage 1 |
+| **Embedding table** | A table with one saved row of numbers for each token ID. Each row describes the usual meaning of its token. | Stage 2 |
+| **Weights** | All the other numbers the model learned in training. They hold what the model knows about how words affect each other and which word tends to come next. | Stages 3 and 4 |
 
-| Dataset size | One answer improves from 4 to 9 | Shift in average score |
-|---|---|:---:|
-| 3 questions | Total rises from 23 to 28 | 7.67 to 9.33 (**+1.67**) |
-| 100 questions | Total rises by 5 | **+0.05** |
+Your request never changes these three things. Only a new round of training can change them.
 
-With 3 questions, one lucky response creates a large jump. With 100 questions, only consistent improvements across many items move the average noticeably.
+Here is a simple picture of how the weights work on the embedding numbers. Say the token `bank` has the saved row `[0.25, 0.81, 0.42]`, and the model multiplies each number by a weight:
 
-> **Remember this:** A few questions measure luck; many questions measure the prompt.
+|  | Number 1 | Number 2 | Number 3 |
+|---|:---:|:---:|:---:|
+| Embedding numbers | 0.25 | 0.81 | 0.42 |
+| Example weights | 0.50 | 0.20 | 0.80 |
+| Multiplication result | 0.125 | 0.162 | 0.336 |
+
+The results are then combined through more math to help predict the next token. All these numbers are made up. In a real model, each result mixes all the embedding numbers, not one number per weight. The [deep dive](01-deep-dive-inside-the-model.md) works through the real version step by step.
+
+#### 1. Cutting the text into pieces (Tokenization)
+
+**What happens:** the model cuts your text into small pieces called **tokens**. Then it looks up each token in the vocabulary and replaces it with its token ID. From here on, the model works only with token IDs, not with letters.
+
+**Example:** "What is quantum computing?" becomes five tokens and five token IDs. The numbers are made up:
+
+| Token | `What` | `is` | `quantum` | `computing` | `?` |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Token ID | 2061 | 374 | 4211 | 9876 | 30 |
+
+The course treats each word as one token to keep things simple. In reality, a long or rare word is often cut into several tokens.
+
+![The question "What is quantum computing?" cut into five tokens](../images/01-tokenization.png)
+
+#### 2. Turning each piece into numbers (Embedding)
+
+**What happens:** the embedding table was built during training and saved in the model. The model simply uses each token ID from stage 1 to look up that token's pre-saved row of trait numbers. That row of numbers is the token's **embedding**.
+
+**Example:** for the token `quantum`, which has token ID 4211, the model reads row 4211 of the embedding table.
+
+The model doesn't search for the row, and it doesn't change it. It goes straight to the row with that token ID, the way you turn straight to a page number in a book. So the token `bank` gets the same row in every sentence, in every request, from every user.
+
+**What the saved numbers mean:** each column of the table is one **trait**, which is one kind of meaning, such as "has to do with money." Each number in a token's row scores that token on that trait. Here is a made-up table with five tokens' rows and three traits, where 0 means "not related" and 1 means "strongly related":
+
+| Token ID | Token | Money | Water | Animals |
+|---|---|:---:|:---:|:---:|
+| 1042 | cash | 0.9 | 0.0 | 0.0 |
+| 3891 | river | 0.0 | 0.9 | 0.1 |
+| 2207 | cat | 0.0 | 0.0 | 0.9 |
+| 6634 | kitten | 0.0 | 0.0 | 0.9 |
+| 5120 | **bank** | **0.5** | **0.5** | **0.0** |
+
+How to read the table:
+
+- **Every token's row has a number for the same traits.** That is what lets the model compare any two tokens later.
+- **Similar words have similar rows.** "Cat" and "kitten" have the same numbers. "Cash" and "cat" have no high number in common.
+- **A word with several meanings has a row that mixes them.** "Bank" scores 0.5 for money and 0.5 for water, because the same row must work in every sentence. Stage 3 settles which bank you mean.
+
+A real embedding table is different in two ways:
+
+1. **It has thousands of columns, not three.** Each token's row is a list of thousands of numbers, such as `[-0.34, 0.87, 0.12, …]`.
+2. **Nobody names the columns.** No person wrote "Money" or "Water" at the top. The model worked out all the numbers itself during training, by noticing which words appear in similar sentences. Words used in similar ways end up with similar rows.
+
+"Quantum" is like "bank." Its saved row mixes several meanings: something in physics, something very small, and a kind of computing.
+
+![The word "quantum" linked to its four meanings and its Latin root "quantus"](../images/01-embedding-quantum.png)
+
+#### 3. Checking the neighbours (Contextualization)
+
+**What happens:** each token looks at the tokens before it in your text and adjusts a copy of its numbers to fit your sentence. The saved row in the embedding table stays the same.
+
+**Example:** here are the made-up numbers for "bank" in two different sentences:
+
+| Where "bank" appears | Money | Water |
+|---|:---:|:---:|
+| Its saved row in the embedding table | 0.5 | 0.5 |
+| "I sat on the river **bank**" | 0.1 | 0.9 |
+| "I paid money into the **bank**" | 0.9 | 0.1 |
+
+In "What is quantum computing?", the same thing happens: the pair "quantum computing" now points only to the technology meaning.
+
+Not in the course:
+
+- A token looks at **all** the tokens before it, not only the one next to it. It can't look at the tokens after it, because the model reads and writes from left to right. So it is "computing" that looks back at "quantum" and takes on the meaning of the pair. The course says "quantum" looks at "computing," but the result is the same.
+- The model repeats this checking many times in a row. Each round is called a *layer*, and each round makes the meaning sharper.
+
+![Columns of numbers for each word, with arcs showing words influencing each other](../images/01-contextualization.png)
+
+#### 4. Writing the answer one piece at a time (Generation)
+
+**What happens:** the model works out, for every token in its vocabulary, the chance that it comes next. It picks one token, adds it to the answer, and then does the same for the next token.
+
+**Example:** here are the chances for the first token of the answer:
+
+![Chances for the first word of the answer: 30% "Quantum", 23% "Great", 19% "Are", 10% "What", 10% "This", 8% "To"](../images/01-generation-probabilities.png)
+
+The model usually picks a likely token, but not always the most likely one. Here it picks "Quantum" most often, but sometimes it picks "Great." That is why the same question can get slightly different answers. A setting called *temperature* controls how often it picks a less likely token ([lesson 6](06-temperature.md)).
+
+After each pick, the new token goes through stages 2 and 3 like every other token. The model reads the new token's saved row in the embedding table, and the new token looks back at everything before it, including your question. Then the model picks the next token:
+
+| Round | Answer written so far | Token the model picks next |
+|:---:|---|---|
+| 1 | *(nothing yet)* | Quantum |
+| 2 | Quantum | computing |
+| 3 | Quantum computing | is |
+| 4 | Quantum computing is | a |
+| … | … | … until a stop check says "stop" (section 5) |
+
+The course says the model writes "one word at a time" to keep things simple. In reality, it writes one token at a time.
+
+> **Remember this:** Training saved the vocabulary and the embedding table inside the model. On every request, the model cuts your text into tokens, looks up each token's saved row, adjusts a copy of the numbers to fit your sentence, and writes the answer one token at a time.
+
+For how training sets these numbers, how attention works with real numbers, and how the next token is picked, read the [deep dive: how a language model learns and thinks](01-deep-dive-inside-the-model.md).
 
 ---
 
-### 3. Step 3: Get the model's answers
+### 5. When the model stops, and what comes back
 
-Your loop inserts each question into the prompt and sends it to the model. For the first question, the full prompt sent is:
-
-```text
-Please answer the user's question:
-
-What's 2+2?
+```mermaid
+flowchart TD
+    A[Model picks the next token] --> B{Reached max_tokens?}
+    B -- Yes --> X[Stop: stop_reason = max_tokens]
+    B -- No --> C{Wrote the end-of-sequence token?}
+    C -- Yes --> Y[Stop: stop_reason = end_turn]
+    C -- No --> D{Wrote one of your stop sequences?}
+    D -- Yes --> Z[Stop: stop_reason = stop_sequence]
+    D -- No --> A
 ```
 
-![Feed Through Claude. Each question is merged into the prompt and sent to Claude. Claude replies "2 + 2 = 4", "Add hot water to dry oatmeal.", and "The Moon is about 384,400 KM away."](../images/10-feed-through-claude.png)
+![The answer's tokens ending in an end-of-sequence token, with the three stop checks](../images/01-stop-checks.png)
 
-Using `chat()` from [lesson 5](../01-accessing-claude-with-the-api/05-system-prompts.md), the loop collects every response:
+#### The response your server receives
 
-```python
-results = []
-for question in dataset:
-    prompt = f"""
-Please answer the user's question:
-
-{question}
-"""
-    messages = [{"role": "user", "content": prompt}]
-    answer = chat(messages)
-    results.append({"question": question, "answer": answer})
+```json
+{
+  "id": "msg_01AbC...",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-haiku-4-5",
+  "content": [
+    { "type": "text", "text": "Quantum computing is a way of processing information that uses..." }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": { "input_tokens": 13, "output_tokens": 212 }
+}
 ```
 
-* `for question in dataset:` runs the indented block once per item in `dataset`.
-* `chat(messages)` sends the messages to the model and returns the reply text.
-* `results.append(...)` saves each `{question, answer}` pair for grading.
+- `content` holds the answer, in a message with the role `assistant`, which is the model's side of the conversation.
+- `stop_reason` says why the model stopped. Here, `end_turn` means the answer is complete.
+- `usage` shows the token counts. The numbers above are examples. You are billed for both.
 
----
+Your server takes the text from `content` and sends it to the app, and the app shows it under the user's question.
 
-### 4. Step 4: Score each answer
+![The response flowing from the Anthropic API back to the SDK on your server, with the answer in an "assistant" message](../images/01-api-response.png)
 
-The grader evaluates each `(question, answer)` pair and assigns a score from 1 to 10. It needs the original question because quality depends on what was asked—`"Add hot water to dry oatmeal."` only looks weak against `"How do I make oatmeal?"`.
+![The full round trip: chat app, your server's SDK, the Anthropic API, and back](../images/01-full-flow.png)
 
-![Feed Through a Grader. Each question and answer pair goes into the grader. "What's 2+2?" with "2 + 2 = 4" scores 10. "How do I make oatmeal?" with "Add hot water to dry oatmeal." scores 4. "How far away is the Moon?" with "The Moon is about 384,400 KM away." scores 9](../images/10-feed-through-grader.png)
+#### Common mix-ups
 
-| Question | Score | Reason |
-|---|:---:|---|
-| What's 2+2? | 10 | Accurate and complete |
-| How do I make oatmeal? | 4 | Accurate, but omits measurements, cook time, and steps |
-| How far away is the Moon? | 9 | Accurate, though it omits that distance changes |
-
-Averaging the scores gives `(10 + 4 + 9) ÷ 3 = 23 ÷ 3 = 7.67` (`7.66` on the slide). That single number is the baseline score for Version 1.
-
-#### How the grader decides
-
-A **model grader** uses a second prompt to rate each answer:
-
-```text
-Here is a question and an answer.
-
-Question: How do I make oatmeal?
-Answer: Add hot water to dry oatmeal.
-
-Score the answer from 1 to 10 for how complete and helpful it is.
-Reply with only the number.
-```
-
-The grading model returns `4`, and your script records that score.
-
-A **code grader** applies deterministic logic instead. For `"What's 2+2?"`, code can check whether the output contains `"4"` and return `10` if true, though code cannot judge recipe helpfulness.
-
-| Grader type | Best fit |
+| ❌ Wrong idea | ✅ What really happens |
 |---|---|
-| **Code** | Exact answers such as numbers, codes, or fixed category labels |
-| **Another model** | Subjective qualities such as completeness, tone, or helpfulness |
-| **A person** | Spot-checking samples to verify that automated graders align with human standards |
+| "My app can call the API directly if I hide the key well." | Any key in client code can be found. Only your server should hold it. |
+| "`max_tokens` makes the model write a shorter answer." | The model doesn't plan around the limit. It writes until it hits the limit, and the answer is cut off. |
+| "One word is always one token." | That is the course's simplification. Long or rare words are often cut into several tokens. |
+| "The model searches a database to find what each word means." | The model uses the token ID to go straight to the token's saved row in the embedding table. Nothing is searched, and the row never changes during your request. |
+| "The same question always gets the same answer." | The model doesn't always pick the most likely token, so answers can differ. |
+| "I only pay for the answer." | You pay for input tokens (your request) and output tokens (the answer). |
 
-Lessons [13](13-model-based-grading.md) and [14](14-code-based-grading.md) cover model-based and code-based graders in detail.
+#### Test yourself
 
----
+<details>
+<summary>1. Which player holds the API key: the app, your server, or the model?</summary>
 
-### 5. Step 5: Change the prompt and test again
+Your server. The app holds no key, and the model is on Anthropic's side.
+</details>
 
-Version 1 scored `7.67` because the oatmeal answer lacked detail. Add one instruction line to create Version 2:
+<details>
+<summary>2. What four things must every request include?</summary>
 
-```python
-prompt = f"""
-Please answer the user's question:
+The API key, the `model`, the `messages` list, and `max_tokens`.
+</details>
 
-{question}
+<details>
+<summary>3. In "What is quantum computing?", how does the model know "quantum" is about computers and not physics?</summary>
 
-Answer the question with ample detail
-"""
-```
+In stage 3 (contextualization), "computing" looks back at "quantum," and the numbers for the pair move to the technology meaning. It is the same way "bank" takes the riverside meaning in "river bank." The saved row for "quantum" in the embedding table stays the same.
+</details>
 
-![Change Prompt and Repeat. The grader averaged 7.66 for the first prompt. The revised prompt adds the line "Answer the question with ample detail"](../images/10-change-prompt-and-repeat.png)
+<details>
+<summary>4. A response has <code>stop_reason: "max_tokens"</code>. What does that tell you?</summary>
 
-Rerun Steps 3 and 4 again using the **same three questions** and the **same grader**. The average rises to `8.7`.
-
-![Prompt Scoring. Get an objective measurement of the output of each prompt, and use the version with the best score or iterate again. Prompt v1, "Please answer the user's question: {question}", scored 7.66. Prompt v2, which adds "Answer the question with ample detail", scored 8.7](../images/10-prompt-scoring.png)
-
-| Version | Prompt change | Average score |
-|---|---|:---:|
-| v1 | Initial baseline prompt | 7.67 |
-| v2 | Added `"Answer the question with ample detail"` | 8.7 |
-
-Comparing numerical scores lets you pick the stronger version and continue **iterating** (editing and retesting in a loop).
-
-**Warning:** Changing the test questions or the grader between runs breaks fair comparison. A jump from `7.67` to `8.7` might come from easier questions rather than a better prompt.
-
-> **Remember this:** Change one thing, rerun the same test, compare the score.
+The answer was cut off because it hit your length limit. It may be incomplete.
+</details>
 
 ---
 
 ### Architect notes
 
+#### Security
+
+- Keep the key in an environment variable or a secrets store (such as AWS Secrets Manager), never in source code or Git. Automated scanners can find a key pushed to a public repository within minutes.
+- Your server now acts as a door to your Anthropic account. Require users to log in, and limit how many requests each user can make. Otherwise, strangers can use your server to call Claude for free.
+- Use a separate key for each app and each environment (development, production). Then you can cancel one leaked key without breaking everything else.
+- There is one exception to "always use a server": **App Attest** lets a genuine, registered iOS or macOS app call the API directly with a short-lived token instead of a key ([lesson 2](02-getting-an-api-key.md)). Every other client app still needs a server.
+
 #### Cost
 
-* Step 3 makes one model call per test question; a model grader makes one additional call per item. A 100-question set with a model grader equals 200 API calls per prompt version.
-* Instructions like `"Answer the question with ample detail"` increase output length, and output tokens cost money. Higher scores can raise API spend—check Anthropic's current pricing before scaling runs.
+- You pay per token, and output tokens cost more than input tokens. For Claude Haiku 4.5, input costs $1 and output costs $5 per million tokens. Prices change, so check the current pricing page.
+- Log `usage.input_tokens` and `usage.output_tokens` from every response. They are the only exact record of what each request cost.
+- To estimate cost before sending, use the token-counting endpoint (`POST /v1/messages/count_tokens`). It returns the input token count without running the model.
 
-#### Speed
+#### Limits and reliability
 
-* Longer responses take longer to generate. Log response latency alongside scores so you spot slowdowns early.
-* Sequential requests are slow on large datasets. Parallel requests run faster, provided you stay within account rate limits.
+- `max_tokens` is a safety limit, not a style setting. The model isn't told the limit, so a low value cuts answers off instead of making them shorter. To get shorter answers, ask for them in the prompt.
+- Every model has a **context window**, which is the most tokens it can read and write in one request. For example, it is 200,000 tokens for Claude Haiku 4.5 and 1 million for the newest models.
+- Common errors are 401 (bad or missing key), 429 (too many requests, called a *rate limit*), 500 (an error on Anthropic's side), and 529 (Anthropic is overloaded). The SDKs retry 429 and 5xx errors twice by default, and wait up to 10 minutes for each request. For long answers, use *streaming* ([lesson 7](07-response-streaming.md)) so the user sees the text as it is written.
 
-#### Trusting the score
+#### Design trade-offs
 
-* Model outputs can vary across runs ([lesson 6](../01-accessing-claude-with-the-api/06-temperature.md)). Rerun checks before trusting small score differences.
-* Model graders sometimes favor longer answers even when extra words add little value. Review sample scores manually.
-* Do not rely solely on the average. A single low score (such as `2`) can hide inside a decent mean, so inspect the lowest-scoring answers each run.
+- Model names change. The course uses `claude-haiku-4-5`, and newer models such as `claude-haiku-5-5` exist. Keep the model name in one setting instead of typing it in many places, so upgrading is a one-line change.
+- Because answers vary, don't write code that expects the exact same text twice. Check answers with tests on many inputs, called *evaluations* ([lesson 9](../02-prompt-evaluation/09-prompt-evaluation.md)).
 
 ---
 
 ### Recap
 
-* An eval acts like a repeatable exam for a prompt: fixed questions, scored outputs, one average score.
-* The five steps are: write the prompt, write test questions, collect answers, score answers, and iterate.
-* Larger datasets prevent one lucky answer from distorting the score.
-* Graders can be code (exact rules), another model (judgment), or humans (spot-checks).
-* Keep the dataset and grader fixed while changing only the prompt.
+- Every request makes a five-step round trip: from the app to your server, then to the Claude API and the model, and back the same way.
+- The API key lives only on your server, because anyone can read the code inside an app.
+- A request needs a key, a model, a messages list, and `max_tokens`.
+- Training saved the vocabulary and the embedding table inside the model. On each request, the model cuts the text into tokens, looks up each token's saved row, adjusts a copy of the numbers to fit the sentence, and writes the answer one token at a time.
+- The model stops at `max_tokens`, at its natural end (`end_turn`), or at one of your stop sequences.
+- The response gives the answer, the token usage, and the stop reason.
 
 ---
 
 ## My notes / practice
 
-* [ ] Put the three questions in a Python list and run the Step 3 loop with `chat()`.
-* [ ] Score each answer manually from 1 to 10 and calculate the average.
-* [ ] Run the Step 4 grader prompt on the oatmeal answer and check the returned score.
-* [ ] Add `"Answer the question with ample detail"`, rerun, and compare response lengths.
+- [ ] Draw the five-step round trip from memory, and mark where the API key lives.
+- [ ] After [lesson 2](02-getting-an-api-key.md), send the `curl` request above with your own key, and read the `usage` and `stop_reason` fields.
+- [ ] Send the same request with `max_tokens` set to `20`, and check that `stop_reason` becomes `max_tokens`.
+- [ ] Ask the same question three times, and compare the answers.
 
 ---
 
 ## FAQ
 
-**Q1. What does "eval workflow" mean?**
-It is the fixed step-by-step process used to score a prompt: write the prompt, write test questions, get model answers, score them, and repeat after editing the prompt.
+**Q1. What does "API" mean here?**
+An API is a way for one program to ask another program to do something. Here, your server sends a request to Anthropic's servers at `api.anthropic.com`, and they send back the model's answer.
 
-**Q2. What does "eval dataset" mean?**
-It is the collection of test questions inserted one by one into the prompt's `{question}` placeholder during evaluation.
+**Q2. Why can't my web or mobile app call the Claude API directly?**
+Every request needs your secret API key, and anyone who has the app can read the code inside it. So the app sends the question to your own server, and your server holds the key and calls Anthropic.
 
-**Q3. What does "baseline" mean in an eval?**
-It is the score of your initial prompt version. Later prompt versions are measured against it to see if changes improve performance.
+**Q3. What is an SDK, and do I have to use one?**
+An SDK is a ready-made code library that builds requests and reads responses for you, such as the `anthropic` package for Python. You don't have to use one. Plain HTTP works too, but the SDK adds the headers and retries for you.
 
-**Q4. Why does an eval need many test questions?**
-Small datasets let one unusual or lucky answer shift the average sharply (for example, `+1.67` on 3 questions versus `+0.05` on 100 questions) and fail to represent real user variety.
+**Q4. Which four things must every request include?**
+The API key, the `model` name, the `messages` list with the user's text, and `max_tokens`, which sets the longest the answer can be.
 
-**Q5. What does "grader" mean?**
-A grader is the mechanism—code, another model, or a human—that reviews a question and its answer and assigns a score.
+**Q5. What do "token" and "token ID" mean?**
+A token is a small piece of text that the model reads and writes, such as a word, part of a word, or a symbol. A token ID is the fixed number that the model's vocabulary gives each token, such as 5120 for `bank`. You are billed by tokens, and limits are measured in tokens.
 
-**Q6. How does a grader decide on a score?**
-Code checks explicit rules (such as substring or format checks). A model grader takes a grading prompt with the question and answer and outputs a numeric score.
+**Q6. What does "embedding" mean?**
+An embedding is a token's saved row of numbers in the embedding table, and it describes the token's usual meaning. Training built the table and saved it inside the model. The model uses the token ID to go straight to the right row, and similar words such as "cat" and "kitten" have similar rows.
 
-**Q7. Why does the grader need both the question and the answer?**
-An answer's quality depends on the question asked. `"Add hot water to dry oatmeal."` is incomplete when answering `"How do I make oatmeal?"` because it lacks quantities, timing, and steps.
+**Q7. What does "contextualization" mean?**
+It is the stage where each token looks at the tokens before it and adjusts a copy of its numbers to fit the sentence. In "river bank," the numbers for "bank" move to the riverside meaning, and in "quantum computing," the pair takes on the technology meaning.
 
-**Q8. Why must the questions and grader stay fixed across prompt versions?**
-Holding the dataset and grader fixed isolates the prompt as the only variable, so score changes reflect prompt edits rather than different tests or grading rules.
+**Q8. How does the model choose the words of its answer?**
+It writes one token at a time. For each token, it works out the chance of every possible next token, picks a likely one, adds it to the answer, and repeats. It doesn't always pick the most likely token, so the same question can get slightly different answers.
 
-**Q9. (Exam angle) A team claims a new prompt "feels better." What should you do?**
-Run a formal eval on the same dataset using the same grader and compare the average scores before deciding. *(Claude Models, Prompting & Context Engineering)*
+**Q9. What does "max_tokens" do?**
+It sets the most tokens the model may write in its answer. The model doesn't plan around the limit. If it reaches the limit, the answer is cut off and the stop reason is `max_tokens`.
 
-**Q10. (Exam angle) A higher eval score comes right after changing the test questions. Is the result valid?**
-No. Changing the test set invalidates direct comparison—keep the dataset and grader unchanged so only the prompt differs. *(Solution Design & Architecture)*
+**Q10. How does the model decide to stop writing?**
+After each token, it checks three things: whether it has reached `max_tokens`, whether it wrote its end-of-sequence token (a natural ending), and whether it wrote one of your stop sequences. The response's `stop_reason` tells you which one happened.
 
-**Q11. (Exam angle) A prompt edit raises the average score, but responses are now three times longer. What should you check?**
-Check token cost, latency, and whether the grader is simply rewarding longer responses over better ones. *(Solution Design & Architecture)*
+**Q11. (Exam angle) A security team asks why the mobile app can't call the Claude API directly to save time. How do you answer?**
+Someone can extract a key from inside the app and misuse it, and you pay for every request made with it. Route all calls through your server, store the key in a secrets store, and add user login and per-user rate limits on that server. The one exception is an iOS or macOS app using App Attest, which gets short-lived tokens instead of a key. (Governance, Safety & Risk Management)
+
+**Q12. (Exam angle) Users say some answers stop mid-sentence. How do you find and fix the cause?**
+Check the `stop_reason` of those responses. If it is `max_tokens`, the answer hit your length limit. Raise `max_tokens` or ask for shorter answers in the prompt, and make the app treat cut-off answers as incomplete. (Integration)
+
+**Q13. (Exam angle) Finance asks how to estimate and track what each conversation costs. What do you set up?**
+Log the `usage` field (input and output tokens) from every response, and multiply each count by the model's price per token. Output tokens cost more than input tokens, so limit long answers where you can. Use the token-counting endpoint to estimate the cost before sending. (Solution Design & Architecture)
 
 ---
 
 | Previous | Course | Next |
 |:---|:---:|---:|
-| [← Prompt evaluation](09-prompt-evaluation.md) | [📚 Chapter index](README.md) | [Generating test datasets →](11-generating-test-datasets.md) |
+| Start of course | [📚 Chapter index](README.md) | [Getting an API key →](02-getting-an-api-key.md) |

@@ -24,7 +24,7 @@
 - **Why build it:** the exam asks you to choose between designs and defend the choice. You can only do that well if you have built the thing, measured it, and seen it fail.
 - **How it grows:** after each chapter of *Building with the Claude API*, you work through that chapter's guide. Every lesson in the chapter becomes at least one problem you solve in the app.
 - **Where the code lives:** in this folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, next to this plan. All paths below are relative to this folder.
-- **Where you build it:** mainly on your MacBook, in the Terminal app. Every step that needs different commands also shows the Windows (PowerShell) version. Both computers share the same GitHub repository, so run `git pull` before each session and `git push` after it.
+- **Where you build it:** on one computer, Mac or Windows. Start with the [one-time setup](setup.md). The capstone stays on your computer: you commit after each problem and push to GitHub only at the end, if you want to.
 
 > **Remember this:** One chapter, then one guide. If you fall behind, keep the order and keep going.
 
@@ -117,6 +117,7 @@ The capstone code lives inside this study-notes repository, so Git saves it toge
 ```text
 02_BuildingWithTheClaudeAPI/00_Capstone_Plan/
 ├── README.md                    this plan
+├── setup.md                     the one-time setup                                 (1)
 ├── guide/                       the ten chapter guides
 ├── .env                         your API keys; never committed to Git              (1)
 ├── .gitignore                   tells Git which files to skip: .env and .venv      (1)

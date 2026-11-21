@@ -44,14 +44,33 @@ Testing a prompt on many realistic messages and scoring the answers is how you c
 
 Options 1 and 2 are traps that almost every developer falls into. People expect users to write like they do. Real users send empty messages, two problems in one message, other languages, and attempts to trick the model.
 
-#### What makes a good test set
+### Why you write a prompt and a test set (The Big Picture)
 
-A *test set* is the list of test questions, each with the answer you know is right (the *expected answer*).
+When you build an AI-powered software feature—like an app that automatically sorts incoming customer emails into `billing`, `technical`, or `other`—**your prompt is your production code**. Every time a real customer sends an email, your app inserts that email into your prompt and sends it to Claude to get the right category.
 
-- Make the test questions look like real user messages, including the odd ones (*edge cases*).
-- Many tests that code or a model can score automatically beat a few tests that a person scores by hand.
-- Use the same test set when you compare two prompt versions, so only the prompt differs.
-- An answer can be scored by code (fast, for exact answers), by another model (for judgment calls), or by a person (best, but slow and costly).
+Before trusting that prompt with real users, you need a **test set**: a saved file of sample customer emails paired with the exact right labels you expect back.
+
+Think of the test set like unit tests for your prompt:
+
+1. **You write the test set** (`test_set.json`) with realistic emails and their right answers.
+2. **You write your draft prompt** and test it against that test set to get a score (for example, `41 / 50`).
+3. **You inspect the failures**, add rules or examples to your prompt to fix them, and **re-test against the exact same test set** until the score is high enough to launch. Once live, only your final prompt runs in production—the test set stays on your laptop.
+
+---
+
+### What makes a good test set
+
+A **test set** is your saved list of sample customer emails, each paired with the exact answer you know is right (the *expected answer*). Without one, you are guessing—you might test 3 neat emails you made up, think your prompt works, and launch it, only for messy real-world messages to break your routing.
+
+To make your test set catch bugs before real users do, follow four rules:
+
+* **Use real, messy messages:** Don't just test neat examples. Include the weird stuff real customers actually send—like `"hi"`, Spanish emails, or two complaints mashed into one message (*edge cases*)—because easy examples hide real bugs.
+* **Go big and automate:** Running 50+ test emails graded automatically by code uncovers way more hidden mistakes than testing 5 emails by hand.
+* **Keep the test set locked:** When comparing Prompt V1 and Prompt V2, run both on the **exact same saved list of emails**. If you change the emails between runs, you won't know if a higher score came from a better prompt or just easier emails.
+* **Pick the right grader:**
+* **Code:** Best for exact answers like `billing` (instant and free).
+* **Another AI:** Best for judgment calls, like checking if a reply sounds polite.
+* **A human:** Most accurate, but too slow and expensive for large test sets.
 
 #### Exam takeaways
 

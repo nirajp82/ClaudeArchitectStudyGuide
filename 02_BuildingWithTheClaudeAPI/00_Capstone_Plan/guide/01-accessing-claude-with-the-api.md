@@ -62,25 +62,34 @@ This is a one-time setup, so just follow the steps. **Mac** commands run in the 
 
 **Done when:** `uv run python -m app.client` prints one sentence, and `.env` never shows in `git status`.
 
-**Step 1. Check that the tools are installed.** Run each check command. If it prints a version number, the tool is installed.
+**Step 1. Check that Git is installed.** Git saves versions of your work. Run:
 
-| Tool | Why you need it | Check command |
-|---|---|---|
-| **Git** | Saves versions of your work | `git --version` |
-| **uv** | Installs Python and the project's packages, and runs your code | `uv --version` |
+```bash
+git --version
+```
+
+If it prints a version, such as `git version 2.46.0`, go to step 2. If it says `command not found` (Mac) or `not recognized` (Windows), open the panel below.
 
 <details>
 <summary>Git is missing: how to install it</summary>
 
-- **Mac:** run `git --version` anyway. macOS offers to install Apple's free *Command Line Tools*, which include Git. Click **Install**.
-- **Windows:** download and install Git from [git-scm.com](https://git-scm.com/downloads), then close and reopen PowerShell.
+- **Mac:** a window appears offering to install Apple's free *Command Line Tools*, which include Git. Click **Install**, then run `git --version` again.
+- **Windows:** download and install Git from [git-scm.com](https://git-scm.com/downloads). Close and reopen PowerShell, then run `git --version` again.
 
 </details>
+
+**Step 2. Check that uv is installed.** uv installs Python and the project's packages, and runs your code. Run:
+
+```bash
+uv --version
+```
+
+If it prints a version, such as `uv 0.9.5`, go to step 3. If it says `command not found` or `not recognized`, open the panel below.
 
 <details>
 <summary>uv is missing: how to install it</summary>
 
-Run the command for your computer, then close and reopen the terminal.
+Run the command for your computer. It downloads uv's official installer and runs it.
 
 **Mac:**
 
@@ -94,11 +103,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Both commands download uv's official installer and run it.
+Close and reopen the terminal, then run `uv --version` again.
 
 </details>
 
-**Step 2. Go to the capstone folder.** `cd` means "change directory": it moves the terminal into that folder. Every later command runs there.
+**Step 3. Go to the capstone folder.** `cd` means "change directory": it moves the terminal into that folder. Every later command runs there.
 
 **Mac:**
 
@@ -114,7 +123,7 @@ cd $HOME\Documents\ClaudeArchitectStudyGuide\02_BuildingWithTheClaudeAPI\00_Caps
 
 If your study-notes folder is somewhere else, use that path instead.
 
-**Step 3. Make the folder a Python project and install the packages.**
+**Step 4. Make the folder a Python project and install the packages.**
 
 ```bash
 uv init --name claude-capstone --python 3.12 --no-readme
@@ -130,7 +139,7 @@ rm main.py
 | `uv add --dev pytest` | Installs `pytest`, which runs automatic tests. `--dev` means you need it only while building. |
 | `rm main.py` | Deletes the sample file that `uv init` creates. Your code goes in `app/` instead. |
 
-**Step 4. Create the code folders.**
+**Step 5. Create the code folders.**
 
 **Mac:**
 
@@ -153,7 +162,7 @@ New-Item app\__init__.py, experiments\__init__.py
 
 Later guides create the other folders when they need them.
 
-**Step 5. Keep your key and packages out of Git.** `.gitignore` is a list of files that Git never saves.
+**Step 6. Keep your key and packages out of Git.** `.gitignore` is a list of files that Git never saves.
 
 **Mac:**
 
@@ -169,7 +178,7 @@ Add-Content .gitignore ".env", ".venv"
 
 This adds two lines to `.gitignore`. `.env` will hold your secret key. `.venv` is the folder where uv keeps the installed packages.
 
-**Step 6. Save your API key in `.env`.** Open the file in a text editor.
+**Step 7. Save your API key in `.env`.** Open the file in a text editor.
 
 **Mac:**
 
@@ -190,7 +199,7 @@ ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
 CLAUDE_MODEL=claude-haiku-5-5
 ```
 
-**Step 7. Write `app/client.py`.**
+**Step 8. Write `app/client.py`.**
 
 ```python
 import os
@@ -227,15 +236,15 @@ if __name__ == "__main__":
 
 **Warning:** the course reads answers with `response.content[0].text`. On current models that can crash, because the first block may be a thinking block. Use `get_text`.
 
-**Step 8. Run it.**
+**Step 9. Run it.**
 
 ```bash
 uv run python -m app.client
 ```
 
-`uv run` starts Python with the packages from step 3. `-m app.client` runs the file `app/client.py`. It should print one sentence about prompt caching. If you see `authentication_error`, the key in `.env` is wrong.
+`uv run` starts Python with the packages from step 4. `-m app.client` runs the file `app/client.py`. It should print one sentence about prompt caching. If you see `authentication_error`, the key in `.env` is wrong.
 
-**Step 9. Save your work.**
+**Step 10. Save your work.**
 
 ```bash
 git add .

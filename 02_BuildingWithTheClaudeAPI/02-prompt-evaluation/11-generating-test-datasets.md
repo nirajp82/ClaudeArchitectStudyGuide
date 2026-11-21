@@ -33,6 +33,10 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why you need an eval:** a prompt that works on the two or three requests you try by hand can still fail on real users. For example, the AWS code prompt in this lesson might add "Sure! Here's your code:" before 1 answer in 5, and break every app that reads its output. An *eval* tests the prompt on many sample requests before it goes live and gives one score, such as "7 of 10." You then edit the prompt and compare the new score with the old one.
+
+**Why you need a dataset:** to test on many sample requests, you first need those requests written down and saved. That saved list is the dataset, and making it is what this lesson is about.
+
 An eval has three parts. This lesson builds the second one.
 
 - **The prompt:** the thing you will ship to production. For example, "Please provide a solution to the following task: {task}".

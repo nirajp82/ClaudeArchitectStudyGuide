@@ -1,5 +1,7 @@
 # Lesson 10 — A typical eval workflow
 
+Your prompt acts as production code in an AI feature, and your test set works like unit tests to check it before launch. An **eval workflow** is the repeatable loop you run to measure how well that prompt scores.
+
 **Course:** [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api) &nbsp;·&nbsp; **Lesson page:** [A typical eval workflow](https://academy.claude.com/courses/building-with-the-claude-api/a-typical-eval-workflow) &nbsp;·&nbsp; **Chapter 2:** Prompt evaluation &nbsp;·&nbsp; **Completed:** November 16, 2026
 
 | Previous | Course | Next |
@@ -11,8 +13,7 @@
 - [Problem 1: Write your first test questions by hand](../00_Capstone_Plan/guide/02-prompt-evaluation.md#problem-1-write-your-first-test-questions-by-hand)
 - [Problem 6: Change the prompt and prove it got better](../00_Capstone_Plan/guide/02-prompt-evaluation.md#problem-6-change-the-prompt-and-prove-it-got-better)
 
-Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
-
+Solve the guide's problems in order after finishing the chapter, because each problem builds on the one before.
 
 ---
 
@@ -36,85 +37,85 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this matters.** You change a prompt and try it on two questions. The answers look nicer, so you ship it. A week later, customers complain that 1 answer in 5 is now missing key steps. You never saw it, because two questions can't show a problem that hits 1 answer in 5. An eval would have shown the score drop before launch.
+**Why this matters.** You edit a prompt and test it on two questions. Both answers look good, so you ship the change. A week later, users report that 1 in 5 answers (20%) misses key steps. Testing only two questions cannot catch a bug that hits 20% of the time. Running an eval on a larger test set catches the score drop before launch.
 
 #### What an eval workflow is
 
-An *eval* (short for evaluation) is a test that gives your prompt a score. The *eval workflow* is the fixed set of steps you follow to get that score. It works like a school exam:
+An **eval** (short for evaluation) tests a prompt and returns a score. The **eval workflow** is the fixed sequence of steps you run to measure that score. It works like a school exam:
 
 | School exam | Prompt eval |
 |---|---|
-| The exam paper, with the same questions for everyone | The test questions (the course calls this the *eval dataset*) |
-| The student writes answers | The model answers each question, using your prompt |
-| The teacher marks each answer out of 10 | A *grader* scores each answer from 1 to 10 |
-| The average mark | The prompt's score |
-| Teach differently, then give the same exam again | Change the prompt, then run the same test questions again |
+| Exam paper with fixed questions for everyone | Test questions (called the **eval dataset**) |
+| Student writes answers | Model answers each question using your prompt |
+| Teacher grades each answer out of 10 | **Grader** scores each answer from 1 to 10 |
+| Average exam grade | Prompt's average score |
+| Change teaching, then give the same exam again | Change the prompt, then rerun the same test questions |
 
-The five steps:
+The five workflow steps:
 
-1. **Write the first prompt.** Leave a slot, `{question}`, where each test question will go. This first version is your *baseline*, the score every later version is compared with.
-2. **Write the test questions.** These are sample questions like the ones real users will ask.
-3. **Get the model's answers.** Your code puts each question into the slot, sends the prompt to the model, and saves each answer.
-4. **Score each answer.** The grader gives each answer a score, and your code averages the scores into one number.
-5. **Change the prompt and test again.** Run the same questions with the same grader. If the average goes up, the change helped.
+1. **Write the first prompt.** Add a `{question}` slot for each test question. This first version sets your **baseline** score for later comparisons.
+2. **Write the test questions.** Collect realistic sample questions that real users will send.
+3. **Get the model's answers.** Loop through the test questions, insert each one into `{question}`, send the prompt to the model, and save each answer.
+4. **Score each answer.** Have a grader score every answer, then average the scores into one number.
+5. **Change the prompt and test again.** Keep the same questions and grader, update the prompt, and rerun. A higher average means the edit helped.
 
 #### Why you need many test questions
 
-- **One answer can swing a small test.** With 3 questions, one answer going from 4 to 9 moves the average by 1.67 points. With 100 questions, the same change moves it by only 0.05. A small test can make a bad prompt look good by luck.
-- **Real users ask many kinds of questions.** A test needs math, how-to, facts, vague, and odd questions too. Three questions can't cover them all.
-- **Real evals use tens to thousands of questions.** You can write them by hand or ask the model to write them ([lesson 11](11-generating-test-datasets.md)).
+* **Small tests swing easily:** On 3 questions, one score jumping from 4 to 9 raises the average by 1.67 points. On 100 questions, that same change moves the average by only 0.05. Small samples let luck look like progress.
+* **Users send varied inputs:** Real traffic includes math, how-to requests, facts, vague prompts, and unusual edge cases. Three test items cannot cover those patterns.
+* **Real evals scale up:** Production evals use tens to thousands of questions. You can write them yourself or generate drafts with a model ([lesson 11](11-generating-test-datasets.md)).
 
 #### How an answer gets a score
 
-The *grader* is whatever reads a question and its answer and gives a score. There are three kinds:
+A **grader** reads a question and its answer and assigns a score. Three options exist:
 
-- **Code:** a few lines that check a fixed rule. For example, "does the answer to 2+2 contain 4?" It is fast and free, but it only works when there is one exact right answer.
-- **Another model:** your code sends a second prompt that says, "Here is a question and an answer. Score the answer from 1 to 10." It can judge things like "is this helpful?", but each score costs one more request.
-- **A person:** best judgment, but slow and expensive, so use it only to spot-check.
+* **Code:** Runs a fixed rule, such as checking whether an answer to `2+2` contains `4`. Fast and free, but limited to exact or rule-checkable answers.
+* **Another model:** Sends a second prompt asking a model to score an answer (for example, from 1 to 10 for helpfulness). Handles judgment calls, but costs one extra API call per item.
+* **A person:** Gives strong human judgment, but moves slowly and costs more. Use human grading to spot-check automated scores.
 
 #### The course's worked example
 
-| Question | The model's answer (version 1) | Score |
+| Question | Model's answer (Version 1) | Score |
 |---|---|:---:|
 | What's 2+2? | "2 + 2 = 4" | 10 |
 | How do I make oatmeal? | "Add hot water to dry oatmeal." | 4 |
 | How far away is the Moon? | "The Moon is about 384,400 km away." | 9 |
 
-- **Version 1** ("Please answer the user's question") averages (10 + 4 + 9) ÷ 3 = 7.67. The course shows 7.66 because it cuts off digits instead of rounding.
-- **Version 2** adds "Answer the question with ample detail" and averages 8.7, so the extra line helped.
+* **Version 1** (`"Please answer the user's question"`) averages `(10 + 4 + 9) ÷ 3 = 7.67` (the course slide displays `7.66` due to truncation).
+* **Version 2** adds `"Answer the question with ample detail"` and averages `8.7`, showing a measurable gain from the added instruction.
 
 #### Exam takeaways
 
-- **A team changes a prompt and says the new version "feels better."** Ask for an eval: run both versions on the same dataset with the same grader and compare the average scores. (Claude Models, Prompting & Context Engineering)
-- **An eval shows a higher score only because the team also changed the test questions.** The comparison is invalid. Keep the dataset and grader fixed, and change only the prompt between runs. (Solution Design & Architecture)
-- **A new prompt raises the average score, but answers are now three times longer.** Check cost and speed too. Longer answers use more output tokens, and a grader may favor long answers even when they are not better. (Solution Design & Architecture)
+* **A team says a new prompt "feels better."** Run an eval: test both versions on the same dataset with the same grader and compare the average scores. *(Claude Models, Prompting & Context Engineering)*
+* **A score rises only after the team swaps out the test questions.** The comparison is invalid. Hold the dataset and grader constant so only the prompt changes between runs. *(Solution Design & Architecture)*
+* **A new prompt raises the score, but answers become three times longer.** Check token cost, latency, and grader bias—longer outputs cost more money and take longer, and graders sometimes reward length over quality. *(Solution Design & Architecture)*
 
 ---
 
 ### The big picture
 
-The five steps form a loop. You go around it once for every version of the prompt.
+The five steps form a repeatable loop. You run one full pass for each prompt version you test.
 
 ![Prompt Eval Workflow. There are many different ways to assemble a workflow and many open source and paid options, and this module assembles its own. The five steps are Draft a Prompt, Create an Eval Dataset, Feed Through Claude, Feed Through a Grader, and Change Prompt and Repeat](../images/10-eval-workflow-steps.png)
 
-The slide's step names are the course terms. In plain words, they are: write the prompt, write the test questions, get the answers, score the answers, change and repeat. Many ready-made eval tools exist, free and paid, but the course builds its own so you see every step.
+In plain terms, the workflow is: write the prompt, write the test questions, collect answers, score answers, and repeat after edits. Ready-made eval tools exist, but building this loop directly makes every step clear.
 
-**The running example:** the course tests a general question-answering prompt on three questions: "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?"
+**The running example:** The course evaluates a general question-answering prompt on three items: `"What's 2+2?"`, `"How do I make oatmeal?"`, and `"How far away is the Moon?"`.
 
 #### Who's who
 
-| Player | Where it lives | What it does |
+| Role | Where it runs | What it does |
 |---|---|---|
-| **You, the developer** | Your notebook | Write the prompt and the questions, read the scores, and decide what to change |
-| **Your eval code** | Your notebook | Sends each question, collects the answers, and averages the scores |
-| **The model** | Anthropic's servers | Answers each test question (step 3) |
-| **The grader** | Your code, or a second request to a model | Scores each answer from 1 to 10 (step 4) |
+| **Developer (you)** | Local environment / notebook | Writes the prompt and test questions, reviews scores, and chooses prompt edits |
+| **Eval script** | Local environment / notebook | Sends each test question, stores answers, and computes the average score |
+| **Target model** | Anthropic servers | Generates an answer for each test question (Step 3) |
+| **Grader** | Local code or a grading model call | Scores each answer from 1 to 10 (Step 4) |
 
 ---
 
 ### 1. Step 1: Write the first prompt
 
-Write a first version of the prompt, with a slot where each test question will go.
+Start with an initial prompt that includes a placeholder for each test question.
 
 ```python
 prompt = f"""
@@ -124,27 +125,27 @@ Please answer the user's question:
 """
 ```
 
-What each part means:
+How this snippet works:
 
-- `prompt = ...` saves the text in a variable named `prompt`.
-- `"""` starts and ends text that runs over several lines.
-- The `f` before the quotes makes it an *f-string*: Python swaps `{question}` for whatever the variable `question` holds.
+* `prompt = ...` stores the prompt text in a variable.
+* `"""` defines a multi-line string.
+* The leading `f` creates a Python f-string, replacing `{question}` with the current value of `question`.
 
-**Warning:** Python fills in `{question}` the moment this line runs. So in a real eval, this line goes inside the loop in step 3, once per question.
+**Warning:** Python evaluates `{question}` right when the f-string runs. Place prompt construction inside the Step 3 loop so each question gets inserted cleanly on its own pass.
 
 ![Initial Prompt Draft. Will this be an effective prompt? We won't know until we evaluate it with some objective methodology. The code is prompt = f""" Please answer the user's question: {question} """](../images/10-initial-prompt-draft.png)
 
-The slide asks the key question: will this prompt work well? You can't know until you score it. This first version is the *baseline* that every later version is compared with.
+You cannot tell from reading a draft alone whether it will perform well. This first version serves as your **baseline** for judging later edits.
 
 ---
 
 ### 2. Step 2: Write the test questions
 
-The test questions are samples of what real users will ask. Each one will go into the `{question}` slot.
+Test questions represent realistic user inputs that will fill `{question}` during evaluation.
 
 ![Draft a Prompt, then Create an Eval Dataset. The dataset is a table with a Question column holding "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?". The eval dataset contains questions that we will merge with our prompt, and it can be assembled by hand or generated by Claude](../images/10-eval-dataset.png)
 
-In Python, the course's three questions can be a simple list:
+In Python, you can start with a simple list:
 
 ```python
 dataset = [
@@ -156,22 +157,22 @@ dataset = [
 
 #### Why three questions are not enough
 
-Three questions are enough to learn the steps, but far too few to trust a score. Look at what one answer does to the average:
+Three questions work for learning the mechanics, but cannot support a reliable decision. See how one score change affects the average:
 
-| Test size | One answer improves from 4 to 9 | Change in the average |
+| Dataset size | One answer improves from 4 to 9 | Shift in average score |
 |---|---|:---:|
-| 3 questions | Total goes from 23 to 28 | 7.67 to 9.33, up **1.67** |
-| 100 questions | Total goes up by 5 | up only **0.05** |
+| 3 questions | Total rises from 23 to 28 | 7.67 to 9.33 (**+1.67**) |
+| 100 questions | Total rises by 5 | **+0.05** |
 
-With 3 questions, one lucky answer looks like a big improvement. With 100, only a real improvement across many answers moves the score.
+With 3 questions, one lucky response creates a large jump. With 100 questions, only consistent improvements across many items move the average noticeably.
 
-> **Remember this:** A few questions measure luck. Many questions measure the prompt.
+> **Remember this:** A few questions measure luck; many questions measure the prompt.
 
 ---
 
 ### 3. Step 3: Get the model's answers
 
-Your code puts each question into the prompt and sends it to the model. The first finished prompt is exactly this text:
+Your loop inserts each question into the prompt and sends it to the model. For the first question, the full prompt sent is:
 
 ```text
 Please answer the user's question:
@@ -181,7 +182,7 @@ What's 2+2?
 
 ![Feed Through Claude. Each question is merged into the prompt and sent to Claude. Claude replies "2 + 2 = 4", "Add hot water to dry oatmeal.", and "The Moon is about 384,400 KM away."](../images/10-feed-through-claude.png)
 
-A small loop does this for every question. It uses the `chat()` function from [lesson 5](../01-accessing-claude-with-the-api/05-system-prompts.md):
+Using `chat()` from [lesson 5](../01-accessing-claude-with-the-api/05-system-prompts.md), the loop collects every response:
 
 ```python
 results = []
@@ -196,29 +197,29 @@ Please answer the user's question:
     results.append({"question": question, "answer": answer})
 ```
 
-- `for question in dataset:` repeats the indented lines once per question.
-- `chat(messages)` sends the prompt to the model and returns its answer.
-- `results.append(...)` saves each question with its answer, ready for scoring.
+* `for question in dataset:` runs the indented block once per item in `dataset`.
+* `chat(messages)` sends the messages to the model and returns the reply text.
+* `results.append(...)` saves each `{question, answer}` pair for grading.
 
 ---
 
 ### 4. Step 4: Score each answer
 
-The grader reads each question with its answer and gives a score from 1 to 10. It needs the question too, because "Add hot water to dry oatmeal" is only weak *as an answer to* "How do I make oatmeal?".
+The grader evaluates each `(question, answer)` pair and assigns a score from 1 to 10. It needs the original question because quality depends on what was asked—`"Add hot water to dry oatmeal."` only looks weak against `"How do I make oatmeal?"`.
 
 ![Feed Through a Grader. Each question and answer pair goes into the grader. "What's 2+2?" with "2 + 2 = 4" scores 10. "How do I make oatmeal?" with "Add hot water to dry oatmeal." scores 4. "How far away is the Moon?" with "The Moon is about 384,400 KM away." scores 9](../images/10-feed-through-grader.png)
 
-| Question | Score | Why |
+| Question | Score | Reason |
 |---|:---:|---|
-| What's 2+2? | 10 | Correct and complete |
-| How do I make oatmeal? | 4 | Correct, but no amounts, times, or steps |
-| How far away is the Moon? | 9 | Correct, though it could say the distance changes |
+| What's 2+2? | 10 | Accurate and complete |
+| How do I make oatmeal? | 4 | Accurate, but omits measurements, cook time, and steps |
+| How far away is the Moon? | 9 | Accurate, though it omits that distance changes |
 
-Then your code averages the scores: (10 + 4 + 9) ÷ 3 = 23 ÷ 3 = **7.67**. The course shows 7.66. That one number is the score for prompt version 1.
+Averaging the scores gives `(10 + 4 + 9) ÷ 3 = 23 ÷ 3 = 7.67` (`7.66` on the slide). That single number is the baseline score for Version 1.
 
 #### How the grader decides
 
-The course doesn't show this yet, so here is the simple picture. A grader that is **another model** gets a second prompt like this:
+A **model grader** uses a second prompt to rate each answer:
 
 ```text
 Here is a question and an answer.
@@ -230,23 +231,23 @@ Score the answer from 1 to 10 for how complete and helpful it is.
 Reply with only the number.
 ```
 
-The model replies `4`. Your code reads the number and saves it.
+The grading model returns `4`, and your script records that score.
 
-A grader that is **code** checks a rule instead. For "What's 2+2?", it checks whether the answer contains "4", and gives 10 if it does. That can't judge whether an oatmeal recipe is helpful.
+A **code grader** applies deterministic logic instead. For `"What's 2+2?"`, code can check whether the output contains `"4"` and return `10` if true, though code cannot judge recipe helpfulness.
 
-| Grader | Use it when |
+| Grader type | Best fit |
 |---|---|
-| **Code** | There is one exact right answer, such as a number or a category name |
-| **Another model** | Quality needs judgment, such as "is this complete and helpful?" |
-| **A person** | Spot-checking a sample of scores to make sure the other graders are fair |
+| **Code** | Exact answers such as numbers, codes, or fixed category labels |
+| **Another model** | Subjective qualities such as completeness, tone, or helpfulness |
+| **A person** | Spot-checking samples to verify that automated graders align with human standards |
 
-Lessons [13](13-model-based-grading.md) and [14](14-code-based-grading.md) build both kinds of grader.
+Lessons [13](13-model-based-grading.md) and [14](14-code-based-grading.md) cover model-based and code-based graders in detail.
 
 ---
 
 ### 5. Step 5: Change the prompt and test again
 
-Version 1 scored 7.67. The oatmeal answer was too short, so you add one line:
+Version 1 scored `7.67` because the oatmeal answer lacked detail. Add one instruction line to create Version 2:
 
 ```python
 prompt = f"""
@@ -260,20 +261,20 @@ Answer the question with ample detail
 
 ![Change Prompt and Repeat. The grader averaged 7.66 for the first prompt. The revised prompt adds the line "Answer the question with ample detail"](../images/10-change-prompt-and-repeat.png)
 
-You run steps 3 and 4 again, with the **same three questions** and the **same grader**. The new average is 8.7.
+Rerun Steps 3 and 4 again using the **same three questions** and the **same grader**. The average rises to `8.7`.
 
 ![Prompt Scoring. Get an objective measurement of the output of each prompt, and use the version with the best score or iterate again. Prompt v1, "Please answer the user's question: {question}", scored 7.66. Prompt v2, which adds "Answer the question with ample detail", scored 8.7](../images/10-prompt-scoring.png)
 
-| Version | Change | Average score |
+| Version | Prompt change | Average score |
 |---|---|:---:|
-| v1 | The first prompt | 7.67 |
-| v2 | Added "Answer the question with ample detail" | 8.7 |
+| v1 | Initial baseline prompt | 7.67 |
+| v2 | Added `"Answer the question with ample detail"` | 8.7 |
 
-Now you can compare versions by number, keep the best one, and keep improving it. Changing and retesting again and again is called *iterating*.
+Comparing numerical scores lets you pick the stronger version and continue **iterating** (editing and retesting in a loop).
 
-**Warning:** If you change the questions or the grader between runs, the scores no longer compare. A rise from 7.67 to 8.7 could come from easier questions, not a better prompt.
+**Warning:** Changing the test questions or the grader between runs breaks fair comparison. A jump from `7.67` to `8.7` might come from easier questions rather than a better prompt.
 
-> **Remember this:** Change one thing, rerun the same test, compare the number.
+> **Remember this:** Change one thing, rerun the same test, compare the score.
 
 ---
 
@@ -281,75 +282,75 @@ Now you can compare versions by number, keep the best one, and keep improving it
 
 #### Cost
 
-- Step 3 sends one request per question. A model grader adds one more per question. 100 questions graded by a model is 200 requests per prompt version.
-- "Answer with ample detail" makes answers longer, and you pay for every output token. A better score can also mean a bigger bill. Prices change, so check Anthropic's pricing page.
+* Step 3 makes one model call per test question; a model grader makes one additional call per item. A 100-question set with a model grader equals 200 API calls per prompt version.
+* Instructions like `"Answer the question with ample detail"` increase output length, and output tokens cost money. Higher scores can raise API spend—check Anthropic's current pricing before scaling runs.
 
 #### Speed
 
-- Longer answers also take longer to arrive. Record how long each answer takes, not just its score.
-- Sending requests one at a time is slow for large tests. Sending several at once is faster, but stay under your account's rate limits.
+* Longer responses take longer to generate. Log response latency alongside scores so you spot slowdowns early.
+* Sequential requests are slow on large datasets. Parallel requests run faster, provided you stay within account rate limits.
 
 #### Trusting the score
 
-- Answers vary a little between runs ([lesson 6](../01-accessing-claude-with-the-api/06-temperature.md)). Rerun before trusting a small difference.
-- A model grader can favor longer answers even when they are not better. Spot-check some scores by hand.
-- Don't watch only the average. One answer scoring 2 can hide inside a good average, so read the lowest-scoring answers each run.
+* Model outputs can vary across runs ([lesson 6](../01-accessing-claude-with-the-api/06-temperature.md)). Rerun checks before trusting small score differences.
+* Model graders sometimes favor longer answers even when extra words add little value. Review sample scores manually.
+* Do not rely solely on the average. A single low score (such as `2`) can hide inside a decent mean, so inspect the lowest-scoring answers each run.
 
 ---
 
 ### Recap
 
-- An eval is like an exam for your prompt: same questions, scored answers, one average.
-- The five steps: write the prompt, write test questions, get answers, score them, change and repeat.
-- Many questions are needed, so one lucky answer can't fake an improvement.
-- A grader can be code (exact answers), another model (judgment), or a person (spot-checks).
-- Keep the questions and grader the same, and change only the prompt.
+* An eval acts like a repeatable exam for a prompt: fixed questions, scored outputs, one average score.
+* The five steps are: write the prompt, write test questions, collect answers, score answers, and iterate.
+* Larger datasets prevent one lucky answer from distorting the score.
+* Graders can be code (exact rules), another model (judgment), or humans (spot-checks).
+* Keep the dataset and grader fixed while changing only the prompt.
 
 ---
 
 ## My notes / practice
 
-- [ ] Put the three questions in a Python list, and run the step 3 loop with `chat()`.
-- [ ] Score the three answers yourself from 1 to 10, and work out the average.
-- [ ] Send the grader prompt from step 4 for the oatmeal answer, and see what score comes back.
-- [ ] Add "Answer the question with ample detail," rerun, and note how much longer the answers got.
+* [ ] Put the three questions in a Python list and run the Step 3 loop with `chat()`.
+* [ ] Score each answer manually from 1 to 10 and calculate the average.
+* [ ] Run the Step 4 grader prompt on the oatmeal answer and check the returned score.
+* [ ] Add `"Answer the question with ample detail"`, rerun, and compare response lengths.
 
 ---
 
 ## FAQ
 
 **Q1. What does "eval workflow" mean?**
-It is the fixed set of steps you follow to give a prompt a score: write the prompt, write test questions, get the model's answers, score them, then change the prompt and repeat. It works like giving a student the same exam after each lesson.
+It is the fixed step-by-step process used to score a prompt: write the prompt, write test questions, get model answers, score them, and repeat after editing the prompt.
 
 **Q2. What does "eval dataset" mean?**
-It is the list of test questions. Each one goes into the prompt's `{question}` slot, one at a time.
+It is the collection of test questions inserted one by one into the prompt's `{question}` placeholder during evaluation.
 
 **Q3. What does "baseline" mean in an eval?**
-It is the score of your first prompt version. Every later version is compared with it to see whether a change helped.
+It is the score of your initial prompt version. Later prompt versions are measured against it to see if changes improve performance.
 
-**Q4. Why does an eval need so many test questions?**
-With few questions, one lucky or unlucky answer moves the average a lot. With 3 questions, one answer going from 4 to 9 raises the average by 1.67. With 100 questions it raises it by only 0.05. Many questions also cover more of the kinds of things real users ask.
+**Q4. Why does an eval need many test questions?**
+Small datasets let one unusual or lucky answer shift the average sharply (for example, `+1.67` on 3 questions versus `+0.05` on 100 questions) and fail to represent real user variety.
 
 **Q5. What does "grader" mean?**
-It is whatever scores each answer. It reads the question and the answer and gives a score, such as 1 to 10.
+A grader is the mechanism—code, another model, or a human—that reviews a question and its answer and assigns a score.
 
 **Q6. How does a grader decide on a score?**
-A code grader checks a fixed rule, such as "the answer contains 4." A model grader gets a second prompt asking it to score the answer from 1 to 10, and replies with a number.
+Code checks explicit rules (such as substring or format checks). A model grader takes a grading prompt with the question and answer and outputs a numeric score.
 
-**Q7. Why does the grader need the question as well as the answer?**
-An answer is only good or bad for a given question. "Add hot water to dry oatmeal" is a weak answer to "How do I make oatmeal?" because it leaves out amounts and times.
+**Q7. Why does the grader need both the question and the answer?**
+An answer's quality depends on the question asked. `"Add hot water to dry oatmeal."` is incomplete when answering `"How do I make oatmeal?"` because it lacks quantities, timing, and steps.
 
-**Q8. Why must the questions and the grader stay the same between runs?**
-So that only the prompt changes. If the questions or the grader also change, you can't tell which change moved the score.
+**Q8. Why must the questions and grader stay fixed across prompt versions?**
+Holding the dataset and grader fixed isolates the prompt as the only variable, so score changes reflect prompt edits rather than different tests or grading rules.
 
-**Q9. (Exam angle) A team changes a prompt and says the new version "feels better." What do you ask for?**
-An eval: run both versions on the same dataset with the same grader, and compare the average scores. (Claude Models, Prompting & Context Engineering)
+**Q9. (Exam angle) A team claims a new prompt "feels better." What should you do?**
+Run a formal eval on the same dataset using the same grader and compare the average scores before deciding. *(Claude Models, Prompting & Context Engineering)*
 
-**Q10. (Exam angle) An eval shows a higher score, but the team also changed the test questions. Is the result valid?**
-No. Keep the dataset and grader fixed, and change only the prompt, so the score difference comes from the prompt alone. (Solution Design & Architecture)
+**Q10. (Exam angle) A higher eval score comes right after changing the test questions. Is the result valid?**
+No. Changing the test set invalidates direct comparison—keep the dataset and grader unchanged so only the prompt differs. *(Solution Design & Architecture)*
 
-**Q11. (Exam angle) A new prompt raises the average score, but answers are now three times longer. What else do you check?**
-Check cost and speed, because longer answers use more output tokens and take longer. Also check that the grader isn't simply rewarding length. (Solution Design & Architecture)
+**Q11. (Exam angle) A prompt edit raises the average score, but responses are now three times longer. What should you check?**
+Check token cost, latency, and whether the grader is simply rewarding longer responses over better ones. *(Solution Design & Architecture)*
 
 ---
 

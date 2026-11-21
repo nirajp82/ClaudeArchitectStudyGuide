@@ -48,27 +48,9 @@ A chat program for a made-up internet company, **Northwind Internet**. You type 
 
 ### Before you start
 
-Open **Terminal** (Mac) or **PowerShell** (Windows), go to your study-notes folder, and get the newest notes.
-
-**Mac:**
-
-```bash
-cd ~/Documents/ClaudeArchitectStudyGuide
-git pull
-```
-
-**Windows:**
-
-```powershell
-cd $HOME\Documents\ClaudeArchitectStudyGuide
-git pull
-```
-
-If the folder doesn't exist yet, problem 1, step 2 creates it.
-
 **Optional warm-up:** the Cookbook notebooks [`how_to_enable_json_mode`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/how_to_enable_json_mode.ipynb) and [`extracting_structured_json`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/extracting_structured_json.ipynb) show older ways to get JSON. Problem 7 teaches the current way.
 
-Problem 1 is setup, so its steps are shown in full. For problems 2 to 8, try each one first and open the answer only when you're stuck or done.
+The capstone stays on your computer. You save your work with `git commit` after each problem, and push it to GitHub only at the end, if you want to.
 
 ---
 
@@ -216,10 +198,9 @@ uv run python -m app.client
 git add .
 git status
 git commit -m "Capstone: first API call"
-git push
 ```
 
-**Warning:** if `.env` or `.venv` appears in `git status`, stop and fix `.gitignore`. A key committed once stays readable on GitHub, even after you delete it.
+**Warning:** if `.env` or `.venv` appears in `git status`, stop and fix `.gitignore`. Git keeps every old version, so a key committed once would still be readable on GitHub if you push later, even after you delete the file.
 
 **Exam:** where the key lives and why it never goes into code or Git (Governance, Safety & Risk).
 
@@ -759,7 +740,6 @@ In the capstone folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`:
 git add .
 git status
 git commit -m "Capstone guide 1: chat loop, system prompt, streaming, triage JSON, retries"
-git push
 ```
 
 **Warning:** check that `.env` isn't in the `git status` list before you commit.

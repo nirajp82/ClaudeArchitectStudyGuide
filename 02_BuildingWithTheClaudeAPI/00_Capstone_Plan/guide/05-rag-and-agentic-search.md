@@ -170,6 +170,7 @@ from pathlib import Path
 DOCS_DIR = Path("sample_documents")
 
 
+# A small record type with four named fields.
 @dataclass
 class Chunk:
     source: str
@@ -182,12 +183,17 @@ def load_chunks() -> list[Chunk]:
     chunks = []
     for path in sorted(DOCS_DIR.glob("*.md")):
         lines = path.read_text(encoding="utf-8").splitlines()
+        # Reads customer or staff from the first line.
         audience = lines[0].removeprefix("audience:").strip()
         title = next(line[2:] for line in lines if line.startswith("# "))
         heading, body = None, []
+        # Adds a fake last heading so the final section is saved too.
         for line in lines[1:] + ["## END"]:
             if line.startswith("## "):
                 if heading and body:
+                    # Puts the document title and section heading at the start of each
+                    # chunk. Without it, a chunk that just says "Wait 5 minutes" has
+                    # lost its meaning.
                     text = f"{title} - {heading}\n" + "\n".join(body).strip()
                     chunks.append(Chunk(path.name, heading, audience, text))
                 heading, body = line[3:], []
@@ -195,13 +201,6 @@ def load_chunks() -> list[Chunk]:
                 body.append(line)
     return chunks
 ```
-
-| Line | What it does |
-|---|---|
-| `@dataclass class Chunk` | A small record type with four named fields. |
-| `lines[0].removeprefix("audience:")` | Reads `customer` or `staff` from the first line. |
-| `lines[1:] + ["## END"]` | Adds a fake last heading so the final section is saved too. |
-| `f"{title} - {heading}\n"` | Puts the document title and section heading at the start of each chunk. Without it, a chunk that just says "Wait 5 minutes" has lost its meaning. |
 
 **Step 3. Try it.** Run `uv run python -c "from app.retrieval import load_chunks; c = load_chunks(); print(len(c)); print(c[0].text)"`.
 
@@ -232,23 +231,20 @@ import re
 from rank_bm25 import BM25Okapi
 
 
+# Splits text into lowercase words, keeping E-17 as one word.
 def words(text: str) -> list[str]:
     return re.findall(r"[a-z0-9-]+", text.lower())
 
 
 def keyword_search(query: str, chunks: list[Chunk], k: int = 3) -> list[Chunk]:
+    # Builds the keyword index from every chunk's words.
     bm25 = BM25Okapi([words(chunk.text) for chunk in chunks])
+    # Gives each chunk a score for this question.
     scores = bm25.get_scores(words(query))
     ranked = sorted(zip(scores, chunks), key=lambda pair: pair[0], reverse=True)
+    # Drops chunks that share no words at all.
     return [chunk for score, chunk in ranked[:k] if score > 0]
 ```
-
-| Line | What it does |
-|---|---|
-| `words(text)` | Splits text into lowercase words, keeping `E-17` as one word. |
-| `BM25Okapi([...])` | Builds the keyword index from every chunk's words. |
-| `get_scores(words(query))` | Gives each chunk a score for this question. |
-| `if score > 0` | Drops chunks that share no words at all. |
 
 **Step 3. Try two questions.**
 
@@ -359,14 +355,21 @@ def embed(texts: list[str], input_type: str) -> np.ndarray:
 
     result = voyageai.Client().embed(texts, model=EMBED_MODEL, input_type=input_type)
     vectors = np.array(result.embeddings)
+    # Scales every vector to length 1, so a simple multiplication gives the *cosine
+    # similarity*: 1 means the same meaning, 0 means unrelated.
     return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
 
 
 def meaning_search(query: str, chunks: list[Chunk], k: int = 3) -> list[Chunk]:
     key = tuple(chunk.text for chunk in chunks)
     if key not in _vectors:
+        # Remembers the chunk vectors, so you pay to embed the documents once, not on
+        # every question.
         _vectors[key] = embed(list(key), "document")
+    # Tells Voyage whether the text is something to find, or the question. It embeds
+    # each a little differently.
     query_vector = embed([query], "query")[0]
+    # Scores every chunk against the question in one step.
     scores = _vectors[key] @ query_vector
     best = np.argsort(scores)[::-1][:k]
     return [chunks[i] for i in best]
@@ -375,13 +378,6 @@ def meaning_search(query: str, chunks: list[Chunk], k: int = 3) -> list[Chunk]:
 def has_embeddings() -> bool:
     return bool(os.environ.get("VOYAGE_API_KEY"))
 ```
-
-| Line | What it does |
-|---|---|
-| `input_type="document"` or `"query"` | Tells Voyage whether the text is something to find, or the question. It embeds each a little differently. |
-| `vectors / np.linalg.norm(...)` | Scales every vector to length 1, so a simple multiplication gives the *cosine similarity*: 1 means the same meaning, 0 means unrelated. |
-| `_vectors[key]` | Remembers the chunk vectors, so you pay to embed the documents once, not on every question. |
-| `_vectors[key] @ query_vector` | Scores every chunk against the question in one step. |
 
 **Step 3. Compare with keyword search.** Run the money-back question with both searches. Meaning search finds the refund policy; keyword search may not. Then try `error E-17`: keyword search is often better there. That difference is why problem 6 combines them.
 

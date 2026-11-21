@@ -144,6 +144,7 @@ class Case(BaseModel):
     priority: Literal["low", "medium", "high"]
 
 
+# Asks for a list of cases, each with the same three fields.
 class CaseList(BaseModel):
     cases: list[Case]
 
@@ -162,16 +163,12 @@ response = client.messages.parse(
 
 with open("evaluations/generated_cases.jsonl", "w", encoding="utf-8") as f:
     for number, case in enumerate(response.parsed_output.cases, start=1):
+        # Builds one row: a new id, the kind, and the case's own fields.
         row = {"id": f"gen-{number:02d}", "kind": "triage", **case.model_dump()}
+        # Writes the row as one JSON line.
         f.write(json.dumps(row) + "\n")
 print("Saved", len(response.parsed_output.cases), "cases")
 ```
-
-| Line | What it does |
-|---|---|
-| `class CaseList(BaseModel): cases: list[Case]` | Asks for a list of cases, each with the same three fields. |
-| `{"id": ..., "kind": "triage", **case.model_dump()}` | Builds one row: a new id, the kind, and the case's own fields. |
-| `json.dumps(row) + "\n"` | Writes the row as one JSON line. |
 
 **Step 3. Run it and review every case.**
 
@@ -240,16 +237,15 @@ def run_case(case: dict) -> str:
 
 
 if __name__ == "__main__":
+    # Reads cases.jsonl and turns each line back into a Python dictionary. It skips
+    # blank lines.
     for case in load_cases():
+        # Sends a triage case to triage(), and every other case to answer() with its
+        # role.
         output = run_case(case)
+        # Prints only the first 80 characters, to keep the screen readable.
         print(f"{case['id']}: {output[:80]}")
 ```
-
-| Line | What it does |
-|---|---|
-| `load_cases()` | Reads `cases.jsonl` and turns each line back into a Python dictionary. It skips blank lines. |
-| `run_case(case)` | Sends a `triage` case to `triage()`, and every other case to `answer()` with its role. |
-| `output[:80]` | Prints only the first 80 characters, to keep the screen readable. |
 
 **Step 3. Run it.**
 
@@ -291,9 +287,11 @@ INTERNAL_WORDS = ["signal level", "router logs", "outage map"]
 
 
 def grade_triage(output: str, case: dict) -> int:
+    # Turns the triage JSON text back into a dictionary.
     result = json.loads(output)
     score = 0
     if result["category"] == case["category"]:
+        # Gives half the points for each field that matches.
         score += 5
     if result["priority"] == case["priority"]:
         score += 5
@@ -302,18 +300,14 @@ def grade_triage(output: str, case: dict) -> int:
 
 def grade_customer_rules(output: str) -> int:
     text = output.lower()
+    # True if the answer contains any internal word.
     if any(word in text for word in INTERNAL_WORDS):
         return 0
+    # Finds lines that start with a number and a dot or bracket, such as 1. or 2). re is
+    # Python's tool for text patterns.
     numbered_steps = re.findall(r"^\s*\d+[.)]", output, flags=re.MULTILINE)
     return 10 if len(numbered_steps) <= 5 else 5
 ```
-
-| Line | What it does |
-|---|---|
-| `json.loads(output)` | Turns the triage JSON text back into a dictionary. |
-| `score += 5` | Gives half the points for each field that matches. |
-| `any(word in text ...)` | True if the answer contains any internal word. |
-| `re.findall(r"^\s*\d+[.)]", ...)` | Finds lines that start with a number and a dot or bracket, such as `1.` or `2)`. `re` is Python's tool for text patterns. |
 
 **Step 2. Try it by hand.** Start Python with `uv run python` and type:
 
@@ -392,15 +386,20 @@ import datetime
 from evaluations.graders import grade_customer_rules, grade_triage, grade_with_model
 
 
+# Uses the code grader for triage. For other cases it asks the model grader, and for
+# customer answers it also applies the code rules, keeping the lower score.
 def grade_case(case: dict, output: str) -> int:
     if case["kind"] == "triage":
         return grade_triage(output, case)
     score = grade_with_model(case["input"], output, case["criteria"]).score
     if case.get("role") == "customer":
+        # A customer answer that mentions internal tools fails, however good the model
+        # grader thinks it is.
         score = min(score, grade_customer_rules(output))
     return score
 
 
+# Runs, grades, prints, and saves. The system argument is for problem 6.
 def run_all(system: str | None = None) -> float:
     results = []
     for case in load_cases():
@@ -411,6 +410,7 @@ def run_all(system: str | None = None) -> float:
     average = sum(r["score"] for r in results) / len(results)
     print(f"Average: {average:.1f} / 10")
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    # Saves each run under the date and time, so you can compare runs later.
     with open(f"evaluations/results/{stamp}.json", "w", encoding="utf-8") as f:
         json.dump({"average": average, "results": results}, f, indent=2)
     return average
@@ -425,13 +425,6 @@ def run_case_with(case: dict, system: str) -> str:
 if __name__ == "__main__":
     run_all()
 ```
-
-| Line | What it does |
-|---|---|
-| `grade_case` | Uses the code grader for triage. For other cases it asks the model grader, and for customer answers it also applies the code rules, keeping the lower score. |
-| `run_all(system=None)` | Runs, grades, prints, and saves. The `system` argument is for problem 6. |
-| `min(score, grade_customer_rules(output))` | A customer answer that mentions internal tools fails, however good the model grader thinks it is. |
-| `evaluations/results/{stamp}.json` | Saves each run under the date and time, so you can compare runs later. |
 
 **Step 3. Run the full eval.**
 
@@ -526,6 +519,7 @@ INBOXES = ["billing", "technical", "other"]
 with open("evaluations/shop_emails.jsonl", encoding="utf-8") as f:
     rows = [json.loads(line) for line in f if line.strip()]
 
+# A Python dictionary that counts things, starting at zero.
 correct, total, mistakes = Counter(), Counter(), Counter()
 for row in rows:
     got = sort_email(row["email"])
@@ -533,19 +527,15 @@ for row in rows:
     if got == row["inbox"]:
         correct[row["inbox"]] += 1
     else:
+        # Counts each kind of mistake, such as "should be billing, went to other".
         mistakes[(row["inbox"], got)] += 1
 
 for inbox in INBOXES:
     print(f"{inbox:10} {correct[inbox]}/{total[inbox]} correct")
+# Lists the mistakes from most to least frequent.
 for (expected, got), count in mistakes.most_common():
     print(f"  {count} x should be {expected}, went to {got}")
 ```
-
-| Line | What it does |
-|---|---|
-| `Counter()` | A Python dictionary that counts things, starting at zero. |
-| `mistakes[(row["inbox"], got)]` | Counts each kind of mistake, such as "should be billing, went to other". |
-| `most_common()` | Lists the mistakes from most to least frequent. |
 
 **Step 3. Run it.**
 

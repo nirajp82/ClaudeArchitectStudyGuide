@@ -91,11 +91,15 @@ for effort in ["low", "high"]:
     response = client.messages.create(
         model=MODEL,
         max_tokens=16000,
+        # The model decides how long to think. summarized asks for a readable summary of
+        # the thinking; by default the thinking text comes back empty.
         thinking={"type": "adaptive", "display": "summarized"},
+        # How much work to put in: low, medium (Haiku 5.5's default), high, and above.
         output_config={"effort": effort},
         messages=[{"role": "user", "content": QUESTION}],
     )
     seconds = time.time() - start
+    # Includes the thinking tokens. You pay for thinking even when you can't read it.
     print(f"\n===== effort={effort}: {response.usage.output_tokens} output tokens, {seconds:.1f} s")
     for block in response.content:
         if block.type == "thinking":
@@ -103,12 +107,6 @@ for effort in ["low", "high"]:
         elif block.type == "text":
             print(block.text)
 ```
-
-| Line | What it does |
-|---|---|
-| `thinking={"type": "adaptive", "display": "summarized"}` | The model decides how long to think. `summarized` asks for a readable summary of the thinking; by default the thinking text comes back empty. |
-| `output_config={"effort": effort}` | How much work to put in: `low`, `medium` (Haiku 5.5's default), `high`, and above. |
-| `response.usage.output_tokens` | Includes the thinking tokens. You pay for thinking even when you can't read it. |
 
 **Step 2. Run it and compare.**
 
@@ -154,19 +152,17 @@ response = client.messages.create(
     messages=[{
         "role": "user",
         "content": [
+            # An image block. It goes before the text, so the question can refer to it.
+            # Must match the file type. Use image/png for a PNG file.
             {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": image}},
+            # Gives the model your own rules, so the advice comes from Northwind, not
+            # from general knowledge.
             {"type": "text", "text": f"<guide>\n{guide}\n</guide>\nWhat do these lights mean, and what should I do? Use the guide."},
         ],
     }],
 )
 print(get_text(response))
 ```
-
-| Line | What it does |
-|---|---|
-| `"type": "image"` | An image block. It goes before the text, so the question can refer to it. |
-| `"media_type": "image/jpeg"` | Must match the file type. Use `image/png` for a PNG file. |
-| `<guide>` | Gives the model your own rules, so the advice comes from Northwind, not from general knowledge. |
 
 **Step 2. Run it.** `uv run python -m experiments.router_photo`
 
@@ -242,8 +238,11 @@ def answer_from_documents(question: str, role: str = "customer") -> str:
     blocks = [
         {
             "type": "document",
+            # A plain-text document. PDFs use the base64 source from problem 3.
             "source": {"type": "text", "media_type": "text/plain", "data": chunk.text},
+            # The name that comes back in each citation.
             "title": chunk.source,
+            # Turn this on for every document in the request, or for none.
             "citations": {"enabled": True},
         }
         for chunk in found
@@ -259,18 +258,13 @@ def answer_from_documents(question: str, role: str = "customer") -> str:
         if block.type != "text":
             continue
         parts.append(block.text)
+        # The list of quotes that support this part of the answer. Each has cited_text
+        # and document_title.
         sources = {citation.document_title for citation in (block.citations or [])}
         if sources:
             parts.append(" [Source: " + ", ".join(sorted(sources)) + "]")
     return "".join(parts)
 ```
-
-| Line | What it does |
-|---|---|
-| `"source": {"type": "text", ...}` | A plain-text document. PDFs use the base64 source from problem 3. |
-| `"title": chunk.source` | The name that comes back in each citation. |
-| `"citations": {"enabled": True}` | Turn this on for every document in the request, or for none. |
-| `block.citations` | The list of quotes that support this part of the answer. Each has `cited_text` and `document_title`. |
 
 **Step 2. Check a quote.** Print `citation.cited_text` once and find it in the file. The quote is taken from your document by the API, so it can't be invented.
 
@@ -418,16 +412,19 @@ with open("data/tickets.csv", "w", newline="", encoding="utf-8") as f:
     writer.writeheader()
     writer.writerows(tickets)
 
+# Uploads the CSV and returns an object with its id.
 uploaded = client.files.upload(file=Path("data/tickets.csv"))
 
 response = client.messages.create(
     model=MODEL,
     max_tokens=8000,
+    # The current version of the code execution tool.
     tools=[{"type": "code_execution_20260521", "name": "code_execution"}],
     messages=[{
         "role": "user",
         "content": [
             {"type": "text", "text": "Count the open tickets per team, print the counts, and save a bar chart as open_tickets.png."},
+            # Puts the uploaded file into the sandbox, so the model's code can open it.
             {"type": "container_upload", "file_id": uploaded.id},
         ],
     }],
@@ -436,24 +433,19 @@ print(get_text(response))
 
 os.makedirs("docs/reports", exist_ok=True)
 for block in response.content:
+    # The result of the code the model ran: its printed output and any files it made.
     if block.type == "bash_code_execution_tool_result":
         result = block.content
         if result.type == "bash_code_execution_result":
             print("stdout:", result.stdout)
             for item in result.content or []:
                 info = client.files.retrieve_metadata(item.file_id)
+                # Keeps only the file name, so a strange name can't write outside
+                # docs/reports.
                 name = os.path.basename(info.filename)
                 client.files.download(item.file_id).write_to_file(f"docs/reports/{name}")
                 print("Saved", name)
 ```
-
-| Line | What it does |
-|---|---|
-| `client.files.upload(file=Path(...))` | Uploads the CSV and returns an object with its `id`. |
-| `code_execution_20260521` | The current version of the code execution tool. |
-| `container_upload` | Puts the uploaded file into the sandbox, so the model's code can open it. |
-| `bash_code_execution_tool_result` | The result of the code the model ran: its printed output and any files it made. |
-| `os.path.basename(...)` | Keeps only the file name, so a strange name can't write outside `docs/reports`. |
 
 **Step 3. Run it.** `uv run python -m experiments.ticket_report`. If the API says the model doesn't support this tool, set the model to `claude-sonnet-5-5` for this script.
 

@@ -140,6 +140,7 @@ from pathlib import Path
 TICKETS_FILE = Path("data/tickets.json")
 
 
+# A custom error type. Your code will send its message to the model instead of crashing.
 class ToolError(Exception):
     """A problem the model should be told about, so it can explain it or try again."""
 
@@ -155,17 +156,15 @@ def save_tickets(tickets: list[dict]) -> None:
 def lookup_ticket(ticket_id: str, user: dict) -> dict:
     for ticket in load_tickets():
         if ticket["id"] == ticket_id:
+            # The access check, done in code. A customer only sees tickets with their
+            # own customer_id.
             if user["role"] == "customer" and ticket["customer_id"] != user["customer_id"]:
+                # Leaves the loop and falls through to "not found". Saying "this ticket
+                # belongs to someone else" would leak that it exists.
                 break  # pretend it doesn't exist, so customers can't probe other people's tickets
             return ticket
     raise ToolError(f"Ticket {ticket_id} was not found.")
 ```
-
-| Line | What it does |
-|---|---|
-| `class ToolError(Exception)` | A custom error type. Your code will send its message to the model instead of crashing. |
-| `if user["role"] == "customer" and ...` | The access check, done in code. A customer only sees tickets with their own `customer_id`. |
-| `break` | Leaves the loop and falls through to "not found". Saying "this ticket belongs to someone else" would leak that it exists. |
 
 **Step 2. Try it.** Start `uv run python` and type:
 
@@ -331,15 +330,19 @@ MAX_ROUNDS = 10
 
 
 def run_turn(messages: list, system: str, user: dict, tools: list = TOOLS, model: str = MODEL):
+    # A safety limit, so a confused model can't loop forever and run up costs.
     for _ in range(MAX_ROUNDS):
         response = client.messages.create(
             model=model, max_tokens=4000, system=system, tools=tools, messages=messages
         )
+        # Keeps every reply in the history, including tool requests.
         messages.append({"role": "assistant", "content": response.content})
         if response.stop_reason == "pause_turn":
             continue  # a server tool paused; send the conversation again to let it finish
+        # The model has finished, so return the reply.
         if response.stop_reason != "tool_use":
             return response
+        # If the model asked for several tools at once, all results go back together.
         results = []
         for block in response.content:
             if block.type == "tool_use":
@@ -348,19 +351,13 @@ def run_turn(messages: list, system: str, user: dict, tools: list = TOOLS, model
                     "type": "tool_result",
                     "tool_use_id": block.id,
                     "content": content,
+                    # Tells the model the tool failed, so it can explain or try
+                    # something else.
                     "is_error": is_error,
                 })
         messages.append({"role": "user", "content": results})
     raise RuntimeError(f"Stopped after {MAX_ROUNDS} tool rounds.")
 ```
-
-| Line | What it does |
-|---|---|
-| `for _ in range(MAX_ROUNDS)` | A safety limit, so a confused model can't loop forever and run up costs. |
-| `messages.append(... response.content)` | Keeps every reply in the history, including tool requests. |
-| `stop_reason != "tool_use"` | The model has finished, so return the reply. |
-| `results` in **one** `user` message | If the model asked for several tools at once, all results go back together. |
-| `"is_error": is_error` | Tells the model the tool failed, so it can explain or try something else. |
 
 **Step 3. Update `app/main.py`.** Add a `--customer` option and replace the request with `run_turn`. Streaming is put aside here to keep the loop simple; problem 8 shows streaming with tools.
 
@@ -545,6 +542,7 @@ from app import tools
 CUSTOMER = {"role": "customer", "customer_id": "C-1001"}
 
 
+# Runs fake_tickets before every test.
 @pytest.fixture(autouse=True)
 def fake_tickets(tmp_path, monkeypatch):
     path = tmp_path / "tickets.json"
@@ -552,6 +550,7 @@ def fake_tickets(tmp_path, monkeypatch):
         {"id": "1042", "customer_id": "C-1001", "title": "Router keeps restarting", "status": "open", "priority": "high", "team": "network"},
         {"id": "1043", "customer_id": "C-1002", "title": "Wants a second router", "status": "open", "priority": "low", "team": "equipment"},
     ]))
+    # Points the tools at the temporary file for this test only.
     monkeypatch.setattr(tools, "TICKETS_FILE", path)
 
 
@@ -560,6 +559,7 @@ def test_lookup_finds_own_ticket():
 
 
 def test_lookup_missing_ticket():
+    # The test passes only if this error is raised.
     with pytest.raises(tools.ToolError):
         tools.lookup_ticket("9999", CUSTOMER)
 
@@ -571,16 +571,10 @@ def test_customer_cannot_see_other_customers_ticket():
 
 def test_declined_ticket_is_not_saved():
     with pytest.raises(tools.ToolError):
+        # A fake person who always says no.
         tools.create_ticket("Test", "low", "Test", CUSTOMER, approve=lambda ticket: False)
     assert len(tools.load_tickets()) == 2
 ```
-
-| Line | What it does |
-|---|---|
-| `@pytest.fixture(autouse=True)` | Runs `fake_tickets` before every test. |
-| `monkeypatch.setattr(tools, "TICKETS_FILE", path)` | Points the tools at the temporary file for this test only. |
-| `pytest.raises(tools.ToolError)` | The test passes only if this error is raised. |
-| `approve=lambda ticket: False` | A fake person who always says no. |
 
 **Step 2. Run the tests.**
 
@@ -611,6 +605,7 @@ uv run pytest
 from app.client import MODEL, client
 from app.tools import TOOLS
 
+# Copies each tool description and switches on eager streaming for it.
 tools = [dict(tool, eager_input_streaming=True) for tool in TOOLS]
 question = ("Please open a ticket: since Monday my internet drops every evening around 8pm, "
             "the router lights turn orange, and restarting only helps for ten minutes.")
@@ -622,7 +617,9 @@ with client.messages.stream(
     messages=[{"role": "user", "content": question}],
 ) as stream:
     for event in stream:
+        # An event that carries the next piece of a tool's input.
         if event.type == "content_block_delta" and event.delta.type == "input_json_delta":
+            # That piece, as raw text. It is not valid JSON on its own.
             print(repr(event.delta.partial_json))
     final = stream.get_final_message()
 
@@ -630,12 +627,6 @@ for block in final.content:
     if block.type == "tool_use":
         print("Complete input:", block.input)
 ```
-
-| Line | What it does |
-|---|---|
-| `dict(tool, eager_input_streaming=True)` | Copies each tool description and switches on eager streaming for it. |
-| `input_json_delta` | An event that carries the next piece of a tool's input. |
-| `event.delta.partial_json` | That piece, as raw text. It is not valid JSON on its own. |
 
 **Step 2. Run it.**
 
@@ -670,12 +661,16 @@ uv run python -m experiments.stream_tool
 ```python
 from pathlib import Path
 
+# Turns a path such as docs/notes/../../.env into the real full path, so tricks with ..
+# are exposed.
 NOTES_ROOT = Path("docs/notes").resolve()
+# Declares the built-in tool by its type and name. No input_schema is needed.
 EDITOR_TOOL = {"type": "text_editor_20250728", "name": "str_replace_based_edit_tool"}
 
 
 def safe_path(raw: str) -> Path:
     path = (NOTES_ROOT / raw).resolve() if not Path(raw).is_absolute() else Path(raw).resolve()
+    # True only if the real path is inside docs/notes.
     if not path.is_relative_to(NOTES_ROOT):
         raise PermissionError(f"Only files inside docs/notes may be used, not {raw}.")
     return path
@@ -692,6 +687,8 @@ def run_editor(tool_input: dict) -> tuple[str, bool]:
             return "File created.", False
         if command == "str_replace":
             text = path.read_text(encoding="utf-8")
+            # str_replace must match exactly one place, or it could change the wrong
+            # text.
             if text.count(tool_input["old_str"]) != 1:
                 return "old_str must appear exactly once.", True
             path.write_text(text.replace(tool_input["old_str"], tool_input["new_str"]), encoding="utf-8")
@@ -705,13 +702,6 @@ def run_editor(tool_input: dict) -> tuple[str, bool]:
     except (OSError, PermissionError) as error:
         return str(error), True
 ```
-
-| Line | What it does |
-|---|---|
-| `EDITOR_TOOL` | Declares the built-in tool by its type and name. No `input_schema` is needed. |
-| `.resolve()` | Turns a path such as `docs/notes/../../.env` into the real full path, so tricks with `..` are exposed. |
-| `is_relative_to(NOTES_ROOT)` | True only if the real path is inside `docs/notes`. |
-| `text.count(...) != 1` | `str_replace` must match exactly one place, or it could change the wrong text. |
 
 **Step 3. Write `experiments/edit_notes.py`.** It is a small loop, like `run_turn`, but it sends tool calls to `run_editor`.
 
@@ -772,7 +762,9 @@ from app.client import client
 WEB_SEARCH = {
     "type": "web_search_20260209",
     "name": "web_search",
+    # At most three searches, to cap cost.
     "max_uses": 3,
+    # The tool only returns pages from these sites.
     "allowed_domains": ["netgear.com", "tp-link.com"],
 }
 
@@ -782,6 +774,7 @@ while True:
         model="claude-sonnet-5-5", max_tokens=4000, tools=[WEB_SEARCH], messages=messages
     )
     messages.append({"role": "assistant", "content": response.content})
+    # A long search can pause the reply; sending the conversation again lets it finish.
     if response.stop_reason != "pause_turn":
         break
 
@@ -789,15 +782,9 @@ for block in response.content:
     if block.type == "text":
         print(block.text)
         for citation in getattr(block, "citations", None) or []:
+            # Each sourced sentence carries the address of the page it came from.
             print("   source:", citation.url)
 ```
-
-| Line | What it does |
-|---|---|
-| `max_uses: 3` | At most three searches, to cap cost. |
-| `allowed_domains` | The tool only returns pages from these sites. |
-| `stop_reason != "pause_turn"` | A long search can pause the reply; sending the conversation again lets it finish. |
-| `citation.url` | Each sourced sentence carries the address of the page it came from. |
 
 **Step 3. Run it.**
 

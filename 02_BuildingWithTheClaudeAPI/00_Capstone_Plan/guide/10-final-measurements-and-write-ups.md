@@ -137,6 +137,8 @@ from evaluations.run_evals import load_cases
 cases = [c for c in load_cases() if c["kind"] in {"answer", "scope"}]
 batch = client.messages.batches.create(requests=[
     Request(
+        # Your own label for each request. Results can come back in any order, so you
+        # match them by this id, never by position.
         custom_id=case["id"],
         params=MessageCreateParamsNonStreaming(
             model=MODEL,
@@ -149,23 +151,19 @@ batch = client.messages.batches.create(requests=[
 ])
 print("Batch", batch.id, "submitted with", len(cases), "requests")
 
+# Waits until every request in the batch is finished.
 while (batch := client.messages.batches.retrieve(batch.id)).processing_status != "ended":
     print("Still processing...")
     time.sleep(30)
 
 for result in client.messages.batches.results(batch.id):
+    # succeeded, errored, canceled, or expired. Handle each one.
     if result.result.type == "succeeded":
         text = "".join(b.text for b in result.result.message.content if b.type == "text")
         print(f"{result.custom_id}: {text[:80]}")
     else:
         print(f"{result.custom_id}: {result.result.type}")
 ```
-
-| Line | What it does |
-|---|---|
-| `custom_id=case["id"]` | Your own label for each request. Results can come back in any order, so you match them by this id, never by position. |
-| `processing_status != "ended"` | Waits until every request in the batch is finished. |
-| `result.result.type` | `succeeded`, `errored`, `canceled`, or `expired`. Handle each one. |
 
 **Step 2. Run it.** `uv run python -m evaluations.batch_answers`
 

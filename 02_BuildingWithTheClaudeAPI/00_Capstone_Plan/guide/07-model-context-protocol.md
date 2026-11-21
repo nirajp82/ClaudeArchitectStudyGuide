@@ -111,14 +111,19 @@ from mcp.server.fastmcp import FastMCP
 
 from app import tools
 
+# Creates the server and gives it a name that clients will see.
 mcp = FastMCP("northwind-tickets")
 STAFF = {"role": "technician"}
 
 
+# Registers the function below as a tool.
 @mcp.tool()
+# The type hints FastMCP uses to build the schema.
 def lookup_ticket(ticket_id: str) -> dict:
     """Look up one Northwind support ticket by its number, such as 1042.
     Returns the title, status, priority, and team. Fails if the ticket is not found."""
+    # Reuses your guide 4 function. If it raises ToolError, FastMCP sends the client an
+    # error result.
     return tools.lookup_ticket(ticket_id, STAFF)
 
 
@@ -129,16 +134,10 @@ def check_outage(area: str) -> dict:
 
 
 if __name__ == "__main__":
+    # Starts the server. By default it talks over *stdio*: the client starts the server
+    # as a program and they exchange messages through its input and output.
     mcp.run()
 ```
-
-| Line | What it does |
-|---|---|
-| `FastMCP("northwind-tickets")` | Creates the server and gives it a name that clients will see. |
-| `@mcp.tool()` | Registers the function below as a tool. |
-| `-> dict` and `ticket_id: str` | The type hints FastMCP uses to build the schema. |
-| `tools.lookup_ticket(ticket_id, STAFF)` | Reuses your guide 4 function. If it raises `ToolError`, FastMCP sends the client an error result. |
-| `mcp.run()` | Starts the server. By default it talks over *stdio*: the client starts the server as a program and they exchange messages through its input and output. |
 
 **Step 2. Start it once to check for errors.** `uv run python -m mcp_server.server`. It prints nothing and waits for a client. Stop it with Ctrl+C.
 
@@ -203,6 +202,7 @@ from mcp.client.stdio import stdio_client
 
 from app.client import MODEL, client, get_text
 
+# How to start the server: the same Python, running mcp_server.server.
 SERVER = StdioServerParameters(command=sys.executable, args=["-m", "mcp_server.server"])
 
 
@@ -215,6 +215,7 @@ async def ask_model(session: ClientSession, tools: list, messages: list) -> str:
         results = []
         for block in response.content:
             if block.type == "tool_use":
+                # Runs the tool on the server and returns its result.
                 result = await session.call_tool(block.name, arguments=block.input)
                 text = "\n".join(part.text for part in result.content if part.type == "text")
                 results.append({"type": "tool_result", "tool_use_id": block.id,
@@ -223,9 +224,13 @@ async def ask_model(session: ClientSession, tools: list, messages: list) -> str:
 
 
 async def main() -> None:
+    # Starts the server and connects to its input and output.
     async with stdio_client(SERVER) as (read, write):
         async with ClientSession(read, write) as session:
+            # The MCP handshake: client and server agree on what each supports.
             await session.initialize()
+            # Asks the server for its tools, then turns each one into the tool format
+            # the Claude API expects.
             listed = await session.list_tools()
             tools = [{"name": t.name, "description": t.description or "", "input_schema": t.inputSchema}
                      for t in listed.tools]
@@ -239,14 +244,6 @@ async def main() -> None:
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-
-| Line | What it does |
-|---|---|
-| `StdioServerParameters(command=sys.executable, args=[...])` | How to start the server: the same Python, running `mcp_server.server`. |
-| `stdio_client(SERVER)` | Starts the server and connects to its input and output. |
-| `session.initialize()` | The MCP handshake: client and server agree on what each supports. |
-| `session.list_tools()` | Asks the server for its tools, then turns each one into the tool format the Claude API expects. |
-| `session.call_tool(name, arguments=...)` | Runs the tool on the server and returns its result. |
 
 **Step 3. Run it.** `uv run python -m mcp_client.chat`
 
@@ -352,16 +349,16 @@ def ticket_handover(ticket_id: str) -> str:
 
 ```python
                 if question.startswith("/"):
+                    # Splits /ticket_handover 1042 into the name ticket_handover and the
+                    # value 1042.
                     name, _, value = question[1:].partition(" ")
+                    # Asks the server to fill in the prompt's blank and return its
+                    # messages.
                     prompt = await session.get_prompt(name, arguments={"ticket_id": value})
+                    # The finished prompt text, which then goes to the model like any
+                    # question.
                     question = prompt.messages[0].content.text
 ```
-
-| Line | What it does |
-|---|---|
-| `question[1:].partition(" ")` | Splits `/ticket_handover 1042` into the name `ticket_handover` and the value `1042`. |
-| `session.get_prompt(name, arguments=...)` | Asks the server to fill in the prompt's blank and return its messages. |
-| `prompt.messages[0].content.text` | The finished prompt text, which then goes to the model like any question. |
 
 **Step 3. Know why prompts live on the server.** The team that owns the server can test and improve the prompt in one place, and every client gets the better version without any change.
 

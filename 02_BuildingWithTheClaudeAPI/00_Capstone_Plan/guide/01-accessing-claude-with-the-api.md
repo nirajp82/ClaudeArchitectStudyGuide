@@ -12,7 +12,7 @@
 
 | # | Section |
 |:---:|:---|
-| 1 | [What you build in this chapter](#what-you-build-in-this-chapter) |
+| 1 | [What you build](#what-you-build) |
 | 2 | [Before you start](#before-you-start) |
 | 3 | [Problem 1: Set up the project and make your first API call](#problem-1-set-up-the-project-and-make-your-first-api-call) |
 | 4 | [Problem 2: A chat that remembers the conversation](#problem-2-a-chat-that-remembers-the-conversation) |
@@ -27,64 +27,69 @@
 
 ---
 
-### What you build in this chapter
+### What you build
 
-By the end of this guide, you have a working chat program for a made-up internet company called **Northwind Internet**. You type a question in the terminal, and the assistant answers it word by word and remembers what you said earlier. It answers a customer and a support technician in different ways. You also have a small program that turns a customer's message into a tidy record that your code can read.
+A chat program for a made-up internet company, **Northwind Internet**. You type a question in the terminal, and the answer appears word by word. The chat remembers what you said, and it answers customers and technicians differently.
 
-| File | What it does | Problem |
-|---|---|---|
-| `app/client.py` | Creates the connection to the API and holds two helper functions | 1 |
-| `app/main.py` | The chat loop you run in the terminal, started as a customer or a technician | 2, 4, 6 |
-| `app/prompts.py` | The system prompts: the assistant's job description for each role | 3, 4 |
-| `experiments/consistency.py` | Asks the same question five times so you can compare the answers | 5 |
-| `app/triage.py` | Turns a customer message into JSON with a category and a priority | 7 |
-| `app/retry.py` | Tries a failed request again, waiting longer each time | 8 |
-| `experiments/shop_inbox.py` | The architect scenario: sorts shop emails into three inboxes | Scenario |
+```text
+00_Capstone_Plan/
+├── app/
+│   ├── client.py       connects to the API             (problem 1)
+│   ├── main.py         the chat you run                (problems 2, 4, 6)
+│   ├── prompts.py      the assistant's instructions    (problems 3, 4)
+│   ├── triage.py       turns a message into JSON       (problem 7)
+│   └── retry.py        retries failed requests         (problem 8)
+└── experiments/        small practice scripts          (problem 5, scenario)
+```
 
-All paths are relative to the capstone folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`. The `experiments/` folder holds small learning scripts that are not part of the finished app.
-
-**Chapter done when:** `uv run python -m app.main --role customer` starts a streamed chat that remembers your name, `--role technician` gives more technical answers, and `uv run python -m app.triage` prints three JSON records.
+**Done when:** `uv run python -m app.main --role customer` starts a chat that remembers your name.
 
 ---
 
 ### Before you start
 
-1. Run `git pull` in the study-notes repository, so you have the newest notes.
-2. Read the [chapter 1 summary](../../01-accessing-claude-with-the-api/README.md) if a lesson feels unclear.
-3. **Optional warm-up:** run these example notebooks from the Claude Cookbook first, to see the techniques working before you build them. The first time, do the Cookbook's [one-time setup](../../../cookbook-build-along.md#one-time-setup). For each notebook, follow the [routine for every notebook](../../../cookbook-build-along.md#the-routine-for-every-notebook): read, run, change, break.
+Open **Terminal** (Mac) or **PowerShell** (Windows), go to your study-notes folder, and get the newest notes.
 
-   | Notebook | What it teaches |
-   |---|---|
-   | [`how_to_enable_json_mode`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/how_to_enable_json_mode.ipynb) | The old way: asking for JSON in the prompt |
-   | [`extracting_structured_json`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/extracting_structured_json.ipynb) | A more reliable way: describing the JSON shape as a tool |
+**Mac:**
 
-   **Try this:** ask for one extra field, such as `priority`. Then give it text that has no answer, and see what comes back.
+```bash
+cd ~/Documents/ClaudeArchitectStudyGuide
+git pull
+```
 
-   Problem 7 of this guide teaches the current way, structured outputs, which is more reliable than both notebooks.
+**Windows:**
 
-**How to use this guide:** read each problem and try to solve it yourself first. Open the answer only when you are stuck or when you have finished and want to check. Typing the code yourself, rather than pasting it, makes you read every line.
+```powershell
+cd $HOME\Documents\ClaudeArchitectStudyGuide
+git pull
+```
+
+If the folder doesn't exist yet, problem 1, step 2 creates it.
+
+**Optional warm-up:** the Cookbook notebooks [`how_to_enable_json_mode`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/how_to_enable_json_mode.ipynb) and [`extracting_structured_json`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/extracting_structured_json.ipynb) show older ways to get JSON. Problem 7 teaches the current way.
+
+Try each problem first. Open the answer only when you're stuck or done.
 
 ---
 
 ### Problem 1: Set up the project and make your first API call
 
-**Lessons:** [1, Accessing the API](../../01-accessing-claude-with-the-api/01-accessing-the-api.md), [2, Getting an API key](../../01-accessing-claude-with-the-api/02-getting-an-api-key.md), and [3, Making a request](../../01-accessing-claude-with-the-api/03-making-a-request.md)
+**Lessons:** [1](../../01-accessing-claude-with-the-api/01-accessing-the-api.md), [2](../../01-accessing-claude-with-the-api/02-getting-an-api-key.md), [3](../../01-accessing-claude-with-the-api/03-making-a-request.md)
 
-**The problem:** Create the capstone project on your computer. Then write a function `ask(question)` in `app/client.py` that sends one question to the model and returns the answer as plain text.
+**Task:** Set up the project. Write `ask(question)` in `app/client.py`, which sends one question to the model and returns the answer.
 
-- **Check:** `uv run python -m app.client` prints one sentence about prompt caching.
-- **Check:** `.env`, which holds your key, never appears in `git status`.
+**Check:** `uv run python -m app.client` prints one sentence, and `.env` never shows in `git status`.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-This takes about 90 minutes. Blocks marked **Mac** run in the Terminal app. Blocks marked **Windows** run in PowerShell. A block with no label works on both.
+About 90 minutes. **Mac** blocks run in Terminal. **Windows** blocks run in PowerShell. Unlabelled blocks work on both.
 
-**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number. **uv** is a tool that installs Python and Python packages for one project.
+**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number. **uv** installs Python and packages for one project.
 
-- **If `git` is missing on the Mac,** macOS offers to install the *Command Line Tools*, Apple's free developer programs that include Git. Click **Install**.
-- **If `git` is missing on Windows,** install it from [git-scm.com](https://git-scm.com/downloads), then reopen PowerShell.
-- **If `uv` is missing,** run the command for your computer, then close and reopen the terminal.
+- **No Git on Mac:** macOS offers to install Apple's free *Command Line Tools*. Click **Install**.
+- **No Git on Windows:** install it from [git-scm.com](https://git-scm.com/downloads), then reopen PowerShell.
+- **No uv:** run the command below, then reopen the terminal.
 
 **Mac:**
 
@@ -98,7 +103,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-**Step 2. Get the notes onto the computer.** Skip this step on a computer that already has the study notes. Replace `<your-github-name>` with your GitHub user name.
+**Step 2. Copy the notes onto this computer.** Skip this if the folder already exists. Replace `<your-github-name>` with your GitHub user name.
 
 **Mac:**
 
@@ -116,7 +121,7 @@ git clone https://github.com/<your-github-name>/ClaudeArchitectStudyGuide.git
 cd ClaudeArchitectStudyGuide
 ```
 
-**Step 3. Create the Python project.** These commands move into the capstone folder, make it a Python project that uses Python 3.12, and install three packages. `anthropic` is the official Python library for the API. `python-dotenv` reads your key from the `.env` file. `pytest` runs automatic tests; `--dev` marks it as a tool for development only.
+**Step 3. Create the Python project** inside the capstone folder. `anthropic` is the API library, `python-dotenv` reads your key from `.env`, and `pytest` runs tests.
 
 ```bash
 cd 02_BuildingWithTheClaudeAPI/00_Capstone_Plan
@@ -126,9 +131,9 @@ uv add --dev pytest
 rm main.py
 ```
 
-`--no-readme` stops uv from touching the plan's `README.md`. `uv init` creates a sample `main.py`, which `rm main.py` deletes, because your code goes in the `app` folder.
+`--no-readme` protects the plan's `README.md`. `rm main.py` deletes uv's sample file, because your code goes in `app/`.
 
-**Step 4. Create the folders and the empty file `app/__init__.py`.** The empty file tells Python that `app` is a *package*, a folder of code that other files can import from.
+**Step 4. Create the folders.** The empty `__init__.py` files let Python import code from `app/` and `experiments/`.
 
 **Mac:**
 
@@ -144,7 +149,7 @@ New-Item -ItemType Directory app, data, sample_documents, tests, mcp_server, eva
 New-Item app\__init__.py, experiments\__init__.py
 ```
 
-**Step 5. Store your API key safely.** First tell Git to ignore the key file and the `.venv` folder, where uv keeps the installed packages. Then open the key file.
+**Step 5. Store your API key.** Tell Git to skip `.env` (your key) and `.venv` (installed packages), then open `.env`.
 
 **Mac:**
 
@@ -160,7 +165,7 @@ Add-Content .gitignore ".env", ".venv"
 notepad .env
 ```
 
-Type these two lines, using your own key from the Claude Console. In nano, press Ctrl+O, Return, then Ctrl+X. In Notepad, press Ctrl+S and close it.
+Type these two lines with your key from the Claude Console. Save with Ctrl+O, Return, Ctrl+X in nano, or Ctrl+S in Notepad.
 
 ```text
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
@@ -198,26 +203,19 @@ if __name__ == "__main__":
     print(ask("In one sentence, what is prompt caching?"))
 ```
 
-| Line | What it does |
-|---|---|
-| `load_dotenv()` | Copies the two lines from `.env` into the program's settings, so the key never appears in your code. |
-| `client = Anthropic()` | Creates the connection to the API. It finds `ANTHROPIC_API_KEY` by itself. |
-| `MODEL = ...` | Reads the model name from `.env`. Haiku is the cheapest current model, so it suits learning. |
-| `get_text(response)` | A reply is a list of *content blocks*. Haiku 5.5 thinks before it answers, so the first block can be a `thinking` block and not the answer. This helper keeps only the `text` blocks. |
-| `max_tokens=4000` | The longest reply allowed, counted in *tokens* (word pieces). The model's thinking counts toward this limit too, so don't set it very low. |
-| `if __name__ == "__main__":` | Runs the last line only when you start this file directly, not when another file imports `ask`. |
+- `load_dotenv()` reads `.env`, so the key never appears in your code. `Anthropic()` finds the key by itself.
+- `get_text` keeps only the `text` blocks. Haiku 5.5 may think first, so the first block can be a `thinking` block, not the answer.
+- `max_tokens=4000` is the longest reply allowed. Thinking counts toward it, so don't set it very low.
 
-**Warning:** many older examples, including the course, read the answer with `response.content[0].text`. On current models the first block may be a thinking block, which has no `.text`, so that line can crash. Always pick out the `text` blocks, as `get_text` does.
+**Warning:** the course reads answers with `response.content[0].text`. On current models that can crash, because the first block may be a thinking block. Use `get_text`.
 
-**Step 7. Run it.**
+**Step 7. Run it.** If you see `authentication_error`, the key in `.env` is wrong.
 
 ```bash
 uv run python -m app.client
 ```
 
-`uv run` starts Python inside the project's own environment, so it finds the packages from step 3. If you see `authentication_error`, the key in `.env` is wrong.
-
-**Step 8. Save your work in Git.**
+**Step 8. Save your work.**
 
 ```bash
 git add .
@@ -226,11 +224,11 @@ git commit -m "Capstone: first API call"
 git push
 ```
 
-**Warning:** read the `git status` list before you commit. If `.env` or `.venv` is in it, stop and fix `.gitignore`. Git keeps every old version, so a key that is committed once stays readable on GitHub even after you delete the file.
+**Warning:** if `.env` or `.venv` appears in `git status`, stop and fix `.gitignore`. A key committed once stays readable on GitHub, even after you delete it.
 
 </details>
 
-**Why this matters:** the exam expects you to know where the key lives, who reads it, and why it never goes into code or Git (Governance, Safety & Risk).
+**Exam:** where the key lives and why it never goes into code or Git (Governance, Safety & Risk).
 
 ---
 
@@ -238,15 +236,14 @@ git push
 
 **Lesson:** [4, Multi-turn conversations](../../01-accessing-claude-with-the-api/04-multi-turn-conversations.md)
 
-**The problem:** Write `app/main.py`, a chat loop. You type a line, the assistant answers, and the loop repeats until you type `quit`. The assistant must remember earlier lines.
+**Task:** Write `app/main.py`, a chat loop that runs until you type `quit` and remembers earlier lines.
 
-- **Check:** type `My name is Sam.` and then `What is my name?`. The second answer says Sam.
-- **Think first:** the API stores nothing between requests. So where must the earlier lines come from?
+**Check:** type `My name is Sam.`, then `What is my name?`. The answer says Sam.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. Understand the rule.** Each API request stands alone. The model only knows what is inside the request you send right now. To make it "remember," your program keeps a list of every message so far and sends the whole list each time.
+**Step 1. Know the rule.** The API remembers nothing between requests. So your program keeps a list of every message and sends the whole list each time.
 
 **Step 2. Write `app/main.py`.**
 
@@ -277,12 +274,7 @@ if __name__ == "__main__":
     main()
 ```
 
-| Line | What it does |
-|---|---|
-| `messages = []` | The list your program keeps. The API never keeps it for you. |
-| `messages.append({"role": "user", ...})` | Adds what you typed, marked as coming from the user. |
-| `messages=messages` | Sends the whole list, so the model sees every earlier line. |
-| `{"role": "assistant", "content": response.content}` | Adds the model's reply to the list. It stores all the reply's blocks, including the thinking block, because the API expects them back unchanged on the next request. |
+The reply is saved with all its blocks, including thinking, because the API expects them back unchanged next time.
 
 **Step 3. Run it and test it.**
 
@@ -290,13 +282,13 @@ if __name__ == "__main__":
 uv run python -m app.main
 ```
 
-Type `My name is Sam.`, then `What is my name?`. The answer says Sam. Now try an experiment: comment out the line that appends the assistant's reply, run it again, and ask the same two questions. The second answer may still say Sam, because your own first message is still in the list. Then remove the first `messages.append` instead, so nothing is kept. Now the model cannot know your name.
+Then remove the first `messages.append` line and run it again. Now the model can't know your name.
 
-**Step 4. Notice the cost.** Every request sends the whole conversation again, so a long chat costs more per question. You will meet ways to manage this in guide 6 (prompt caching).
+**Step 4. Notice the cost.** Every request resends the whole chat, so long chats cost more. Guide 6 (prompt caching) helps.
 
 </details>
 
-**Why this matters:** "the API is stateless, so the app sends the history" is a basic fact that many exam scenarios build on (Context Management & Reliability).
+**Exam:** the API is stateless, so the app sends the history (Context Management & Reliability).
 
 ---
 
@@ -304,15 +296,14 @@ Type `My name is Sam.`, then `What is my name?`. The answer says Sam. Now try an
 
 **Lesson:** [5, System prompts](../../01-accessing-claude-with-the-api/05-system-prompts.md)
 
-**The problem:** The assistant should act as a support agent for Northwind Internet. It should answer only questions about Northwind's internet service, and politely say no to anything else. Put this job description in a new file, `app/prompts.py`, and use it in `app/main.py`.
+**Task:** Make the assistant a Northwind support agent that politely refuses off-topic questions. Put its instructions in `app/prompts.py` and use them in `app/main.py`.
 
-- **Check:** `How do I restart my router?` gets a helpful answer.
-- **Check:** `Write me a poem about cats.` gets a polite refusal that offers help with internet problems instead.
+**Check:** `How do I restart my router?` gets help. `Write me a poem about cats.` gets a polite refusal.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. Write `app/prompts.py`.** A *system prompt* is text that describes the assistant's role and rules. You send it in the `system` field, separate from the conversation, and it applies to every turn.
+**Step 1. Write `app/prompts.py`.** A *system prompt* describes the assistant's role and rules. It goes in the `system` field and applies to every turn.
 
 ```python
 SYSTEM_PROMPT = """You are the support assistant for Northwind Internet, a home internet provider.
@@ -327,7 +318,7 @@ Rules:
 """
 ```
 
-**Step 2. Use it in `app/main.py`.** Add the import at the top and the `system` argument to the request.
+**Step 2. Use it in `app/main.py`.** Add the import and the `system` line.
 
 ```python
 from app.prompts import SYSTEM_PROMPT
@@ -342,13 +333,13 @@ from app.prompts import SYSTEM_PROMPT
         )
 ```
 
-**Step 3. Test both checks.** Ask the router question and the poem request. If the model still writes the poem, make the rule more direct, for example "Do not write poems, stories, or code."
+**Step 3. Test both checks.** If it still writes the poem, make the rule blunter: "Do not write poems, stories, or code."
 
-**Step 4. Think about why `system` is better than putting the rules in your first message.** The system prompt stays in place for every turn and is kept apart from what users type. A user message is just one more line in the conversation, so later lines can push it aside more easily.
+The `system` field beats putting rules in your first message, because it stays in place every turn and is kept apart from what users type.
 
 </details>
 
-**Why this matters:** the system prompt is where an architect sets scope, tone, and refusal rules for a product (Prompt Engineering & Structured Output).
+**Exam:** the system prompt sets scope, tone, and refusal rules (Prompt Engineering & Structured Output).
 
 ---
 
@@ -356,20 +347,14 @@ from app.prompts import SYSTEM_PROMPT
 
 **Lesson:** [5, System prompts](../../01-accessing-claude-with-the-api/05-system-prompts.md)
 
-**The problem:** Two kinds of people will use the app, so it needs two roles:
+**Task:** Add a `--role` option. A **customer** gets 3 to 5 plain steps. A **technician** (Northwind staff) gets short technical checks, such as signal levels and router logs.
 
-- **A customer** wants a few simple steps in everyday words.
-- **A Northwind support technician** (a staff member who fixes customer problems) wants short, technical answers that can name internal checks, such as line signal levels and router logs.
-
-Start the app with a role, `uv run python -m app.main --role customer` or `--role technician`, and make the answers fit that role.
-
-- **Check:** ask both roles `My internet keeps dropping every evening.`. The customer gets 3 to 5 plain steps. The technician gets a short list of technical checks.
-- **Check:** the customer's answer never mentions internal tools.
+**Check:** ask both roles `My internet keeps dropping every evening.` Only the technician's answer mentions internal tools.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. Split the prompt into a shared part and a role part.** Everything that is true for every user stays in one base prompt. Only the part about *who is asking* changes. Replace the contents of `app/prompts.py` with this.
+**Step 1. Split the prompt** into a shared part and a role part. Replace `app/prompts.py` with this.
 
 ```python
 BASE_PROMPT = """You are the support assistant for Northwind Internet, a home internet provider.
@@ -401,7 +386,7 @@ def system_prompt_for(role: str) -> str:
 SYSTEM_PROMPT = system_prompt_for("customer")  # the default, used by scripts that have no role
 ```
 
-**Step 2. Read the role when the app starts.** `argparse` is Python's built-in tool for reading options typed after the command, such as `--role technician`. Change the top of `main()` in `app/main.py`, and use `system` in the request.
+**Step 2. Read the role at start-up** in `app/main.py`. `argparse` is Python's built-in tool for options like `--role technician`.
 
 ```python
 import argparse
@@ -428,20 +413,18 @@ def main() -> None:
         )
 ```
 
-**Step 3. Run both roles and compare.**
+**Step 3. Run both roles.**
 
 ```bash
 uv run python -m app.main --role customer
 uv run python -m app.main --role technician
 ```
 
-**Step 4. Understand the limit of this design.** Here *you* type the role, so anyone could type `--role technician`. A prompt changes how the model *talks*, but it can't keep secrets safe, because a clever user can talk the model out of its rules. In a real app, the role comes from the person's login. Information that only staff may see must be blocked by your code before it reaches the model. Guide 5 does exactly that: a customer's search never returns the internal technician documents.
-
-**Extension:** add a third role, `billing`, for staff who handle payments, and make its answers name invoice numbers and refund steps.
+**Warning:** anyone can type `--role technician`. A prompt changes how the model talks, but it can't protect secrets. In a real app, the role comes from the login, and your code blocks staff-only data before it reaches the model. Guide 5 does this.
 
 </details>
 
-**Why this matters:** "the same assistant serves different users" is a common exam scenario. The trap is to trust the prompt for access control; the right answer is to decide the role from login and filter data in code (Governance, Safety & Risk).
+**Exam:** never trust the prompt for access control. Take the role from login and filter data in code (Governance, Safety & Risk).
 
 ---
 
@@ -449,11 +432,11 @@ uv run python -m app.main --role technician
 
 **Lesson:** [6, Temperature](../../01-accessing-claude-with-the-api/06-temperature.md)
 
-**Warning:** lesson 6 teaches the `temperature` setting, which controls how random the word choices are. The current Python library and current models no longer accept `temperature`, `top_p`, or `top_k`. Sending one now fails with an error. This problem teaches what still controls how consistent the answers are.
+**Warning:** current models reject `temperature`, `top_p`, and `top_k`, which lesson 6 teaches. Sending one causes an error.
 
-**The problem:** Write `experiments/consistency.py`. It asks the same question five times and prints each answer, so you can see how much they differ. Then find two ways to make the answers more consistent without `temperature`.
+**Task:** Write `experiments/consistency.py`, which asks the same question five times. Then make the answers more consistent without `temperature`.
 
-- **Check:** you can name the two ways, and you have seen the difference in your own output.
+**Check:** you can name two ways to get consistent answers, and you've seen the difference.
 
 <details>
 <summary>Show the step-by-step answer</summary>
@@ -474,26 +457,24 @@ for attempt in range(1, 6):
     print(f"{attempt}: {get_text(response)}")
 ```
 
-**Step 2. Run it.**
+**Step 2. Run it.** You get different names, because the model picks words with some chance.
 
 ```bash
 uv run python -m experiments.consistency
 ```
 
-You get several different names. The model picks each word with some chance, so the same request can give different answers.
+**Step 3. Try `temperature=0,`** in the request. You get an error. Remove it again.
 
-**Step 3. Try the old setting, to see that it is gone.** Add `temperature=0,` to the request and run it again. Depending on your library version, Python rejects the argument or the API returns a `400` error. Remove the line again.
+**Step 4. Use the two current ways.**
 
-**Step 4. Make the answers more consistent the current way.**
+1. **Narrow the task.** Ask: `Pick the best name from this list for a student plan: Campus Connect, Study Stream, Dorm Fiber. Reply with the name only.` The answers now mostly agree.
+2. **Fix the allowed answers** with a schema, as problem 7 does.
 
-1. **Narrow the task in the prompt.** Change the question to `Pick the best name from this list for a student plan: Campus Connect, Study Stream, Dorm Fiber. Reply with the name only.` Run it again. The answers now agree much more, because the model has fewer good choices.
-2. **Fix the answer's shape.** When your code needs a fixed answer, give the model a fixed set of allowed values. Problem 7 does this with a schema, where `priority` can only be `low`, `medium`, or `high`.
-
-**Step 5. Know the difference between consistency and effort.** The `effort` setting (`output_config={"effort": "low"}`) controls how much work the model puts in, such as how long it thinks. It does not control randomness. Guide 6 uses it.
+The `effort` setting controls how hard the model works, not randomness. Guide 6 uses it.
 
 </details>
 
-**Why this matters:** an exam question may ask how to get repeatable output. On current models the answer is a precise prompt, a fixed list of choices, and structured outputs, not a sampling setting (Prompt Engineering & Structured Output).
+**Exam:** repeatable output comes from a precise prompt and structured outputs, not a sampling setting (Prompt Engineering & Structured Output).
 
 ---
 
@@ -501,17 +482,16 @@ You get several different names. The model picks each word with some chance, so 
 
 **Lesson:** [7, Response streaming](../../01-accessing-claude-with-the-api/07-response-streaming.md)
 
-**The problem:** Change `app/main.py` so the answer appears word by word while the model writes it, instead of all at once at the end.
+**Task:** Change `app/main.py` so the answer appears word by word.
 
-- **Check:** ask `Explain in five steps how to fix slow Wi-Fi.` The first words appear within a second or two, and the rest follows.
-- **Check:** the chat still remembers earlier lines.
+**Check:** `Explain in five steps how to fix slow Wi-Fi.` starts printing within a second or two, and the chat still remembers.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. Understand streaming.** Without streaming, the API sends nothing until the whole answer is ready. With *streaming*, the API sends small pieces as the model writes them, so the person starts reading sooner. The total time is the same; the wait for the first word is much shorter.
+*Streaming* sends small pieces of the answer as the model writes them. The total time is the same, but the first word arrives much sooner.
 
-**Step 2. Replace the request in `app/main.py`.** Swap `client.messages.create(...)` and the two lines after it for this block.
+**Step 1. Replace the request in `app/main.py`.** Swap `client.messages.create(...)` and the two lines after it for this.
 
 ```python
         print("App:  ", end="", flush=True)
@@ -528,21 +508,15 @@ You get several different names. The model picks each word with some chance, so 
         messages.append({"role": "assistant", "content": final.content})
 ```
 
-| Line | What it does |
-|---|---|
-| `client.messages.stream(...)` | Opens a streamed request. The `with` block closes the connection when it ends. |
-| `stream.text_stream` | Gives you each new piece of answer text as it arrives. Thinking pieces are skipped. |
-| `print(text, end="", flush=True)` | Prints the piece on the same line and shows it at once, instead of waiting for a full line. |
-| `stream.get_final_message()` | After the stream ends, builds the complete reply, the same object `create` would have returned. |
-| `messages.append(... final.content)` | Keeps the full reply in the history, so memory still works. |
+- `stream.text_stream` gives each new piece of text and skips thinking.
+- `flush=True` shows each piece at once.
+- `get_final_message()` builds the full reply, so the history still works.
 
-**Step 3. Remove the unused import.** `get_text` is no longer used in `app/main.py`, so you can remove it from the import line.
-
-**Step 4. Run it** with `uv run python -m app.main` and ask the Wi-Fi question.
+**Step 2. Remove `get_text`** from the import line, then run `uv run python -m app.main`.
 
 </details>
 
-**Why this matters:** streaming improves how fast an app *feels*, and long answers need it to avoid request timeouts (Context Management & Reliability).
+**Exam:** streaming makes apps feel faster and avoids timeouts on long answers (Context Management & Reliability).
 
 ---
 
@@ -550,17 +524,11 @@ You get several different names. The model picks each word with some chance, so 
 
 **Lesson:** [8, Structured data](../../01-accessing-claude-with-the-api/08-structured-data.md)
 
-**Warning:** lesson 8 gets JSON with *prefill* (writing the start of the model's answer yourself) and *stop sequences*. Current models reject prefill with an error. This problem uses **structured outputs**, where you give the API a schema and it guarantees that the answer matches it.
+**Warning:** lesson 8 uses *prefill*, which current models reject. This problem uses **structured outputs**: you give the API a schema, and the answer always matches it.
 
-**The problem:** Write `app/triage.py`. Given a customer's message, it returns a record with these fields:
+**Task:** Write `app/triage.py`. It turns a message into a record with `category` (`outage`, `billing`, `equipment`, or `other`), `priority` (`low`, `medium`, or `high`), and a `summary` of at most 15 words.
 
-| Field | Allowed values |
-|---|---|
-| `category` | `outage`, `billing`, `equipment`, or `other` |
-| `priority` | `low`, `medium`, or `high` |
-| `summary` | One sentence, at most 15 words |
-
-Test it on these three messages:
+**Check:** these three messages give three valid records.
 
 ```text
 My internet has been down since 7am and I work from home.
@@ -568,14 +536,10 @@ I was charged twice for October.
 How do I change my Wi-Fi password?
 ```
 
-- **Check:** the program prints three records, and every value is one of the allowed values.
-
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. Describe the shape with Pydantic.** **Pydantic** is a Python library for describing data shapes. It comes with the `anthropic` package. `Literal[...]` lists the only values a field may hold.
-
-**Step 2. Write `app/triage.py`.**
+**Step 1. Write `app/triage.py`.** **Pydantic** describes data shapes and comes with `anthropic`. `Literal[...]` lists the only allowed values.
 
 ```python
 from typing import Literal
@@ -612,52 +576,45 @@ if __name__ == "__main__":
         print(triage(text).model_dump_json())
 ```
 
-| Line | What it does |
-|---|---|
-| `class Triage(BaseModel)` | Describes the record: three fields and their allowed values. |
-| `client.messages.parse(...)` | Sends the request with the schema built from `Triage`. The API makes the model's answer match the schema. |
-| `output_format=Triage` | Tells `parse` which shape to use. |
-| `response.parsed_output` | The answer, already checked and turned into a `Triage` object. |
-| `.model_dump_json()` | Turns the object back into a JSON text line for printing. |
+`messages.parse` sends the schema with `output_format`, and `parsed_output` is the checked answer.
 
-**Step 3. Run it.**
+**Step 2. Run it.**
 
 ```bash
 uv run python -m app.triage
 ```
 
-You should see something like `{"category":"outage","priority":"high","summary":"Customer working from home has had no internet since 7am."}`.
+You see lines like `{"category":"outage","priority":"high","summary":"Customer working from home has had no internet since 7am."}`.
 
-**Step 4. Notice what the schema can't check.** The schema guarantees the *shape*, such as a priority being one of three words. It can't guarantee the *judgment*, such as whether the password question is really `low`. You check judgment with evals in guide 2.
+The schema checks the *shape*, not the *judgment*. Whether the password question is really `low` is checked with evals in guide 2.
 
 </details>
 
-**Why this matters:** "how do you get reliable JSON from current models?" has the answer "structured outputs," not prefill (Prompt Engineering & Structured Output).
+**Exam:** reliable JSON on current models comes from structured outputs, not prefill (Prompt Engineering & Structured Output).
 
 ---
 
 ### Problem 8: Try again when a request fails
 
-**Lesson:** not a course lesson. This is a production skill that the chapter's Architect notes cover.
+**Lesson:** none. This is a production skill from the chapter's Architect notes.
 
-**The problem:** Requests sometimes fail for reasons that pass on their own, such as too many requests at once (error `429`) or a busy server (errors `500` and above). Write `create_with_retry(**kwargs)` in `app/retry.py`. It tries again after a failure that may pass, waiting longer each time. It gives up at once on errors that won't fix themselves, such as a wrong key.
+**Task:** Write `create_with_retry(**kwargs)` in `app/retry.py`. It retries errors that pass on their own, waiting longer each time, and stops at once on errors that won't.
 
-- **Check:** with a fake server address, you see the attempts and the growing waits, and then an error.
-- **Check:** with a wrong key, it stops at once without retrying.
+**Check:** a fake server address shows growing waits and then an error. A wrong key stops at once.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. Sort the errors into two groups.**
+**Step 1. Know which errors to retry.**
 
 | Error | Retry? | Why |
 |---|---|---|
-| `429` rate limit | Yes | You sent too much too fast; waiting fixes it. |
+| `429` too many requests | Yes | Waiting fixes it. |
 | `500` and above, server errors | Yes | The server had a short problem. |
 | Connection error | Yes | The network dropped for a moment. |
-| `400` bad request, `401` wrong key, `404` wrong model name | No | Sending the same request again gives the same error. |
+| `400`, `401` wrong key, `404` wrong model | No | The same request gives the same error. |
 
-**Step 2. Write `app/retry.py`.** Waiting twice as long after each failure is called *exponential backoff*. Adding a small random extra wait, called *jitter*, stops many programs from retrying at the same moment.
+**Step 2. Write `app/retry.py`.** Doubling the wait each time is *exponential backoff*. A small random extra (*jitter*) stops many programs retrying at once.
 
 ```python
 import random
@@ -687,14 +644,7 @@ def create_with_retry(max_attempts: int = 4, base_delay: float = 1.0, client=def
         time.sleep(delay)
 ```
 
-| Line | What it does |
-|---|---|
-| `client.with_options(max_retries=0)` | Makes a copy of the client that does not retry by itself, so only your code retries. |
-| `except (RateLimitError, APIConnectionError)` | Catches the errors worth retrying. `RateLimitError` comes first because it is a special kind of `APIStatusError`. |
-| `if error.status_code < 500: raise` | Stops at once for `400`, `401`, `404`, and similar errors. |
-| `base_delay * 2 ** (attempt - 1)` | Waits 1, then 2, then 4 seconds. |
-
-**Step 3. Test it with a fake address.** Create `experiments/test_retry.py`. Port 9 on your own computer has nothing listening, so every request fails with a connection error.
+**Step 3. Test it with a fake address.** Create `experiments/test_retry.py`. Nothing listens on port 9, so every request fails.
 
 ```python
 from app.client import MODEL, client
@@ -713,40 +663,40 @@ create_with_retry(
 uv run python -m experiments.test_retry
 ```
 
-You see three "Attempt failed" lines with waits of about 1, 2, and 4 seconds, and then `APIConnectionError`.
+You see waits of about 1, 2, and 4 seconds, then `APIConnectionError`.
 
-**Step 4. Test a wrong key.** Change one letter of the key in `.env` and call `create_with_retry` from a normal request. It stops at once with `AuthenticationError`. Put the key back afterwards.
+**Step 4. Test a wrong key.** Change one letter of the key in `.env`. It stops at once with `AuthenticationError`. Put the key back.
 
-**Step 5. Know the shortcut.** In a real app you can simply set `Anthropic(max_retries=5)`, because the library already retries with backoff. Writing it yourself once shows you what that setting does.
+In a real app, `Anthropic(max_retries=5)` does all this for you.
 
 </details>
 
-**Why this matters:** knowing which errors to retry, and that blind retries waste money and can make an overload worse, is a common production scenario (Context Management & Reliability).
+**Exam:** retry only errors that pass on their own. Blind retries waste money and worsen overloads (Context Management & Reliability).
 
 ---
 
 ### Architect scenario: sorting 1,000 shop emails a day
 
-The problems above build the Northwind app. Each guide also ends with a scenario from a different business, so you practise the chapter's ideas the way the exam asks them: as a design decision. The same online shop returns in later guides.
+Each guide ends with a design question about the same online shop, asked the way the exam asks it.
 
-**The scenario:** you are building software for an online shop. Every day, about 1,000 customers email `support@shop.com`. Your software must sort each email into the right inbox, `billing`, `technical`, or `other`, without a person reading it first. Design it, write the sorting function, and estimate the daily cost.
+**Task:** An online shop gets about 1,000 emails a day at `support@shop.com`. Sort each one into `billing`, `technical`, or `other`, with no person reading it first. Design it, write the function, and estimate the daily cost.
 
-- **Check:** your design says what happens when the model is unsure, when the API is down, and when an email tries to give the model orders.
+**Check:** your design covers an unsure model, an API outage, and an email that tries to give the model orders.
 
 <details>
 <summary>Show the step-by-step answer</summary>
 
-**Step 1. List what the requirements really mean.**
+**Step 1. Read the requirements.**
 
-| Requirement | What it means for the design |
+| Requirement | What it means |
 |---|---|
-| 1,000 emails a day | One API call per email is fine. That's less than one email a minute on average. |
-| No person reads them first | A wrong inbox costs time, so you need a safe default for unsure cases. |
-| Exactly three inboxes | The answer must be one of three fixed words. Use structured outputs, not free text. |
+| 1,000 emails a day | One API call per email is fine, under one a minute. |
+| No person reads them first | You need a safe default for unsure cases. |
+| Exactly three inboxes | Use structured outputs, not free text. |
 
-**Step 2. Decide the safe default.** When the model is unsure, send the email to `other`, which people already handle by hand. A ticket that lands in `other` is a little slow; a billing email lost in `technical` may never be answered.
+**Step 2. Pick the safe default.** Unsure emails go to `other`, which people already check by hand. A slow ticket is better than a billing email lost in `technical`.
 
-**Step 3. Write the sorting function.** Save it as `experiments/shop_inbox.py`.
+**Step 3. Write `experiments/shop_inbox.py`.**
 
 ```python
 from typing import Literal
@@ -792,32 +742,25 @@ if __name__ == "__main__":
         print(sort_email(email), "<-", email)
 ```
 
-**Step 4. Estimate the cost.** Count tokens per email, then multiply by 1,000. These numbers are assumptions to check with `response.usage` on real emails.
-
-| Part | Tokens per email | Per day (1,000 emails) |
-|---|---|---|
-| Input: system prompt (about 150) and email (about 250) | about 400 | about 400,000 |
-| Output: the model's thinking and the short JSON answer | about 200 | about 200,000 |
-
-At Haiku 5.5's price of $0.10 per million input tokens and $0.50 per million output tokens, that is about $0.04 plus $0.10, so roughly **$0.14 a day**. Prices change, so check the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing) before you rely on the number.
+**Step 4. Estimate the cost.** About 400 input tokens and 200 output tokens per email gives 400,000 and 200,000 a day. At Haiku 5.5's $0.10 and $0.50 per million tokens, that's about **$0.14 a day**. Check real counts with `response.usage`, and check current prices on the [pricing page](https://platform.claude.com/docs/en/about-claude/pricing).
 
 **Step 5. Plan for failures.**
 
-1. **The API is down or busy:** keep each email in a queue, retry with backoff (problem 8), and never delete an email until it is sorted.
-2. **The model is unsure:** the code sends it to `other`.
-3. **An email gives orders** (the last test email): the `<email>` tags and the rule in the prompt tell the model it is data. And the worst outcome is only a wrong inbox, because this app takes no other action.
+1. **API down:** keep emails in a queue, retry with backoff (problem 8), and delete nothing until it's sorted.
+2. **Model unsure:** the code sends it to `other`.
+3. **Email gives orders:** the `<email>` tags mark it as data, and the worst outcome is a wrong inbox.
 
-**Step 6. Plan how to prove it works.** Before going live, label 100 real emails by hand and measure how many land in the right inbox. You do exactly this in guide 2's scenario.
-
-**Step 7. Protect the customers' data.** Emails contain names, addresses, and order numbers. Log the inbox and the email's ID, not the whole email.
+**Step 6. Prove it and protect data.** Before going live, label 100 real emails by hand and measure accuracy (guide 2's scenario). Log only the inbox and email ID, not the email, because emails contain personal details.
 
 </details>
 
-**Why this matters:** the exam asks this kind of question as "which design fits these requirements?" The answer combines a fixed list of outputs, a safe default, a cost estimate, and a failure plan (Prompt Engineering & Structured Output, Context Management & Reliability).
+**Exam:** "which design fits?" answers combine fixed outputs, a safe default, a cost estimate, and a failure plan (Prompt Engineering & Structured Output, Context Management & Reliability).
 
 ---
 
 ### Commit your work
+
+In the capstone folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`:
 
 ```bash
 git add .
@@ -826,7 +769,7 @@ git commit -m "Capstone guide 1: chat loop, system prompt, streaming, triage JSO
 git push
 ```
 
-**Warning:** check that `.env` is not in the `git status` list before you commit.
+**Warning:** check that `.env` isn't in the `git status` list before you commit.
 
 Then mark guide 1 as done in the [capstone index](../README.md#the-chapter-guides).
 

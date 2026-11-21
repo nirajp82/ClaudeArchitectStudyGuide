@@ -107,7 +107,7 @@ Close and reopen the terminal, then run `uv --version` again.
 
 </details>
 
-**Step 3. Go to the capstone folder.** `cd` means "change directory": it moves the terminal into that folder. Every later command runs there.
+**Step 3. Go to the capstone folder.** Every later command runs there.
 
 **Mac:**
 
@@ -123,7 +123,7 @@ cd $HOME\Documents\ClaudeArchitectStudyGuide\02_BuildingWithTheClaudeAPI\00_Caps
 
 If your study-notes folder is somewhere else, use that path instead.
 
-**Step 4. Make the folder a Python project and install the packages.**
+**Step 4. Make the folder a Python project and install the packages.** uv is a helper that sets up a Python project for you, like a kitchen assistant: you name the recipe, and it brings the right oven and ingredients. It gets the right Python and add-on packages and keeps them inside this one project, so nothing else on your computer breaks.
 
 ```bash
 uv init --name claude-capstone --python 3.12 --no-readme
@@ -132,12 +132,12 @@ uv add --dev pytest
 rm main.py
 ```
 
-| Command | What it does |
+| Command | In plain words |
 |---|---|
-| `uv init ...` | Turns the folder into a Python project that uses Python 3.12. It creates `pyproject.toml`, the project's list of packages. `--no-readme` stops uv from overwriting the plan's `README.md`. |
-| `uv add anthropic python-dotenv` | Installs two packages: `anthropic` talks to the Claude API, and `python-dotenv` reads your key from the `.env` file. |
-| `uv add --dev pytest` | Installs `pytest`, which runs automatic tests. `--dev` means you need it only while building. |
-| `rm main.py` | Deletes the sample file that `uv init` creates. Your code goes in `app/` instead. |
+| `uv init --name claude-capstone --python 3.12 --no-readme` | "Make this folder a Python project called claude-capstone, using Python 3.12. Don't create a README file, because this folder already has one." |
+| `uv add anthropic python-dotenv` | "Install two add-ons. `anthropic` lets my code talk to Claude. `python-dotenv` reads my secret key from the `.env` file." |
+| `uv add --dev pytest` | "Install `pytest`, a tool that tests my code. I only need it while building." |
+| `rm main.py` | "Delete the sample file uv made. I don't need it." |
 
 **Step 5. Create the code folders.**
 
@@ -155,12 +155,7 @@ New-Item -ItemType Directory app, experiments
 New-Item app\__init__.py, experiments\__init__.py
 ```
 
-| Command | What it does |
-|---|---|
-| `mkdir` (Mac) or `New-Item -ItemType Directory` (Windows) | Creates two folders: `app/` for the app's code, and `experiments/` for practice scripts. |
-| `touch` (Mac) or `New-Item` (Windows) | Creates an empty file named `__init__.py` in each folder. Python needs this file before one file can import code from another, such as `from app.client import ask`. |
-
-Later guides create the other folders when they need them.
+`app/` holds the app's code, and `experiments/` holds practice scripts. The empty `__init__.py` file lets one file import code from another, such as `from app.client import ask`. Later guides create the other folders when they need them.
 
 **Step 6. Keep your key and packages out of Git.** `.gitignore` is a list of files that Git never saves.
 
@@ -251,12 +246,6 @@ git add .
 git status
 git commit -m "Capstone: first API call"
 ```
-
-| Command | What it does |
-|---|---|
-| `git add .` | Marks every new or changed file in this folder to be saved. |
-| `git status` | Lists the marked files, so you can check them before saving. |
-| `git commit -m "..."` | Saves the marked files as one version, with your message as its label. |
 
 **Warning:** if `.env` or `.venv` appears in `git status`, stop and fix `.gitignore`. Git keeps every old version, so a key committed once would still be readable on GitHub if you push later, even after you delete the file.
 

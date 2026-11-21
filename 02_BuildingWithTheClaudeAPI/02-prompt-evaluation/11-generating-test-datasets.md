@@ -33,7 +33,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-A test dataset is the list of sample inputs that an eval feeds into your prompt. This lesson builds one with code, in four steps:
+A test dataset (also called a *test set*) is the list of sample user requests that an eval sends through your prompt. It stands in for real users during testing and never goes to production. [Lesson 9](09-prompt-evaluation.md#how-the-pieces-fit-together) shows how the prompt, the dataset, and the eval fit together. This lesson builds a dataset with code, in four steps:
 
 1. **Decide the shape.** Each test case is a small JSON object with one field, such as `{"task": "Write a regex that matches an S3 bucket name"}`.
 2. **Ask a fast, cheap model to write the cases.** Your code sends a prompt such as "Write 3 AWS tasks that need Python, JSON, or a regex" to a small model like Claude Haiku.
@@ -76,7 +76,17 @@ Your code describes the shape with a Python class and calls `client.messages.par
 
 **Warning:** The course gets JSON back with prefill, which Claude Haiku 5.5 and other newer models reject with a 400 error. This page uses structured outputs instead. A short note at the end of [section 3](#3-get-clean-json-back-with-structured-outputs) shows the course's way.
 
-This lesson is step 2 of the eval workflow from [lesson 10](10-a-typical-eval-workflow.md): create the test dataset. Here is the prompt that will be tested later.
+This lesson is step 2 of the eval workflow from [lesson 10](10-a-typical-eval-workflow.md): create the test dataset. The highlighted box is what this lesson builds.
+
+```mermaid
+flowchart LR
+    P["Prompt v1<br/>Please provide a solution<br/>to the following task: {task}"] --> E
+    D["dataset.json<br/>sample user requests<br/>(this lesson)"] --> E
+    E["Eval<br/>puts each request into {task},<br/>sends it to the model,<br/>grades the answer<br/>(lessons 12 to 14)"] --> S["Score"]
+    style D fill:#ffe9a8,stroke:#b8860b,stroke-width:2px
+```
+
+Here is the prompt that will be tested later.
 
 ![Goal: write a prompt that will assist users in writing Python code, JSON config, or regular expressions focused on AWS-specific use cases. Input: the user will request code for a specific task. Output: Python, JSON, or a regular expression without any explanation. Prompt v1 is prompt = f""" Please provide a solution to the following task: {task} """](../images/11-aws-code-prompt-goal.png)
 
@@ -128,6 +138,24 @@ Think of a teacher who asks a teaching assistant to draft exam questions. It sav
 ---
 
 ### 2. The prompt that asks the model for test tasks
+
+Here is the whole process of making the dataset, from start to finish:
+
+```mermaid
+sequenceDiagram
+    participant You
+    participant Code as Your notebook code
+    participant Haiku as Claude Haiku<br/>(writes the tasks)
+    participant File as dataset.json
+    You->>Code: Run generate_dataset()
+    Code->>Haiku: "Write 3 AWS tasks that need Python, JSON, or a regex"<br/>plus the shape: {"tasks": [{"task": ...}]}
+    Haiku-->>Code: {"tasks": [{"task": "Write a regex that matches an EC2 instance ID"}, ...]}
+    Code-->>You: print(dataset)
+    You->>You: Read each task, delete or fix bad ones
+    You->>Code: Save the list
+    Code->>File: json.dump(dataset, f, indent=2)
+    Note over File: Saved once. Every prompt version<br/>is tested on this same file.
+```
 
 Your notebook defines a function, `generate_dataset()`. Its prompt asks the model for test tasks:
 

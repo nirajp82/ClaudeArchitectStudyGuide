@@ -16,6 +16,46 @@
 
 This page will sum up the whole chapter for revision once its lessons are done. Each lesson summary will end with a link to the full lesson notes.
 
+## How the pieces fit together
+
+This whole chapter builds one thing: an **eval**, a process that scores a prompt before you ship it.
+
+- **The prompt** is what you will ship to production. You test it on your laptop first.
+- **The test set** (also called the *dataset* or *eval dataset*) is a saved list of sample user messages. It stands in for real users during testing, and it never goes to production.
+- **The eval** puts each sample into the prompt, sends it to the model, grades the answer, and gives one score, such as "41 of 50."
+- **The grader** is the part of the eval that decides whether each answer is good. It can be code, another model, or a person.
+
+```mermaid
+flowchart LR
+    subgraph Local["On your laptop: testing"]
+        P["Prompt v1<br/>(the thing you will ship)"]
+        D["Test set<br/>test_set.json<br/>(sample emails + right groups)"]
+        E["Eval<br/>sends every sample email<br/>through the prompt,<br/>then grades the answers"]
+        S["Score<br/>e.g. 41 of 50"]
+        P --> E
+        D --> E
+        E --> S
+        S -- "score too low:<br/>edit the prompt" --> P
+    end
+    subgraph Prod["In production: real use"]
+        P2["Final prompt"]
+        U["Real customer emails"]
+        M["Model sorts each email"]
+        U --> P2 --> M
+    end
+    S -- "score good enough:<br/>ship the prompt" --> P2
+```
+
+Where each lesson fits:
+
+| Lesson | Which piece it covers |
+|---|---|
+| [9. Prompt evaluation](09-prompt-evaluation.md) | Why you need an eval at all |
+| [10. A typical eval workflow](10-a-typical-eval-workflow.md) | The five steps, from prompt to score |
+| [11. Generating test datasets](11-generating-test-datasets.md) | Where the test set comes from: a model drafts it, you check it, you save it |
+| 12. Running the eval | Sending every sample through the prompt |
+| 13. Model based grading and 14. Code based grading | How the grader scores each answer |
+
 ## Lessons in this chapter
 
 | # | Lesson | Lesson page | Notes | Status |

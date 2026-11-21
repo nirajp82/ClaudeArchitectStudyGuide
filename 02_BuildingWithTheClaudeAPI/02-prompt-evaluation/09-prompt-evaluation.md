@@ -63,6 +63,44 @@ Think of the test set like unit tests for your prompt:
 2. **You write your draft prompt** and test it against that test set to get a score (for example, `41 / 50`).
 3. **You inspect the failures**, add rules or examples to your prompt to fix them, and **re-test against the exact same test set** until the score is high enough to launch. Once live, only your final prompt runs in production—the test set stays on your laptop.
 
+#### How the pieces fit together
+
+An eval is a process. It takes two inputs, the prompt and the test set, and produces one output, a score.
+
+| Piece | What it is | Example | Goes to production? |
+|---|---|---|---|
+| **The prompt** | The thing you will ship. You test it on your laptop first. | "Sort this email into billing, technical, or other: {email}" | Yes |
+| **The test set** | Sample user messages that stand in for real users during testing. Later lessons call it the *dataset* or *eval dataset*. | `test_set.json`: 50 sample emails, each with its right group | No. It stays on your laptop. |
+| **The eval** | The process. It puts each sample into the prompt, sends it to the model, and grades the answer. | Code that runs all 50 emails and counts the right answers | No |
+| **The score** | What the eval produces | "41 of 50 correct" | No |
+
+```mermaid
+flowchart LR
+    subgraph Local["On your laptop: testing"]
+        P["Prompt v1<br/>(the thing you will ship)"]
+        D["Test set<br/>test_set.json<br/>(sample emails + right groups)"]
+        E["Eval<br/>sends every sample email<br/>through the prompt,<br/>then grades the answers"]
+        S["Score<br/>e.g. 41 of 50"]
+        P --> E
+        D --> E
+        E --> S
+        S -- "score too low:<br/>edit the prompt" --> P
+    end
+    subgraph Prod["In production: real use"]
+        P2["Final prompt"]
+        U["Real customer emails"]
+        M["Model sorts each email"]
+        U --> P2 --> M
+    end
+    S -- "score good enough:<br/>ship the prompt" --> P2
+```
+
+- **Only the prompt moves to production.** In production, real customer emails take the place of the test set.
+- **The test set stays fixed while you edit the prompt.** You change the prompt, rerun the same test set, and compare the scores.
+- **The eval has a third piece inside it, the grader,** which decides whether each answer is right ([lesson 13](13-model-based-grading.md) and [lesson 14](14-code-based-grading.md)).
+
+> **Remember this:** The test set is a practice crowd of users. The eval is the rehearsal. Only the prompt goes on stage.
+
 ---
 
 ### What makes a good test set
@@ -250,25 +288,28 @@ Both are ways to write a better prompt. Multishot prompting means adding a few s
 **Q3. What does "evaluation pipeline" mean?**
 It is code that sends your prompt every question in a test set, checks each answer, and adds up a score.
 
-**Q4. What does "expected answer" mean?**
+**Q4. What is the difference between the "test set" and the "eval"?**
+The test set is the input: a saved list of sample user messages, such as 50 customer emails. The eval is the process that sends each one through your prompt, grades the answers, and gives a score. Only the prompt goes to production. The test set stays on your laptop.
+
+**Q5. What does "expected answer" mean?**
 It is the answer you know is right for a test question, written down before the test. For the email "I was charged twice," the expected answer is `billing`.
 
-**Q5. What does "corner case" or "edge case" mean?**
+**Q6. What does "corner case" or "edge case" mean?**
 It is an unusual input that a prompt may not handle, such as an empty email, an email in another language, or one that mixes two topics.
 
-**Q6. Why isn't trying a prompt a few times by hand enough?**
+**Q7. Why isn't trying a prompt a few times by hand enough?**
 You only try the inputs you can imagine. Real users send many inputs you never thought of.
 
-**Q7. What is the downside of scoring a prompt on a test set?**
+**Q8. What is the downside of scoring a prompt on a test set?**
 It takes more work and costs more. You must write the test set and the code, and every run sends one paid API request per test question.
 
-**Q8. (Exam angle) A team tested a new prompt on three sample inputs and wants to ship it today. What do you recommend?**
+**Q9. (Exam angle) A team tested a new prompt on three sample inputs and wants to ship it today. What do you recommend?**
 Build an evaluation pipeline first. Use a set of realistic test inputs, including edge cases, with an automatic score, because three hand tests can't show how the prompt handles unusual real-world inputs. (Claude Models, Prompting & Context Engineering)
 
-**Q9. (Exam angle) Two engineers disagree about which of two prompt versions is better. How do you settle it?**
+**Q10. (Exam angle) Two engineers disagree about which of two prompt versions is better. How do you settle it?**
 Run both versions on the same test set and compare the scores. The decision then rests on a measured number instead of opinion. (Solution Design & Architecture)
 
-**Q10. (Exam angle) A prompt that worked in development gives wrong answers in production. What process do you put in place?**
+**Q11. (Exam angle) A prompt that worked in development gives wrong answers in production. What process do you put in place?**
 Add the failing production inputs to the test set, fix the prompt, and rerun the whole set. Rerunning everything shows that the fix didn't break cases that used to pass. (Governance, Safety & Risk)
 
 ---

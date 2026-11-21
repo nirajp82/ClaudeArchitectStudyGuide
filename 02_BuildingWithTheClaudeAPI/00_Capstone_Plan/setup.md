@@ -69,6 +69,8 @@ cd $HOME\Documents\ClaudeArchitectStudyGuide\02_BuildingWithTheClaudeAPI\00_Caps
 
 If your study-notes folder is somewhere else, use that path instead.
 
+**Stay in `00_Capstone_Plan` for every command in this setup and in every guide.** Never `cd` into `app` first. Commands such as `uv run python -m app.client` only work from `00_Capstone_Plan`, because Python looks for the `app` folder inside the folder you are in.
+
 **Step 4. Make the folder a Python project and install the packages.** uv is a helper that sets up a Python project for you, like a kitchen assistant: you name the recipe, and it brings the right oven and ingredients. It gets the right Python and add-on packages and keeps them inside this one project, so nothing else on your computer breaks.
 
 ```bash
@@ -119,7 +121,17 @@ Add-Content .gitignore ".env", ".venv"
 
 This adds two lines to `.gitignore`. `.env` will hold your secret key. `.venv` is the folder where uv keeps the installed packages.
 
-**Step 7. Save your API key in `.env`.** Open the file in a text editor.
+**Step 7. Save your API key in `.env`.** Create `.env` in the `00_Capstone_Plan` folder, next to `pyproject.toml`, not inside `app`. Your code reads it with `load_dotenv()`, which looks in the folder you run commands from.
+
+```text
+00_Capstone_Plan/
+├── .env              <- your key goes here
+├── pyproject.toml
+└── app/
+    └── client.py
+```
+
+Open the file in a text editor. Run this from `00_Capstone_Plan`:
 
 **Mac:**
 

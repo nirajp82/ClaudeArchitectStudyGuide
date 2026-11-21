@@ -74,20 +74,21 @@ import os
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-load_dotenv()
-client = Anthropic()
+load_dotenv()  # reads .env, so the key never appears in your code
+client = Anthropic()  # finds ANTHROPIC_API_KEY by itself
 MODEL = os.environ.get("CLAUDE_MODEL", "claude-haiku-5-5")
 
 
 def get_text(response) -> str:
-    """Join the text blocks of a reply and skip every other kind of block."""
+    # Keep only the text blocks. Haiku 5.5 may think first, so the first
+    # block can be a thinking block, not the answer.
     return "".join(block.text for block in response.content if block.type == "text")
 
 
 def ask(question: str) -> str:
     response = client.messages.create(
         model=MODEL,
-        max_tokens=4000,
+        max_tokens=4000,  # longest reply allowed; thinking counts too, so don't set it very low
         messages=[{"role": "user", "content": question}],
     )
     return get_text(response)
@@ -96,10 +97,6 @@ def ask(question: str) -> str:
 if __name__ == "__main__":
     print(ask("In one sentence, what is prompt caching?"))
 ```
-
-- `load_dotenv()` reads `.env`, so the key never appears in your code. `Anthropic()` finds the key by itself.
-- `get_text` keeps only the `text` blocks. Haiku 5.5 may think first, so the first block can be a `thinking` block, not the answer.
-- `max_tokens=4000` is the longest reply allowed. Thinking counts toward it, so don't set it very low.
 
 **Warning:** the course reads answers with `response.content[0].text`. On current models that can crash, because the first block may be a thinking block. Use `get_text`.
 
@@ -394,16 +391,12 @@ The `effort` setting controls how hard the model works, not randomness. Guide 6 
             system=system,
             messages=messages,
         ) as stream:
-            for text in stream.text_stream:
-                print(text, end="", flush=True)
-            final = stream.get_final_message()
+            for text in stream.text_stream:  # each new piece of text; thinking is skipped
+                print(text, end="", flush=True)  # flush=True shows each piece at once
+            final = stream.get_final_message()  # the full reply, so the history still works
         print()
         messages.append({"role": "assistant", "content": final.content})
 ```
-
-- `stream.text_stream` gives each new piece of text and skips thinking.
-- `flush=True` shows each piece at once.
-- `get_final_message()` builds the full reply, so the history still works.
 
 **Step 2. Remove `get_text`** from the import line, then run `uv run python -m app.main`.
 

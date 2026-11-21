@@ -58,15 +58,29 @@ The capstone stays on your computer. You save your work with `git commit` after 
 
 **Lessons:** [1](../../01-accessing-claude-with-the-api/01-accessing-the-api.md), [2](../../01-accessing-claude-with-the-api/02-getting-an-api-key.md), [3](../../01-accessing-claude-with-the-api/03-making-a-request.md)
 
-This is a one-time setup, so just follow the steps. It takes about 90 minutes. **Mac** blocks run in Terminal. **Windows** blocks run in PowerShell. Unlabelled blocks work on both.
+This is a one-time setup, so just follow the steps. **Mac** commands run in the Terminal app. **Windows** commands run in PowerShell. Commands with no label work on both.
 
 **Done when:** `uv run python -m app.client` prints one sentence, and `.env` never shows in `git status`.
 
-**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number. **uv** installs Python and packages for one project.
+**Step 1. Check that the tools are installed.** Run each check command. If it prints a version number, the tool is installed.
 
-- **No Git on Mac:** macOS offers to install Apple's free *Command Line Tools*. Click **Install**.
-- **No Git on Windows:** install it from [git-scm.com](https://git-scm.com/downloads), then reopen PowerShell.
-- **No uv:** run the command below, then reopen the terminal.
+| Tool | Why you need it | Check command |
+|---|---|---|
+| **Git** | Saves versions of your work | `git --version` |
+| **uv** | Installs Python and the project's packages, and runs your code | `uv --version` |
+
+<details>
+<summary>Git is missing: how to install it</summary>
+
+- **Mac:** run `git --version` anyway. macOS offers to install Apple's free *Command Line Tools*, which include Git. Click **Install**.
+- **Windows:** download and install Git from [git-scm.com](https://git-scm.com/downloads), then close and reopen PowerShell.
+
+</details>
+
+<details>
+<summary>uv is missing: how to install it</summary>
+
+Run the command for your computer, then close and reopen the terminal.
 
 **Mac:**
 
@@ -80,76 +94,103 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-**Step 2. Copy the notes onto this computer.** Skip this if the folder already exists. Replace `<your-github-name>` with your GitHub user name.
+Both commands download uv's official installer and run it.
+
+</details>
+
+**Step 2. Go to the capstone folder.** `cd` means "change directory": it moves the terminal into that folder. Every later command runs there.
 
 **Mac:**
 
 ```bash
-cd ~/Documents
-git clone https://github.com/<your-github-name>/ClaudeArchitectStudyGuide.git
-cd ClaudeArchitectStudyGuide
+cd ~/Documents/ClaudeArchitectStudyGuide/02_BuildingWithTheClaudeAPI/00_Capstone_Plan
 ```
 
 **Windows:**
 
 ```powershell
-cd $HOME\Documents
-git clone https://github.com/<your-github-name>/ClaudeArchitectStudyGuide.git
-cd ClaudeArchitectStudyGuide
+cd $HOME\Documents\ClaudeArchitectStudyGuide\02_BuildingWithTheClaudeAPI\00_Capstone_Plan
 ```
 
-**Step 3. Create the Python project** inside the capstone folder. `anthropic` is the API library, `python-dotenv` reads your key from `.env`, and `pytest` runs tests.
+If your study-notes folder is somewhere else, use that path instead.
+
+**Step 3. Make the folder a Python project and install the packages.**
 
 ```bash
-cd 02_BuildingWithTheClaudeAPI/00_Capstone_Plan
 uv init --name claude-capstone --python 3.12 --no-readme
 uv add anthropic python-dotenv
 uv add --dev pytest
 rm main.py
 ```
 
-`--no-readme` protects the plan's `README.md`. `rm main.py` deletes uv's sample file, because your code goes in `app/`.
+| Command | What it does |
+|---|---|
+| `uv init ...` | Turns the folder into a Python project that uses Python 3.12. It creates `pyproject.toml`, the project's list of packages. `--no-readme` stops uv from overwriting the plan's `README.md`. |
+| `uv add anthropic python-dotenv` | Installs two packages: `anthropic` talks to the Claude API, and `python-dotenv` reads your key from the `.env` file. |
+| `uv add --dev pytest` | Installs `pytest`, which runs automatic tests. `--dev` means you need it only while building. |
+| `rm main.py` | Deletes the sample file that `uv init` creates. Your code goes in `app/` instead. |
 
-**Step 4. Create the folders.** The empty `__init__.py` files let Python import code from `app/` and `experiments/`.
+**Step 4. Create the code folders.**
 
 **Mac:**
 
 ```bash
-mkdir -p app data sample_documents tests mcp_server evaluations/results docs experiments
+mkdir app experiments
 touch app/__init__.py experiments/__init__.py
 ```
 
 **Windows:**
 
 ```powershell
-New-Item -ItemType Directory app, data, sample_documents, tests, mcp_server, evaluations\results, docs, experiments
+New-Item -ItemType Directory app, experiments
 New-Item app\__init__.py, experiments\__init__.py
 ```
 
-**Step 5. Store your API key.** Tell Git to skip `.env` (your key) and `.venv` (installed packages), then open `.env`.
+| Command | What it does |
+|---|---|
+| `mkdir` (Mac) or `New-Item -ItemType Directory` (Windows) | Creates two folders: `app/` for the app's code, and `experiments/` for practice scripts. |
+| `touch` (Mac) or `New-Item` (Windows) | Creates an empty file named `__init__.py` in each folder. Python needs this file before one file can import code from another, such as `from app.client import ask`. |
+
+Later guides create the other folders when they need them.
+
+**Step 5. Keep your key and packages out of Git.** `.gitignore` is a list of files that Git never saves.
 
 **Mac:**
 
 ```bash
 printf ".env\n.venv\n" >> .gitignore
-nano .env
 ```
 
 **Windows:**
 
 ```powershell
 Add-Content .gitignore ".env", ".venv"
+```
+
+This adds two lines to `.gitignore`. `.env` will hold your secret key. `.venv` is the folder where uv keeps the installed packages.
+
+**Step 6. Save your API key in `.env`.** Open the file in a text editor.
+
+**Mac:**
+
+```bash
+nano .env
+```
+
+**Windows:**
+
+```powershell
 notepad .env
 ```
 
-Type these two lines with your key from the Claude Console. Save with Ctrl+O, Return, Ctrl+X in nano, or Ctrl+S in Notepad.
+Type these two lines, with your own key from the Claude Console. In nano, save with Ctrl+O, then Return, then Ctrl+X. In Notepad, save with Ctrl+S and close it.
 
 ```text
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
 CLAUDE_MODEL=claude-haiku-5-5
 ```
 
-**Step 6. Write `app/client.py`.**
+**Step 7. Write `app/client.py`.**
 
 ```python
 import os
@@ -186,19 +227,27 @@ if __name__ == "__main__":
 
 **Warning:** the course reads answers with `response.content[0].text`. On current models that can crash, because the first block may be a thinking block. Use `get_text`.
 
-**Step 7. Run it.** If you see `authentication_error`, the key in `.env` is wrong.
+**Step 8. Run it.**
 
 ```bash
 uv run python -m app.client
 ```
 
-**Step 8. Save your work.**
+`uv run` starts Python with the packages from step 3. `-m app.client` runs the file `app/client.py`. It should print one sentence about prompt caching. If you see `authentication_error`, the key in `.env` is wrong.
+
+**Step 9. Save your work.**
 
 ```bash
 git add .
 git status
 git commit -m "Capstone: first API call"
 ```
+
+| Command | What it does |
+|---|---|
+| `git add .` | Marks every new or changed file in this folder to be saved. |
+| `git status` | Lists the marked files, so you can check them before saving. |
+| `git commit -m "..."` | Saves the marked files as one version, with your message as its label. |
 
 **Warning:** if `.env` or `.venv` appears in `git status`, stop and fix `.gitignore`. Git keeps every old version, so a key committed once would still be readable on GitHub if you push later, even after you delete the file.
 

@@ -26,7 +26,7 @@
 - **Why build it:** the exam asks you to choose between designs and defend the choice. You can only do that well if you have built the thing, measured it, and seen it fail.
 - **How it grows:** you add one feature after each chapter of *Building with the Claude API*. Each feature uses what that chapter just taught. Nothing is built up front.
 - **Where the code lives:** in this folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, next to this plan. All paths below are relative to this folder.
-- **Where you build it:** on your MacBook, in the Terminal app. You write these notes on a different computer, so both computers share the same GitHub repository. Run `git pull` before you start each session and `git push` when you finish, so neither computer works on an old copy.
+- **Where you build it:** mainly on your MacBook, in the Terminal app. Every step that needs different commands also shows the Windows (PowerShell) version, so you can work on either computer. Both computers share the same GitHub repository. Run `git pull` before you start each session and `git push` when you finish, so neither computer works on an old copy.
 
 > **Remember this:** One chapter, then one feature. If you fall behind, keep the order and keep going.
 
@@ -66,10 +66,10 @@ Behind the scenes, the app also saves money with *prompt caching*, which means t
 
 | Player | Where it lives | What it does | Example |
 |---|---|---|---|
-| You | Your MacBook | Write the code, run the app, and type `yes` to approve tickets | You write `lookup_ticket` in `app/tools.py` |
-| Your app | This folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, on your MacBook | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main` starts the chat |
+| You | Your MacBook (or your Windows computer) | Write the code, run the app, and type `yes` to approve tickets | You write `lookup_ticket` in `app/tools.py` |
+| Your app | This folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, on whichever computer you use | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main` starts the chat |
 | The Claude API and the model | Anthropic's servers | Reads the question and the documents your app sends, then replies or asks for a tool | It replies "call `lookup_ticket` with 1042" |
-| Claude Code | The Terminal app on your MacBook, opened in this folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
+| Claude Code | Terminal (Mac) or PowerShell (Windows), opened in this folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
 | The Cookbook | `claude-cookbooks/`, a folder next to this repository (see the [Cookbook build-along plan](../../cookbook-build-along.md#where-the-folders-sit)) | Working examples that you study before you build each feature | `tool_use/customer_service_agent.ipynb` |
 
 ---
@@ -110,18 +110,33 @@ The capstone code lives inside this study-notes repository, so Git saves it toge
 
 ### Start here: your first session
 
-This takes about 90 minutes. At the end, your own program sends a question to the model and prints the answer. Do every step on your MacBook. Run every command in the **Terminal** app, which you can open by pressing Cmd+Space, typing `Terminal`, and pressing Return.
+This takes about 90 minutes. At the end, your own program sends a question to the model and prints the answer.
 
-**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number.
+- **On your MacBook,** run every command in the **Terminal** app. Open it by pressing Cmd+Space, typing `Terminal`, and pressing Return. Use the blocks marked **Mac**.
+- **On Windows,** run every command in **PowerShell**. Open it from the Start menu. Use the blocks marked **Windows**.
+- **A block with no label** works the same on both computers.
 
-- **If `git` is missing,** macOS offers to install the *Command Line Tools*, Apple's free set of developer programs that includes Git. Click **Install**, wait for it to finish, then run `git --version` again.
-- **If `uv` is missing,** install it with the command below, then close and reopen Terminal. **uv** is a tool that installs Python and Python packages for one project.
+**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number. **uv** is a tool that installs Python and Python packages for one project.
+
+- **If `git` is missing on the Mac,** macOS offers to install the *Command Line Tools*, Apple's free set of developer programs that includes Git. Click **Install**, wait for it to finish, then run `git --version` again.
+- **If `git` is missing on Windows,** install it from [git-scm.com](https://git-scm.com/downloads), then close and reopen PowerShell.
+- **If `uv` is missing,** install it with the command for your computer, then close and reopen Terminal or PowerShell.
+
+**Mac:**
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-**Step 2. Get the notes onto your MacBook.** The capstone folder is part of this study-notes repository, so download (*clone*) the repository from GitHub. Replace `<your-github-name>` with your GitHub user name. You only do this once. After that, run `git pull` at the start of each session instead.
+**Windows:**
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Step 2. Get the notes onto the computer.** The capstone folder is part of this study-notes repository, so download (*clone*) the repository from GitHub. Skip this step on a computer that already has the notes. Replace `<your-github-name>` with your GitHub user name. You only clone once. After that, run `git pull` at the start of each session instead.
+
+**Mac:**
 
 ```bash
 cd ~/Documents
@@ -129,9 +144,17 @@ git clone https://github.com/<your-github-name>/ClaudeArchitectStudyGuide.git
 cd ClaudeArchitectStudyGuide
 ```
 
-`~` means your home folder on the Mac, so `~/Documents` is your Documents folder. You can clone into any folder you like.
+**Windows:**
 
-**Step 3. Create the project.** These commands move into the capstone folder, turn it into a Python project that uses Python 3.12, and install three packages. `anthropic` is the official Python library for calling the API. `python-dotenv` reads your API key from the `.env` file. `pytest` runs automatic tests, and `--dev` marks it as a package for development only.
+```powershell
+cd $HOME\Documents
+git clone https://github.com/<your-github-name>/ClaudeArchitectStudyGuide.git
+cd ClaudeArchitectStudyGuide
+```
+
+`~` on the Mac and `$HOME` on Windows both mean your home folder, so both commands start in your Documents folder. You can clone into any folder you like.
+
+**Step 3. Create the project.** These commands move into the capstone folder, turn it into a Python project that uses Python 3.12, and install three packages. `anthropic` is the official Python library for calling the API. `python-dotenv` reads your API key from the `.env` file. `pytest` runs automatic tests, and `--dev` marks it as a package for development only. PowerShell accepts forward slashes in paths, so this block works on both computers.
 
 ```bash
 cd 02_BuildingWithTheClaudeAPI/00_Capstone_Plan
@@ -140,23 +163,45 @@ uv add anthropic python-dotenv
 uv add --dev pytest
 ```
 
-`--name` gives the project a clean name, and `--no-readme` keeps uv from touching this plan. The folder is already inside a Git repository, so `uv init` does not create a new one. It does create a sample file named `main.py` (older uv versions call it `hello.py`). Delete that sample file with `rm main.py`, because your code goes in the `app` folder.
+`--name` gives the project a clean name, and `--no-readme` keeps uv from touching this plan. The folder is already inside a Git repository, so `uv init` does not create a new one. It does create a sample file named `main.py` (older uv versions call it `hello.py`). Delete that sample file with `rm main.py`, which works on both computers, because your code goes in the `app` folder.
 
-**Step 4. Create the folders.** `mkdir -p` creates each folder, including `evaluations/results` inside `evaluations`. `touch` creates the empty file `app/__init__.py`.
+**Step 4. Create the folders and the empty file `app/__init__.py`.**
+
+**Mac:** `mkdir -p` creates each folder, including `evaluations/results` inside `evaluations`. `touch` creates the empty file.
 
 ```bash
 mkdir -p app data sample_documents tests mcp_server evaluations/results docs
 touch app/__init__.py
 ```
 
-**Step 5. Store your API key safely.** First tell Git to ignore the key file and the `.venv` folder, where uv keeps the installed packages. Then open the key file in *nano*, a simple text editor that runs inside Terminal.
+**Windows:** `New-Item -ItemType Directory` creates each folder, and `New-Item` on its own creates the empty file.
+
+```powershell
+New-Item -ItemType Directory app, data, sample_documents, tests, mcp_server, evaluations\results, docs
+New-Item app\__init__.py
+```
+
+**Step 5. Store your API key safely.** First tell Git to ignore the key file and the `.venv` folder, where uv keeps the installed packages. Then open the key file in a text editor.
+
+**Mac:** `printf` writes the two names, each on its own line, and `>>` adds them to the end of `.gitignore` instead of replacing the file. `nano` is a simple text editor that runs inside Terminal.
 
 ```bash
 printf ".env\n.venv\n" >> .gitignore
 nano .env
 ```
 
-`printf` writes the two names, each on its own line, and `>>` adds them to the end of `.gitignore` instead of replacing the file. In nano, type or paste the two lines below. Press Ctrl+O and then Return to save, and press Ctrl+X to close nano. Use your own key from the Claude Console. You created it in [lesson 2 of the API course](../01-accessing-claude-with-the-api/02-getting-an-api-key.md).
+In nano, type or paste the two lines below. Press Ctrl+O and then Return to save, and press Ctrl+X to close nano.
+
+**Windows:** `Add-Content` adds the two names to the end of `.gitignore`. `notepad .env` opens the key file in Notepad. Click **Yes** when Notepad asks to create it.
+
+```powershell
+Add-Content .gitignore ".env", ".venv"
+notepad .env
+```
+
+In Notepad, type or paste the two lines below, then save with Ctrl+S and close Notepad.
+
+On both computers, use your own key from the Claude Console. You created it in [lesson 2 of the API course](../01-accessing-claude-with-the-api/02-getting-an-api-key.md).
 
 ```text
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
@@ -255,11 +300,21 @@ Do each milestone right after the course chapter in the "Do it after" column. Th
 
 1. Install the MCP library with `uv add "mcp[cli]"`.
 2. In `mcp_server/server.py`, create a server with `FastMCP` and mark `lookup_ticket` as a tool. The MCP course shows how. Import the function from `app/tools.py`; don't copy it.
-3. Connect the server to Claude Code. Open Terminal on your MacBook in this folder (`02_BuildingWithTheClaudeAPI/00_Capstone_Plan`) and run the command below. Everything after `--` is the command that starts your server. `$(pwd)` fills in this folder's location for you, so you never type it:
+3. Connect the server to Claude Code. Open Terminal (Mac) or PowerShell (Windows) in this folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan`, and run the command for your computer. Everything after `--` is the command that starts your server. `$(pwd)` on the Mac and `$(Get-Location)` on Windows fill in this folder's location for you, so you never type it.
+
+   **Mac:**
 
    ```bash
    claude mcp add tickets -- uv --directory "$(pwd)" run python -m mcp_server.server
    ```
+
+   **Windows:**
+
+   ```powershell
+   claude mcp add tickets -- uv --directory "$(Get-Location)" run python -m mcp_server.server
+   ```
+
+   Claude Code saves the server for this folder on this computer only. Run the command once on each computer you use.
 
 4. Open Claude Code and ask, "What is the status of ticket 1042?" It should call your tool.
 

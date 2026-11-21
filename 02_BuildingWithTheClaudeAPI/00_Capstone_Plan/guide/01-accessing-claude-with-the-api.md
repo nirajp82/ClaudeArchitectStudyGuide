@@ -68,7 +68,7 @@ If the folder doesn't exist yet, problem 1, step 2 creates it.
 
 **Optional warm-up:** the Cookbook notebooks [`how_to_enable_json_mode`](https://github.com/anthropics/claude-cookbooks/blob/main/misc/how_to_enable_json_mode.ipynb) and [`extracting_structured_json`](https://github.com/anthropics/claude-cookbooks/blob/main/tool_use/extracting_structured_json.ipynb) show older ways to get JSON. Problem 7 teaches the current way.
 
-Try each problem first. Open the answer only when you're stuck or done.
+Problem 1 is setup, so its steps are shown in full. For problems 2 to 8, try each one first and open the answer only when you're stuck or done.
 
 ---
 
@@ -76,14 +76,9 @@ Try each problem first. Open the answer only when you're stuck or done.
 
 **Lessons:** [1](../../01-accessing-claude-with-the-api/01-accessing-the-api.md), [2](../../01-accessing-claude-with-the-api/02-getting-an-api-key.md), [3](../../01-accessing-claude-with-the-api/03-making-a-request.md)
 
-**Task:** Set up the project. Write `ask(question)` in `app/client.py`, which sends one question to the model and returns the answer.
+This is a one-time setup, so just follow the steps. It takes about 90 minutes. **Mac** blocks run in Terminal. **Windows** blocks run in PowerShell. Unlabelled blocks work on both.
 
-**Check:** `uv run python -m app.client` prints one sentence, and `.env` never shows in `git status`.
-
-<details>
-<summary>Show the step-by-step answer</summary>
-
-About 90 minutes. **Mac** blocks run in Terminal. **Windows** blocks run in PowerShell. Unlabelled blocks work on both.
+**Done when:** `uv run python -m app.client` prints one sentence, and `.env` never shows in `git status`.
 
 **Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number. **uv** installs Python and packages for one project.
 
@@ -225,8 +220,6 @@ git push
 ```
 
 **Warning:** if `.env` or `.venv` appears in `git status`, stop and fix `.gitignore`. A key committed once stays readable on GitHub, even after you delete it.
-
-</details>
 
 **Exam:** where the key lives and why it never goes into code or Git (Governance, Safety & Risk).
 

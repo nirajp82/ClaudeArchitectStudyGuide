@@ -26,6 +26,7 @@
 - **Why build it:** the exam asks you to choose between designs and defend the choice. You can only do that well if you have built the thing, measured it, and seen it fail.
 - **How it grows:** you add one feature after each chapter of *Building with the Claude API*. Each feature uses what that chapter just taught. Nothing is built up front.
 - **Where the code lives:** in this folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, next to this plan. All paths below are relative to this folder.
+- **Where you build it:** on your MacBook, in the Terminal app. You write these notes on a different computer, so both computers share the same GitHub repository. Run `git pull` before you start each session and `git push` when you finish, so neither computer works on an old copy.
 
 > **Remember this:** One chapter, then one feature. If you fall behind, keep the order and keep going.
 
@@ -65,10 +66,10 @@ Behind the scenes, the app also saves money with *prompt caching*, which means t
 
 | Player | Where it lives | What it does | Example |
 |---|---|---|---|
-| You | Your computer | Write the code, run the app, and type `yes` to approve tickets | You write `lookup_ticket` in `app\tools.py` |
-| Your app | This folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/` | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main` starts the chat |
+| You | Your MacBook | Write the code, run the app, and type `yes` to approve tickets | You write `lookup_ticket` in `app/tools.py` |
+| Your app | This folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, on your MacBook | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main` starts the chat |
 | The Claude API and the model | Anthropic's servers | Reads the question and the documents your app sends, then replies or asks for a tool | It replies "call `lookup_ticket` with 1042" |
-| Claude Code | Your terminal, opened in this folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
+| Claude Code | The Terminal app on your MacBook, opened in this folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
 | The Cookbook | `claude-cookbooks/`, a folder next to this repository (see the [Cookbook build-along plan](../../cookbook-build-along.md#where-the-folders-sit)) | Working examples that you study before you build each feature | `tool_use/customer_service_agent.ipynb` |
 
 ---
@@ -78,27 +79,27 @@ Behind the scenes, the app also saves money with *prompt caching*, which means t
 The capstone code lives inside this study-notes repository, so Git saves it together with your notes. A **Git repository** is a folder whose history of changes Git records. The number in brackets is the milestone that creates each file.
 
 ```text
-02_BuildingWithTheClaudeAPI\00_Capstone_Plan\
+02_BuildingWithTheClaudeAPI/00_Capstone_Plan/
 ├── README.md                 this plan
 ├── .env                      your API key; never committed to Git            (M0)
 ├── .gitignore                tells Git which files to skip: .env and .venv   (M0)
 ├── pyproject.toml            the list of Python packages; uv writes it       (M0)
-├── app\
+├── app/
 │   ├── __init__.py           empty; tells Python that app is a package       (M0)
 │   ├── client.py             sends a question to the API, returns the answer (M0)
 │   ├── retry.py              tries a failed request again                    (M1)
 │   ├── main.py               the chat loop you run in the terminal           (M4)
 │   ├── tools.py              lookup_ticket and create_ticket                 (M4)
 │   └── retrieval.py          finds the document passages for a question     (M5)
-├── data\tickets.json         10 made-up support tickets                      (M4)
-├── sample_documents\         5 to 10 made-up company documents               (M5)
-├── tests\test_tools.py       automatic checks for the two tools              (M4)
-├── mcp_server\server.py      offers the ticket tools over MCP                (M8)
-├── evaluations\
+├── data/tickets.json         10 made-up support tickets                      (M4)
+├── sample_documents/         5 to 10 made-up company documents               (M5)
+├── tests/test_tools.py       automatic checks for the two tools              (M4)
+├── mcp_server/server.py      offers the ticket tools over MCP                (M8)
+├── evaluations/
 │   ├── cases.jsonl           the test questions, one per line                (M2)
 │   ├── run_evals.py          runs every test question and saves a score     (M2)
-│   └── results\              saved scores, cost, and speed                   (M2)
-└── docs\
+│   └── results/              saved scores, cost, and speed                   (M2)
+└── docs/
     ├── decision-journal.md   for each notebook: tried, expected, happened    (M1)
     ├── decisions.md          three design-decision notes                     (M9)
     ├── risk-review.md        one page                                        (M10)
@@ -109,47 +110,60 @@ The capstone code lives inside this study-notes repository, so Git saves it toge
 
 ### Start here: your first session
 
-This takes about 90 minutes. At the end, your own program sends a question to the model and prints the answer. Run every command in PowerShell.
+This takes about 90 minutes. At the end, your own program sends a question to the model and prints the answer. Do every step on your MacBook. Run every command in the **Terminal** app, which you can open by pressing Cmd+Space, typing `Terminal`, and pressing Return.
 
-**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number. **uv** is a tool that installs Python and Python packages for one project. If `uv` is missing, install it with this command, then close and reopen PowerShell:
+**Step 1. Check your tools.** Run `git --version` and `uv --version`. Each should print a version number.
 
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+- **If `git` is missing,** macOS offers to install the *Command Line Tools*, Apple's free set of developer programs that includes Git. Click **Install**, wait for it to finish, then run `git --version` again.
+- **If `uv` is missing,** install it with the command below, then close and reopen Terminal. **uv** is a tool that installs Python and Python packages for one project.
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-**Step 2. Create the project.** Start in the top folder of this study-notes repository. These commands move into the capstone folder, turn it into a Python project that uses Python 3.12, and install three packages. `anthropic` is the official Python library for calling the API. `python-dotenv` reads your API key from the `.env` file. `pytest` runs automatic tests, and `--dev` marks it as a package for development only.
+**Step 2. Get the notes onto your MacBook.** The capstone folder is part of this study-notes repository, so download (*clone*) the repository from GitHub. Replace `<your-github-name>` with your GitHub user name. You only do this once. After that, run `git pull` at the start of each session instead.
 
-```powershell
-cd 02_BuildingWithTheClaudeAPI\00_Capstone_Plan
+```bash
+cd ~/Documents
+git clone https://github.com/<your-github-name>/ClaudeArchitectStudyGuide.git
+cd ClaudeArchitectStudyGuide
+```
+
+`~` means your home folder on the Mac, so `~/Documents` is your Documents folder. You can clone into any folder you like.
+
+**Step 3. Create the project.** These commands move into the capstone folder, turn it into a Python project that uses Python 3.12, and install three packages. `anthropic` is the official Python library for calling the API. `python-dotenv` reads your API key from the `.env` file. `pytest` runs automatic tests, and `--dev` marks it as a package for development only.
+
+```bash
+cd 02_BuildingWithTheClaudeAPI/00_Capstone_Plan
 uv init --name claude-capstone --python 3.12 --no-readme
 uv add anthropic python-dotenv
 uv add --dev pytest
 ```
 
-`--name` gives the project a clean name, and `--no-readme` keeps uv from touching this plan. The folder is already inside a Git repository, so `uv init` does not create a new one. It does create a sample file named `main.py` (older uv versions call it `hello.py`). Delete that sample file, because your code goes in the `app` folder.
+`--name` gives the project a clean name, and `--no-readme` keeps uv from touching this plan. The folder is already inside a Git repository, so `uv init` does not create a new one. It does create a sample file named `main.py` (older uv versions call it `hello.py`). Delete that sample file with `rm main.py`, because your code goes in the `app` folder.
 
-**Step 3. Create the folders.**
+**Step 4. Create the folders.** `mkdir -p` creates each folder, including `evaluations/results` inside `evaluations`. `touch` creates the empty file `app/__init__.py`.
 
-```powershell
-New-Item -ItemType Directory app, data, sample_documents, tests, mcp_server, evaluations\results, docs
-New-Item app\__init__.py
+```bash
+mkdir -p app data sample_documents tests mcp_server evaluations/results docs
+touch app/__init__.py
 ```
 
-**Step 4. Store your API key safely.** First tell Git to ignore the key file and the `.venv` folder, where uv keeps the installed packages. Then create the key file.
+**Step 5. Store your API key safely.** First tell Git to ignore the key file and the `.venv` folder, where uv keeps the installed packages. Then open the key file in *nano*, a simple text editor that runs inside Terminal.
 
-```powershell
-Add-Content .gitignore ".env", ".venv"
-code .env
+```bash
+printf ".env\n.venv\n" >> .gitignore
+nano .env
 ```
 
-Put these two lines in `.env`, using your own key from the Claude Console. You created it in [lesson 2 of the API course](../01-accessing-claude-with-the-api/02-getting-an-api-key.md).
+`printf` writes the two names, each on its own line, and `>>` adds them to the end of `.gitignore` instead of replacing the file. In nano, type or paste the two lines below. Press Ctrl+O and then Return to save, and press Ctrl+X to close nano. Use your own key from the Claude Console. You created it in [lesson 2 of the API course](../01-accessing-claude-with-the-api/02-getting-an-api-key.md).
 
 ```text
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
 CLAUDE_MODEL=claude-haiku-5-5
 ```
 
-**Step 5. Write your first API call.** Create `app\client.py` with this code. Type it yourself rather than pasting it, because typing makes you read each line.
+**Step 6. Write your first API call.** Create `app/client.py` with this code. Type it yourself rather than pasting it, because typing makes you read each line.
 
 ```python
 import os
@@ -183,17 +197,17 @@ if __name__ == "__main__":
 | `response.content[0].text` | Takes the text of the reply out of the response. |
 | `if __name__ == "__main__":` | Runs the last line only when you start this file directly, not when another file imports `ask`. |
 
-**Step 6. Run it.**
+**Step 7. Run it.**
 
-```powershell
+```bash
 uv run python -m app.client
 ```
 
-`uv run` starts Python inside the project's own environment, so the packages from step 2 are found. One sentence about prompt caching should appear. If you see `authentication_error`, the key in `.env` is wrong or has a typo.
+`uv run` starts Python inside the project's own environment, so the packages from step 3 are found. One sentence about prompt caching should appear. If you see `authentication_error`, the key in `.env` is wrong or has a typo.
 
-**Step 7. Save your work in Git.**
+**Step 8. Save your work in Git.**
 
-```powershell
+```bash
 git add .
 git status
 git commit -m "Capstone: first API call"
@@ -221,7 +235,7 @@ Do each milestone right after the course chapter in the "Do it after" column. Th
 | M6 | Chapter 6, Features of Claude (lessons 39–46) | 6 | Citations in every answer and prompt caching | You saved the cost per question with and without caching | Not started |
 | M7 | Chapter 9, Agents and workflows (lessons 61–67) | 7 | A router that sends each question to document search or to the ticket tools, plus a filter that refuses misuse | 3 misuse test questions pass | Not started |
 | M8 | Chapter 7, Model Context Protocol (lessons 47–56), and the [Introduction to MCP course](https://academy.claude.com/courses/introduction-to-model-context-protocol) | none | The ticket tools offered through an MCP server | Claude Code can look up a ticket through your server | Not started |
-| M9 | The cloud course: [Bedrock](https://academy.claude.com/courses/claude-with-amazon-bedrock) or [Vertex AI](https://academy.claude.com/courses/claude-with-google-cloud-s-vertex-ai) | 8 | Cost and speed measured for Haiku and one larger model, and the three decision notes | `docs\decisions.md` has three notes based on your numbers | Not started |
+| M9 | The cloud course: [Bedrock](https://academy.claude.com/courses/claude-with-amazon-bedrock) or [Vertex AI](https://academy.claude.com/courses/claude-with-google-cloud-s-vertex-ai) | 8 | Cost and speed measured for Haiku and one larger model, and the three decision notes | `docs/decisions.md` has three notes based on your numbers | Not started |
 | M10 | Everything above | none | About 25 test questions in total, the risk review, and the manager summary | All three write-ups exist and the tests run cleanly | Not started |
 
 **The test question file.** `cases.jsonl` holds one test question per line, written in JSON (a text format for data). JSONL means "JSON Lines". For example:
@@ -240,11 +254,11 @@ Do each milestone right after the course chapter in the "Do it after" column. Th
 **MCP** (Model Context Protocol) is a standard way to offer tools to any AI app. In M4, only your own app can use `lookup_ticket`. In M8, you wrap the same function in a small server so that other apps, such as Claude Code, can use it too.
 
 1. Install the MCP library with `uv add "mcp[cli]"`.
-2. In `mcp_server\server.py`, create a server with `FastMCP` and mark `lookup_ticket` as a tool. The MCP course shows how. Import the function from `app\tools.py`; don't copy it.
-3. Connect the server to Claude Code. Open PowerShell in this folder (`02_BuildingWithTheClaudeAPI\00_Capstone_Plan`) and run the command below. Everything after `--` is the command that starts your server. `(Get-Location)` fills in this folder's location for you, so you never type it:
+2. In `mcp_server/server.py`, create a server with `FastMCP` and mark `lookup_ticket` as a tool. The MCP course shows how. Import the function from `app/tools.py`; don't copy it.
+3. Connect the server to Claude Code. Open Terminal on your MacBook in this folder (`02_BuildingWithTheClaudeAPI/00_Capstone_Plan`) and run the command below. Everything after `--` is the command that starts your server. `$(pwd)` fills in this folder's location for you, so you never type it:
 
-   ```powershell
-   claude mcp add tickets -- uv --directory "$(Get-Location)" run python -m mcp_server.server
+   ```bash
+   claude mcp add tickets -- uv --directory "$(pwd)" run python -m mcp_server.server
    ```
 
 4. Open Claude Code and ask, "What is the status of ticket 1042?" It should call your tool.
@@ -259,9 +273,9 @@ These short documents cover the exam's Governance and Stakeholder domains, which
 
 | File | What goes in it | Length |
 |---|---|---|
-| `docs\decisions.md` | Three design-decision notes, often called *ADRs* (architecture decision records). Write one each on model choice, deployment platform (the API directly, Bedrock, or Vertex AI), and how the app finds documents. | Half a page each |
-| `docs\risk-review.md` | What data the app sees. What happens if a document contains hidden instructions, such as "ignore your rules" (this is called *prompt injection*). Why the approval gate exists. What you log. What you would change before real users. | One page |
-| `docs\manager-summary.md` | The problem, what the app does, the cost per question from your M9 numbers, the main risks, how you would roll it out, and how you would measure success. | One page |
+| `docs/decisions.md` | Three design-decision notes, often called *ADRs* (architecture decision records). Write one each on model choice, deployment platform (the API directly, Bedrock, or Vertex AI), and how the app finds documents. | Half a page each |
+| `docs/risk-review.md` | What data the app sees. What happens if a document contains hidden instructions, such as "ignore your rules" (this is called *prompt injection*). Why the approval gate exists. What you log. What you would change before real users. | One page |
+| `docs/manager-summary.md` | The problem, what the app does, the cost per question from your M9 numbers, the main risks, how you would roll it out, and how you would measure success. | One page |
 
 Each decision note answers five questions:
 

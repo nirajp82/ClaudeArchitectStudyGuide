@@ -209,7 +209,7 @@ The cost: you must write the test emails and the code, and each run sends 50 pai
 - [ ] Write the three-group email-sorting prompt, and try it on 5 emails you make up.
 - [ ] Write 15 more emails, including the 5 odd kinds from the table. Count how many the prompt gets wrong.
 - [ ] Change the prompt once, rerun all 20 emails, and compare the two scores.
-- [ ] Capstone milestone M2: start `cases.jsonl` with 10 test questions ([capstone plan](../../Capstone/README.md#the-milestones)).
+- [ ] Capstone milestone M2: start `cases.jsonl` with 10 test questions ([capstone plan](../00_Capstone_Plan/README.md#the-milestones)).
 
 ---
 

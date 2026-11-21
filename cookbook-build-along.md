@@ -25,7 +25,7 @@ The Claude Cookbook is a free GitHub repository from Anthropic with about 110 Ju
 
 - **When:** after each chapter of *Building with the Claude API*, do the matching phase below. The plan follows the course chapters, not calendar dates, so it still works if you fall behind or move ahead.
 - **How much:** about 20 notebooks in 8 phases, roughly 22 hours in total. These hours are part of the 5 hours a week set aside for the capstone, so the plan adds no new weekly time.
-- **What you end up with:** a working capstone (the support assistant in the [capstone plan](Capstone/README.md)) where every feature is backed by a Cookbook technique you have run and changed yourself.
+- **What you end up with:** a working capstone (the support assistant in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md)) where every feature is backed by a Cookbook technique you have run and changed yourself.
 
 > **Remember this:** The course tells you what a technique is. The notebook shows it working. The capstone proves you can do it without help.
 
@@ -42,10 +42,10 @@ Building along is **not** copying code into your project. Copying gives you work
 | Player | Where it lives | What it does | Example |
 |---|---|---|---|
 | You | Your computer | Run notebooks, change them, write the capstone code | You change the cache settings and rerun the cell |
-| The Cookbook | `C:\Projects\Personal\claude-cookbooks\` (a copy you download) | Gives you example code to run and study | `misc\prompt_caching.ipynb` |
+| The Cookbook | `claude-cookbooks/`, a folder next to this repository (a copy you download) | Gives you example code to run and study | `misc\prompt_caching.ipynb` |
 | VS Code with the Jupyter extension | Your computer | Opens notebooks and runs their cells | You press Shift+Enter to run a cell |
 | The Claude API | Anthropic's servers | Receives each request from a cell, runs the model, and sends back the answer | A cell sends a question and prints the reply |
-| Your capstone repository | `C:\Projects\Personal\claude-capstone\` (layout in the [capstone plan](Capstone/README.md#where-the-files-go)) | Holds your own version of each technique | `app\tools.py` with your ticket lookup tool |
+| Your capstone folder | `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, inside this repository (layout in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md#where-the-files-go)) | Holds your own version of each technique | `app\tools.py` with your ticket lookup tool |
 | Claude Code | Your terminal, opened in either folder | Acts as a tutor: explains a cell you don't understand and reviews your capstone code | "Explain what `cache_control` does in cell 6" |
 
 #### Where the folders sit
@@ -53,16 +53,17 @@ Building along is **not** copying code into your project. Copying gives you work
 Keep the Cookbook **outside** this notes repository. It is a separate download of someone else's code, and you should never commit it here.
 
 ```text
-C:\Projects\Personal\
-├── ClaudeArchitectStudyGuide\   your study notes (this repository)
-├── claude-cookbooks\            the Cookbook: read and run, never commit
-│   ├── .env                     your API key (you create this; Git ignores it)
-│   ├── misc\prompt_caching.ipynb
-│   └── tool_use\customer_service_agent.ipynb
-└── claude-capstone\             your capstone project: your own code
-    ├── app\client.py
-    ├── app\tools.py
-    └── evaluations\cases.jsonl
+(the folder that holds this repository)
+├── ClaudeArchitectStudyGuide\       your study notes (this repository)
+│   └── 02_BuildingWithTheClaudeAPI\
+│       └── 00_Capstone_Plan\        your capstone project: your own code
+│           ├── app\client.py
+│           ├── app\tools.py
+│           └── evaluations\cases.jsonl
+└── claude-cookbooks\                the Cookbook: read and run, never commit
+    ├── .env                         your API key (you create this; Git ignores it)
+    ├── misc\prompt_caching.ipynb
+    └── tool_use\customer_service_agent.ipynb
 ```
 
 ---
@@ -82,7 +83,7 @@ This takes about an hour. Run the commands in PowerShell.
 2. **Download the Cookbook** (Git calls this *cloning*):
 
    ```powershell
-   cd C:\Projects\Personal
+   cd ..
    git clone https://github.com/anthropics/claude-cookbooks.git
    cd claude-cookbooks
    ```
@@ -140,7 +141,7 @@ flowchart LR
 
 ### The plan, phase by phase
 
-Do each phase after you finish the matching course chapter. File names in the "Build in the capstone" rows match the file layout in the [capstone plan](Capstone/README.md#where-the-files-go).
+Do each phase after you finish the matching course chapter. File names in the "Build in the capstone" rows match the file layout in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md#where-the-files-go).
 
 | Phase | Do it after | Notebooks | Hours | Capstone result |
 |:---:|---|---:|---:|---|
@@ -159,8 +160,8 @@ Chapters 7 (MCP) and 8 (Anthropic apps) have no Cookbook phase, because the Cook
 #### Phase 0: setup (now)
 
 - Do the one-time setup above.
-- Create the capstone folder by following "Start here: your first session" in the [capstone plan](Capstone/README.md#start-here-your-first-session).
-- **Done when:** the JSON mode notebook returns a reply, and `claude-capstone` is a Git repository with a `.gitignore` that lists `.env`.
+- Create the capstone folder by following "Start here: your first session" in the [capstone plan](02_BuildingWithTheClaudeAPI/00_Capstone_Plan/README.md#start-here-your-first-session).
+- **Done when:** the JSON mode notebook returns a reply, and the capstone folder has a `.gitignore` that lists `.env` and `.venv`.
 
 #### Phase 1: calling the API and getting structured output
 

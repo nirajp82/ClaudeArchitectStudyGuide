@@ -1,6 +1,6 @@
 # Capstone Project Plan: Support Assistant
 
-**Part of:** [Study plan](../readme.md) &nbsp;·&nbsp; **Created:** November 7, 2026 &nbsp;·&nbsp; **Runs:** November 16, 2026 to February 7, 2027
+**Part of:** [Study plan](../../readme.md) &nbsp;·&nbsp; **Course:** [Building with the Claude API](../README.md)
 
 ---
 
@@ -25,16 +25,15 @@
 - **What it is:** a small Python program that runs in your terminal. You type a question, and the program answers it using the Claude API. It is the one app you build during the whole study plan.
 - **Why build it:** the exam asks you to choose between designs and defend the choice. You can only do that well if you have built the thing, measured it, and seen it fail.
 - **How it grows:** you add one feature after each chapter of *Building with the Claude API*. Each feature uses what that chapter just taught. Nothing is built up front.
-- **Where the code lives:** in its own folder, `C:\Projects\Personal\claude-capstone\`, outside these notes. This plan stays here in the notes.
-- **Time:** about 5 hours a week, which includes the matching notebooks from the [Cookbook build-along plan](../cookbook-build-along.md). The Cookbook shows each technique working. The capstone is where you write it yourself. Pause the capstone from December 14 to January 2 while you prepare for and take the Foundations exam.
+- **Where the code lives:** in this folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/`, next to this plan. All paths below are relative to this folder.
 
-> **Remember this:** One chapter, then one feature. If you fall behind on dates, keep the order and keep going.
+> **Remember this:** One chapter, then one feature. If you fall behind, keep the order and keep going.
 
 ---
 
 ### What the finished app does
 
-By February 7, 2027, a session in your terminal looks like this. Every item it shows is a feature you add in one milestone.
+When the app is finished, a session in your terminal looks like this. Every item it shows is a feature you add in one milestone.
 
 ```text
 You:  How long do I have to ask for a refund?
@@ -67,21 +66,22 @@ Behind the scenes, the app also saves money with *prompt caching*, which means t
 | Player | Where it lives | What it does | Example |
 |---|---|---|---|
 | You | Your computer | Write the code, run the app, and type `yes` to approve tickets | You write `lookup_ticket` in `app\tools.py` |
-| Your app | `C:\Projects\Personal\claude-capstone\` | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main` starts the chat |
+| Your app | This folder, `02_BuildingWithTheClaudeAPI/00_Capstone_Plan/` | Reads your question, finds documents, runs tools, and calls the API | `uv run python -m app.main` starts the chat |
 | The Claude API and the model | Anthropic's servers | Reads the question and the documents your app sends, then replies or asks for a tool | It replies "call `lookup_ticket` with 1042" |
-| Claude Code | Your terminal, opened in the capstone folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
-| The Cookbook | `C:\Projects\Personal\claude-cookbooks\` | Working examples that you study before you build each feature | `tool_use/customer_service_agent.ipynb` |
+| Claude Code | Your terminal, opened in this folder | Your tutor and reviewer. You write the code first, then ask it to review. | "Review `app/tools.py`. Explain problems; don't fix them." |
+| The Cookbook | `claude-cookbooks/`, a folder next to this repository (see the [Cookbook build-along plan](../../cookbook-build-along.md#where-the-folders-sit)) | Working examples that you study before you build each feature | `tool_use/customer_service_agent.ipynb` |
 
 ---
 
 ### Where the files go
 
-The capstone is its own Git repository. A **Git repository** is a folder whose history of changes Git records. The number in brackets is the milestone that creates each file.
+The capstone code lives inside this study-notes repository, so Git saves it together with your notes. A **Git repository** is a folder whose history of changes Git records. The number in brackets is the milestone that creates each file.
 
 ```text
-C:\Projects\Personal\claude-capstone\
+02_BuildingWithTheClaudeAPI\00_Capstone_Plan\
+├── README.md                 this plan
 ├── .env                      your API key; never committed to Git            (M0)
-├── .gitignore                tells Git which files to skip, such as .env     (M0)
+├── .gitignore                tells Git which files to skip: .env and .venv   (M0)
 ├── pyproject.toml            the list of Python packages; uv writes it       (M0)
 ├── app\
 │   ├── __init__.py           empty; tells Python that app is a package       (M0)
@@ -117,17 +117,16 @@ This takes about 90 minutes. At the end, your own program sends a question to th
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-**Step 2. Create the project.** These commands create the folder, set it to use Python 3.12, and install three packages. `anthropic` is the official Python library for calling the API. `python-dotenv` reads your API key from the `.env` file. `pytest` runs automatic tests, and `--dev` marks it as a package for development only.
+**Step 2. Create the project.** Start in the top folder of this study-notes repository. These commands move into the capstone folder, turn it into a Python project that uses Python 3.12, and install three packages. `anthropic` is the official Python library for calling the API. `python-dotenv` reads your API key from the `.env` file. `pytest` runs automatic tests, and `--dev` marks it as a package for development only.
 
 ```powershell
-cd C:\Projects\Personal
-uv init claude-capstone --python 3.12
-cd claude-capstone
+cd 02_BuildingWithTheClaudeAPI\00_Capstone_Plan
+uv init --name claude-capstone --python 3.12 --no-readme
 uv add anthropic python-dotenv
 uv add --dev pytest
 ```
 
-`uv init` also makes the folder a Git repository and creates a sample file named `main.py` (older uv versions call it `hello.py`). Delete that sample file, because your code goes in the `app` folder.
+`--name` gives the project a clean name, and `--no-readme` keeps uv from touching this plan. The folder is already inside a Git repository, so `uv init` does not create a new one. It does create a sample file named `main.py` (older uv versions call it `hello.py`). Delete that sample file, because your code goes in the `app` folder.
 
 **Step 3. Create the folders.**
 
@@ -136,14 +135,14 @@ New-Item -ItemType Directory app, data, sample_documents, tests, mcp_server, eva
 New-Item app\__init__.py
 ```
 
-**Step 4. Store your API key safely.** First tell Git to ignore the key file, then create it.
+**Step 4. Store your API key safely.** First tell Git to ignore the key file and the `.venv` folder, where uv keeps the installed packages. Then create the key file.
 
 ```powershell
-Add-Content .gitignore ".env"
+Add-Content .gitignore ".env", ".venv"
 code .env
 ```
 
-Put these two lines in `.env`, using your own key from the Claude Console. You created it in [lesson 2 of the API course](../02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/02-getting-an-api-key.md).
+Put these two lines in `.env`, using your own key from the Claude Console. You created it in [lesson 2 of the API course](../01-accessing-claude-with-the-api/02-getting-an-api-key.md).
 
 ```text
 ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
@@ -180,7 +179,7 @@ if __name__ == "__main__":
 | `load_dotenv()` | Copies the two lines from `.env` into the program's settings, so the key never appears in the code. |
 | `client = Anthropic()` | Creates the connection to the API. It finds `ANTHROPIC_API_KEY` by itself. |
 | `MODEL = ...` | Reads the model name from `.env`. Haiku is the cheapest current model, so it is right for learning. |
-| `client.messages.create(...)` | Sends one request: which model to use, the longest reply allowed (`max_tokens`, where a token is a word piece), and your message. This is the call from [lesson 3](../02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/03-making-a-request.md). |
+| `client.messages.create(...)` | Sends one request: which model to use, the longest reply allowed (`max_tokens`, where a token is a word piece), and your message. This is the call from [lesson 3](../01-accessing-claude-with-the-api/03-making-a-request.md). |
 | `response.content[0].text` | Takes the text of the reply out of the response. |
 | `if __name__ == "__main__":` | Runs the last line only when you start this file directly, not when another file imports `ask`. |
 
@@ -197,12 +196,11 @@ uv run python -m app.client
 ```powershell
 git add .
 git status
-git commit -m "First API call"
+git commit -m "Capstone: first API call"
+git push
 ```
 
-**Warning:** check the `git status` list before you commit. If `.env` appears in it, stop and fix `.gitignore` first. A committed key can be copied by anyone who sees the repository, even after you delete the file, because Git keeps the history.
-
-If you want a backup on GitHub, `gh repo create claude-capstone --private --source . --push` creates a private repository there and uploads your work.
+**Warning:** check the `git status` list before you commit. If `.env` or `.venv` appears in it, stop and fix `.gitignore` first. This repository is pushed to GitHub, so a committed key can be copied by anyone who sees the repository, even after you delete the file, because Git keeps the history.
 
 **Milestone 0 is done when** `uv run python -m app.client` prints an answer and `git log` shows your first commit.
 
@@ -210,21 +208,21 @@ If you want a backup on GitHub, `gh repo create claude-capstone --private --sour
 
 ### The milestones
 
-Do each milestone right after the course chapter in the "Do it after" column. The chapters belong to [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api), and your notes for it are in the [course index](../02_BuildingWithTheClaudeAPI/README.md). A chapter name becomes a link to your notes once you have written notes for its first lesson. The dates match the study plan, but the order matters more than the dates. "Cookbook phase" points to the [Cookbook build-along plan](../cookbook-build-along.md#the-plan-phase-by-phase), which lists the notebooks to study first and the exact files to build.
+Do each milestone right after the course chapter in the "Do it after" column. The chapters belong to [Building with the Claude API](https://academy.claude.com/courses/building-with-the-claude-api), and your notes for it are in the [course index](../README.md). A chapter name becomes a link to your notes once you have written notes for its first lesson. "Cookbook phase" points to the [Cookbook build-along plan](../../cookbook-build-along.md#the-plan-phase-by-phase), which lists the notebooks to study first and the exact files to build.
 
-| # | Dates | Do it after | Cookbook phase | What you add | Done when | Status |
-|:---:|:---|:---|:---:|:---|:---|:---|
-| M0 | Nov 16 | [API course lesson 3, Making a request](../02_BuildingWithTheClaudeAPI/01-accessing-claude-with-the-api/03-making-a-request.md) | 0 | The project and your first API call | The first session above is complete | Not started |
-| M1 | Nov 17 – Nov 19 | API chapter 1, Accessing Claude with the API (lessons 4–8) | 1 | A system prompt, retries in `retry.py`, and replies in a fixed JSON shape | A failed request is tried again, and you can explain why | Not started |
-| M2 | Nov 20 – Nov 22 | [Chapter 2, Prompt evaluation (lessons 9–14)](../02_BuildingWithTheClaudeAPI/02-prompt-evaluation/09-prompt-evaluation.md) | 2 | The first 10 test questions in `cases.jsonl` and `run_evals.py` | One command prints a score out of 10 | Not started |
-| M3 | Nov 23 – Nov 24 | Chapter 3, Prompt engineering techniques (lessons 15–19) | 3 | Documents and instructions wrapped in XML tags in the system prompt | You reran the tests and wrote down whether the score changed | Not started |
-| M4 | Nov 25 – Dec 1 | Chapter 4, Tool use with Claude (lessons 20–31) | 4 | `lookup_ticket`, `create_ticket` with the approval gate, the chat loop in `main.py`, and two tests | The second and third exchanges in the example above work | Not started |
-| M5 | Dec 2 – Dec 4 | Chapter 5, RAG and Agentic Search (lessons 32–38) | 5 | Search over the documents in `sample_documents`, plus 3 test questions the documents can't answer | The first and last exchanges in the example work | Not started |
-| M6 | Dec 5 – Dec 8 | Chapter 6, Features of Claude (lessons 39–46) | 6 | Citations in every answer and prompt caching | You saved the cost per question with and without caching | Not started |
-| M7 | Dec 12 – Dec 13 | Chapter 9, Agents and workflows (lessons 61–67) | 7 | A router that sends each question to document search or to the ticket tools, plus a filter that refuses misuse | 3 misuse test questions pass | Not started |
-| M8 | Jan 3 – Jan 10, 2027 | Chapter 7, Model Context Protocol (lessons 47–56), and the [Introduction to MCP course](https://academy.claude.com/courses/introduction-to-model-context-protocol) | none | The ticket tools offered through an MCP server | Claude Code can look up a ticket through your server | Not started |
-| M9 | Jan 14 – Jan 24 | The cloud course: [Bedrock](https://academy.claude.com/courses/claude-with-amazon-bedrock) or [Vertex AI](https://academy.claude.com/courses/claude-with-google-cloud-s-vertex-ai) | 8 | Cost and speed measured for Haiku and one larger model, and the three decision notes | `docs\decisions.md` has three notes based on your numbers | Not started |
-| M10 | Jan 26 – Feb 7 | Everything above | none | About 25 test questions in total, the risk review, and the manager summary | All three write-ups exist and the tests run cleanly | Not started |
+| # | Do it after | Cookbook phase | What you add | Done when | Status |
+|:---:|:---|:---:|:---|:---|:---|
+| M0 | [API course lesson 3, Making a request](../01-accessing-claude-with-the-api/03-making-a-request.md) | 0 | The project and your first API call | The first session above is complete | Not started |
+| M1 | API chapter 1, Accessing Claude with the API (lessons 4–8) | 1 | A system prompt, retries in `retry.py`, and replies in a fixed JSON shape | A failed request is tried again, and you can explain why | Not started |
+| M2 | [Chapter 2, Prompt evaluation (lessons 9–14)](../02-prompt-evaluation/09-prompt-evaluation.md) | 2 | The first 10 test questions in `cases.jsonl` and `run_evals.py` | One command prints a score out of 10 | Not started |
+| M3 | Chapter 3, Prompt engineering techniques (lessons 15–19) | 3 | Documents and instructions wrapped in XML tags in the system prompt | You reran the tests and wrote down whether the score changed | Not started |
+| M4 | Chapter 4, Tool use with Claude (lessons 20–31) | 4 | `lookup_ticket`, `create_ticket` with the approval gate, the chat loop in `main.py`, and two tests | The second and third exchanges in the example above work | Not started |
+| M5 | Chapter 5, RAG and Agentic Search (lessons 32–38) | 5 | Search over the documents in `sample_documents`, plus 3 test questions the documents can't answer | The first and last exchanges in the example work | Not started |
+| M6 | Chapter 6, Features of Claude (lessons 39–46) | 6 | Citations in every answer and prompt caching | You saved the cost per question with and without caching | Not started |
+| M7 | Chapter 9, Agents and workflows (lessons 61–67) | 7 | A router that sends each question to document search or to the ticket tools, plus a filter that refuses misuse | 3 misuse test questions pass | Not started |
+| M8 | Chapter 7, Model Context Protocol (lessons 47–56), and the [Introduction to MCP course](https://academy.claude.com/courses/introduction-to-model-context-protocol) | none | The ticket tools offered through an MCP server | Claude Code can look up a ticket through your server | Not started |
+| M9 | The cloud course: [Bedrock](https://academy.claude.com/courses/claude-with-amazon-bedrock) or [Vertex AI](https://academy.claude.com/courses/claude-with-google-cloud-s-vertex-ai) | 8 | Cost and speed measured for Haiku and one larger model, and the three decision notes | `docs\decisions.md` has three notes based on your numbers | Not started |
+| M10 | Everything above | none | About 25 test questions in total, the risk review, and the manager summary | All three write-ups exist and the tests run cleanly | Not started |
 
 **The test question file.** `cases.jsonl` holds one test question per line, written in JSON (a text format for data). JSONL means "JSON Lines". For example:
 
@@ -243,10 +241,10 @@ Do each milestone right after the course chapter in the "Do it after" column. Th
 
 1. Install the MCP library with `uv add "mcp[cli]"`.
 2. In `mcp_server\server.py`, create a server with `FastMCP` and mark `lookup_ticket` as a tool. The MCP course shows how. Import the function from `app\tools.py`; don't copy it.
-3. Connect the server to Claude Code. Everything after `--` is the command that starts your server:
+3. Connect the server to Claude Code. Open PowerShell in this folder (`02_BuildingWithTheClaudeAPI\00_Capstone_Plan`) and run the command below. Everything after `--` is the command that starts your server. `(Get-Location)` fills in this folder's location for you, so you never type it:
 
    ```powershell
-   claude mcp add tickets -- uv --directory C:\Projects\Personal\claude-capstone run python -m mcp_server.server
+   claude mcp add tickets -- uv --directory "$(Get-Location)" run python -m mcp_server.server
    ```
 
 4. Open Claude Code and ask, "What is the status of ticket 1042?" It should call your tool.

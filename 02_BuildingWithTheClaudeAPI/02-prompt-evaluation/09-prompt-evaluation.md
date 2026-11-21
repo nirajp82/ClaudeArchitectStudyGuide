@@ -48,7 +48,7 @@ Options 1 and 2 are traps that almost every developer falls into. People expect 
 
 When you build an AI-powered software feature—like an app that automatically sorts incoming customer emails into `billing`, `technical`, or `other`—**your prompt is your production code**. Every time a real customer sends an email, your app inserts that email into your prompt and sends it to Claude to get the right category.
 
-Before trusting that prompt with real users, you need a **test set**: a saved file of sample customer emails paired with the exact right labels you expect back.
+Why we need a test set: Before trusting a prompt with real users, you need a test set to verify that your prompt handles normal, regular, and messy edge-case inputs reliably. A prompt test case works just like a unit test in software development: given a specific input, you check whether you get the expected answer. In practice, this is a saved file (like test_set.json) of sample customer emails paired with the exact right labels you expect back.
 
 Think of the test set like unit tests for your prompt:
 

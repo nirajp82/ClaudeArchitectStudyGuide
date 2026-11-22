@@ -36,6 +36,22 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why this lesson exists:**
+
+1. An online shop wants each customer email turned into a support ticket automatically.
+2. The shop's code asks the model to pull out the name, email, order ID, issue, and whether the customer wants a refund.
+3. The ticket system needs exact fields. A friendly sentence or Markdown around the JSON breaks the code that reads it.
+4. This lesson shows how to make the model return clean JSON in exactly the shape your code needs.
+
+```mermaid
+flowchart LR
+    EM["Customer email<br/>'...blue kettle (order #A-1042)<br/>arrived with a cracked lid.<br/>I'd like a refund...'"] --> CALL["client.messages.parse(<br/>..., output_format=SupportTicket)"]
+    SCH["Schema: SupportTicket<br/>name, email, order_id,<br/>issue, wants_refund"] --> CALL
+    CALL --> API["Claude API keeps the model<br/>to the schema while it writes"]
+    API --> OUT["response.parsed_output<br/>order_id = 'A-1042'<br/>issue = 'damaged'<br/>wants_refund = True"]
+    style SCH fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
 - **The problem:** asked for JSON, the model adds a friendly sentence, wraps the JSON in Markdown fences, and picks its own field names. Your code can't use that reliably.
 - **Structured outputs (the current way):** you give the API the exact shape you want, called a *JSON schema*. The API returns plain JSON that always matches it.
 - **Prefill and stop sequences (the course's way):** an older trick that works only on older models such as `claude-haiku-4-5`. Newer models reject it with a 400 error.
@@ -48,6 +64,14 @@ Do the guide's problems in order, after you finish the chapter, because each one
 4. `response.parsed_output` holds a ready Python object, such as `ticket.issue == "damaged"`.
 
 #### What is guaranteed, and what isn't
+
+```mermaid
+flowchart TD
+    R["Response arrives"] --> SR{"stop_reason?"}
+    SR -- "max_tokens or refusal" --> BAD["Answer may not match<br/>the schema: retry or handle"]
+    SR -- "end_turn" --> SHAPE["Shape is guaranteed:<br/>valid JSON, every field,<br/>right types, no extras"]
+    SHAPE --> VAL["Values are NOT guaranteed:<br/>check the ones that matter,<br/>such as the category"]
+```
 
 - **Guaranteed:** valid JSON, every required field, the right type for each field, and no extra fields.
 - **Not guaranteed:** that the values are true. The model can still pick the wrong category, so check values that matter.

@@ -36,6 +36,25 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why this lesson exists:**
+
+1. You are building a chat app. A user types "What is quantum computing?" and presses Send.
+2. The answer must come from Claude, which runs on Anthropic's servers, not on the user's phone.
+3. Your app reaches Claude through the **Claude API**: a request goes out, an answer comes back.
+4. This lesson follows that one question all the way there and back.
+
+```mermaid
+flowchart LR
+    U["User<br/>types a question"] --> A["Your app<br/>(phone or browser)<br/>no API key"]
+    A -- "1. question" --> S["Your server<br/>holds the secret<br/>API key"]
+    S -- "2. key + model +<br/>messages + max_tokens" --> API["Claude API<br/>api.anthropic.com"]
+    API -- "3." --> M["The model<br/>writes the answer"]
+    M --> API
+    API -- "4. answer + usage +<br/>stop_reason" --> S
+    S -- "5. answer text" --> A
+    style S fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
 - **The round trip:** your app sends the user's question to your own server. Your server adds the secret API key and sends it to Anthropic. The answer comes back the same way.
 - **The API key:** proves a request comes from your account, which pays for it. It lives only on your server.
 - **The request:** every request carries the key, a `model`, a `messages` list, and `max_tokens`.
@@ -72,6 +91,14 @@ The model works only with numbers. Long before your request, **training** saved 
 3. **Weights:** all the other learned numbers, which process the embedding numbers. In a real model, each result mixes all of a row's numbers, not one number per weight.
 
 On every request, the model runs four stages:
+
+```mermaid
+flowchart LR
+    T["1. Tokenization<br/>'What is quantum computing?'<br/>becomes 5 token IDs:<br/>2061, 374, 4211, 9876, 30"] --> E["2. Embedding<br/>each ID's saved row<br/>of numbers is read"]
+    E --> C["3. Contextualization<br/>each token adjusts a copy<br/>of its numbers to fit<br/>the words before it"]
+    C --> G["4. Generation<br/>pick a likely next token,<br/>add it, repeat"]
+    G -- "new token goes<br/>through 2 and 3 too" --> E
+```
 
 1. **Tokenization:** cut the text into tokens and replace each one with its token ID.
 2. **Embedding:** go straight to each token's saved row, without searching. So `bank` gets the same row in every sentence.
@@ -242,6 +269,22 @@ This happens in two parts:
 | **Weights** | All the other numbers the model learned in training. They hold what the model knows about how words affect each other and which word tends to come next. | Stages 3 and 4 |
 
 Your request never changes these three things. Only a new round of training can change them.
+
+```mermaid
+flowchart LR
+    subgraph Once["Training: once, long before your request"]
+        V["Vocabulary<br/>token to token ID"]
+        ET["Embedding table<br/>one row per token ID"]
+        W["Weights<br/>everything else learned"]
+    end
+    subgraph Each["Your request: every time"]
+        S1["1. Tokenization"] --> S2["2. Embedding"] --> S3["3. Contextualization"] --> S4["4. Generation"]
+    end
+    V -. "read only" .-> S1
+    ET -. "read only" .-> S2
+    W -. "read only" .-> S3
+    W -. "read only" .-> S4
+```
 
 Here is a simple picture of how the weights work on the embedding numbers. Say the token `bank` has the saved row `[0.25, 0.81, 0.42]`, and the model multiplies each number by a weight:
 

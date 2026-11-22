@@ -201,8 +201,6 @@ for event in stream:
 - `for event in stream:` handles each event as it arrives, in order.
 - `print(event)` shows the raw event. The output starts with a `RawMessageStartEvent`, then a `RawContentBlockStartEvent`, then many delta events.
 
-![Notebook output of the stream=True code: a RawMessageStartEvent with an empty content list, stop_reason None, and usage of 18 input tokens, then a RawContentBlockStartEvent with an empty text block](../images/07-raw-event-output.png)
-
 Things to notice in the output: the first event already shows `input_tokens=18`, but `stop_reason` is still `None` and the text is empty, because the model has not written anything yet. The text arrives in the delta events that follow.
 
 #### Way 2: only the text, with `messages.stream()`

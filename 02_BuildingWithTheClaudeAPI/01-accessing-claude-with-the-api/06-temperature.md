@@ -35,6 +35,23 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why this lesson exists:**
+
+1. In [lesson 1](01-accessing-the-api.md), you saw that the model writes one token at a time, picking each from a list of chances. That is why the same question can get different answers.
+2. Some apps need the same answer every time, such as pulling fields out of an invoice. Others want variety, such as brainstorming movie ideas.
+3. **Temperature** is the setting that controls how much the picks vary. This lesson shows how it works and when to use each value.
+
+```mermaid
+flowchart LR
+    IN["'What do you think'"] --> P["Model gives every next word<br/>a chance:<br/>about 30%, would 20%,<br/>of 10%, ... we 5%"]
+    P --> T{"Temperature<br/>reshapes the chances"}
+    T -- "low (0.0)" --> LO["about 100%<br/>same word every time"]
+    T -- "high (1.0)" --> HI["about 23%, would 18%,<br/>... we 9%<br/>more variety"]
+    LO --> PICK["Pick one word at random,<br/>using the chances.<br/>Repeat for the next word."]
+    HI --> PICK
+    style T fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
 - **Temperature:** a setting from 0.0 to 1.0 that controls how predictable or creative the model's answers are. The default is 1.0. The name comes from physics: cold molecules stay locked in one place, like ice, and hot ones jump around, like steam. In the same way, 0.0 is cold (the model sticks to one word) and 1.0 is hot (it jumps between many).
 - **Low temperature (near 0):** the model almost always picks the most likely next word. Answers are consistent.
 - **High temperature (near 1):** the chances spread more evenly across words, so less likely words get picked more often. Answers vary more.
@@ -57,6 +74,15 @@ Temperature reshapes these probabilities before the pick in step 3:
 | High temperature | 23% | 18% | 15% | 12% | 12% | 11% | 9% |
 
 #### When to use which temperature
+
+```mermaid
+flowchart TD
+    M{"Model is Claude 4.7<br/>or newer?"} -- "Yes" --> D["Leave temperature at 1.0<br/>(other values return an error).<br/>Steer with the prompt, examples,<br/>and output checks."]
+    M -- "No" --> K{"What kind of task?"}
+    K -- "Facts, code, extraction,<br/>moderation" --> L["Low: 0.0 to 0.3"]
+    K -- "Summaries, teaching,<br/>writing with rules" --> MID["Medium: 0.4 to 0.7"]
+    K -- "Brainstorming, jokes,<br/>marketing" --> H["High: 0.8 to 1.0"]
+```
 
 | Range | Use it for |
 |---|---|

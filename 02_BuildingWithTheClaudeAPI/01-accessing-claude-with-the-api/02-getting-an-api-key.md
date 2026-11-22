@@ -34,7 +34,19 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-To let your code use Claude, you log in to the Claude Console (Anthropic's website for developers at `platform.claude.com`), create an API key, which is a long secret password such as `sk-ant-api03-...`, copy it straight away because it is shown only once, and store it outside your code, for example in an environment variable called `ANTHROPIC_API_KEY`.
+**Why this lesson exists:**
+
+1. In [lesson 1](01-accessing-the-api.md), your server sent the user's question to the Claude API with a secret **API key** attached.
+2. The API key is a long secret password, such as `sk-ant-api03-...`. It tells Anthropic which account sent the request and which account pays.
+3. You don't have a key yet. This lesson gets one from the **Claude Console** (Anthropic's website for developers, `platform.claude.com`) and stores it safely.
+
+```mermaid
+flowchart LR
+    C["Claude Console<br/>platform.claude.com<br/>creates the key"] -- "shown ONCE:<br/>copy it now" --> E["Environment variable<br/>ANTHROPIC_API_KEY<br/>(or a .env file Git ignores)"]
+    E -- "SDK reads it<br/>automatically" --> CODE["Your code<br/>never contains the key"]
+    CODE -- "key sent with<br/>every request" --> API["Claude API<br/>checks the key"]
+    style E fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
 
 #### How to create a key
 
@@ -65,6 +77,14 @@ A **workspace** is a folder inside your Anthropic account that groups API keys, 
 - If a key leaks, disable or delete it in the Console right away and create a new one. **Disable** can be undone; **Delete** is permanent.
 
 #### When to use which kind of key
+
+```mermaid
+flowchart TD
+    Q{"Who uses<br/>the app?"} -- "Only me:<br/>learning, scripts" --> P["Personal key<br/>acts as you"]
+    Q -- "A team or<br/>real users" --> R{"Runs on AWS, Google Cloud,<br/>Azure, or a CI pipeline?"}
+    R -- "Yes" --> W["Workload Identity Federation<br/>short-lived tokens, no key to leak"]
+    R -- "No" --> SA["Service account key<br/>belongs to the app"]
+```
 
 - **Use a personal key** for your own learning and scripts, such as this course. It acts as you and stops working if you leave the organization.
 - **Use a service account key** for a shared or production app. It belongs to the app, not a person, so it keeps working when a developer leaves.
@@ -194,6 +214,13 @@ course-project/
 The `.gitignore` file lists files that Git must never save, so `.env` stays on your computer and never reaches GitHub.
 
 #### What to do if the key leaks
+
+```mermaid
+flowchart LR
+    L["Key leaked"] --> D["1. Disable it (undoable)<br/>or delete it (permanent)"]
+    D --> N["2. Create a new key,<br/>put it where the old one was"]
+    N --> U["3. Check the usage page<br/>for requests you didn't make"]
+```
 
 1. In the Console, **disable** the key (this can be undone) or **delete** it (permanent).
 2. Create a new key and put it where the old one was.

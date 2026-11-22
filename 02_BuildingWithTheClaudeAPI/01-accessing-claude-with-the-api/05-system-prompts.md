@@ -35,6 +35,24 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why this lesson exists:**
+
+1. You are building a math tutor chatbot. A student types "How do I solve 5x + 2 = 3 for x?"
+2. Left alone, the model just hands over the full solution, so the student learns nothing.
+3. You need standing instructions that shape every answer, such as "Give hints first." The student's question can't carry those.
+4. That place is the **system prompt**, and this lesson shows how to send it.
+
+```mermaid
+flowchart LR
+    subgraph Req["One request to the Claude API"]
+        SYS["system=<br/>'You are a patient math tutor.<br/>Don't give the answer directly.'<br/>(written by you, the developer)"]
+        MSG["messages=[<br/>user: 'How do I solve<br/>5x + 2 = 3 for x?' ]<br/>(from the student)"]
+    end
+    Req --> M["Model reads the system<br/>prompt first, then the messages"]
+    M --> A["'What do you think would be<br/>a good first step to isolate x?'"]
+    style SYS fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
 - **System prompt:** instructions that you, the developer, write once to tell the model how to behave, such as "You are a patient math tutor."
 - **Where it goes:** in the separate `system` setting of `client.messages.create()`, not inside the `messages` list.
 - **What it changes:** the model's tone, style, and approach. It answers the way someone in that role would.
@@ -43,6 +61,15 @@ Do the guide's problems in order, after you finish the chapter, because each one
 #### How a system prompt changes an answer
 
 A student asks "How do I solve 5x + 2 = 3 for x?"
+
+```mermaid
+flowchart LR
+    Q["5x + 2 = 3"] --> N["No system prompt"]
+    Q --> T["Math tutor<br/>system prompt"]
+    N --> NA["Full solution at once:<br/>5x = 1, so x = 1/5.<br/>The student doesn't think."]
+    T --> TA["A guiding question:<br/>'What would be a good<br/>first step to isolate x?'"]
+    style TA fill:#c8f0c8,stroke:#2e7d32,stroke-width:2px,color:#000000
+```
 
 - **Without a system prompt:** the model gives the complete step-by-step solution at once. The student doesn't have to think.
 - **With a math tutor system prompt:** the model asks a guiding question instead, such as "What do you think would be a good first step to isolate x?"

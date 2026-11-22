@@ -35,7 +35,19 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-To get your first answer from Claude in Python, you install Anthropic's `anthropic` library, put your API key in a `.env` file, create a client object, call `client.messages.create()` with a model name such as `claude-haiku-4-5`, a `max_tokens` limit such as 1000, and a list holding one user message such as "What is quantum computing? Answer in one sentence", and then read the answer's text from `message.content[0].text`.
+**Why this lesson exists:**
+
+1. [Lesson 1](01-accessing-the-api.md) showed the round trip a question makes to Claude and back.
+2. [Lesson 2](02-getting-an-api-key.md) got you a secret API key.
+3. This lesson writes the actual Python code that sends your first question, "What is quantum computing? Answer in one sentence", and prints the answer.
+
+```mermaid
+flowchart LR
+    ENV[".env file<br/>ANTHROPIC_API_KEY"] -- "load_dotenv()" --> CL["client = Anthropic()"]
+    CL -- "client.messages.create(<br/>model, max_tokens, messages)" --> API["Claude API<br/>+ the model"]
+    API -- "message object" --> MSG["message.content[0].text<br/>= the answer text<br/>message.stop_reason<br/>message.usage"]
+    style MSG fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
 
 #### How to set up the project
 
@@ -200,6 +212,16 @@ Things to notice:
 - **A high limit costs nothing extra.** You pay only for the tokens the model actually writes, so row 1 costs about 25 output tokens, not 1000.
 - **A low limit doesn't make a short answer.** Row 4 isn't a short summary. It is the start of a long answer, chopped off.
 - **When an answer is cut off,** raise `max_tokens` and send the request again, or ask for a shorter answer in the prompt. Don't show a cut-off answer to users as if it were complete.
+
+```mermaid
+flowchart LR
+    W["Model writes<br/>the next token"] --> D{"Answer<br/>complete?"}
+    D -- "Yes" --> OK["Stop<br/>stop_reason = end_turn<br/>(you pay only for<br/>tokens written)"]
+    D -- "No" --> L{"Reached<br/>max_tokens?"}
+    L -- "No" --> W
+    L -- "Yes" --> CUT["Cut off mid-sentence<br/>stop_reason = max_tokens"]
+    style CUT fill:#f8c8c8,stroke:#b22222,stroke-width:2px,color:#000000
+```
 
 > **Remember this:** The prompt decides the length. `max_tokens` only decides where to cut.
 

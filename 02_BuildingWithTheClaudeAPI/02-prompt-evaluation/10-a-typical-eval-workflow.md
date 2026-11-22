@@ -35,25 +35,35 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**1. Your prompt is your production code**
-When you build an AI-powered software feature—like an app that automatically sorts incoming customer emails into `billing`, `technical`, or `other`—your prompt is your production code. Every time a real customer sends an email, your app inserts that email into your prompt and sends it to Claude to get the right category.
+**Why this lesson exists:**
 
-**2. Why we need a test set**
-Before trusting that prompt with real users, you need a **test set** to verify that your prompt handles normal, regular, and messy edge-case inputs reliably. A prompt test case works just like a **unit test** in software development: given a specific input, you check whether you get the expected answer. In practice, this is a saved file (like `test_set.json`) of sample customer emails paired with the exact right labels you expect back.
+1. You are building an app that answers users' questions. Your app puts each question into a **prompt** and sends it to Claude. The prompt is your production code.
+2. [Lesson 9](09-prompt-evaluation.md) showed why you must test that prompt on many sample inputs before going live. There, the example was an email sorter that sorts customer emails into `billing`, `technical`, or `other`.
+3. That test is an **eval**. This lesson shows its five steps, from first prompt to final score.
 
-**3. How we verify it (The Eval Workflow)**
-Once your `test_set.json` is ready, how do you actually verify your prompt? You run an **eval** (short for *evaluation*)—a repeatable, automated process that runs your prompt through every test case and gives it a concrete score:
+```mermaid
+flowchart LR
+    A["1. Draft a prompt<br/>(you)"] --> B["2. Create test questions<br/>(you or the model)"]
+    B --> C["3. Send each question<br/>to the model"]
+    C --> D["4. Grader scores<br/>each answer"]
+    D --> E["Average score<br/>for this version"]
+    E --> F["5. Change the prompt"]
+    F --> C
+    style E fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
 
-* **Why hand-checking fails:** If you tweak a prompt and test it on just two questions by hand, both might look great—so you launch it. A week later, customers complain that 1 in 5 answers (20%) is missing key steps. Two test questions are too small a sample to catch a bug that happens 20% of the time.
-* **How the automated check works:** Like a school exam or a unit test runner, your evaluation script sends all 50+ emails from `test_set.json` through your prompt to Claude, compares every reply against your expected labels, and outputs a final score (e.g., `45 / 50 = 90%`). If you edit your prompt and the score drops, you catch the regression immediately *before* real customers ever see it.
+An eval works like a school exam for your prompt. Every version of the prompt sits the same exam, and you compare the marks. It also works like a unit test run: each test question is one test, and the score is how many passed.
+
+#### Why hand-checking isn't enough
+
+- **Hand-checking:** you tweak a prompt and try two questions by hand. Both look great, so you launch. A week later, customers complain that 1 answer in 5 (20%) misses key steps. Two questions are too few to catch a bug that happens 20% of the time.
+- **An eval:** a script sends all 50 or more saved test questions (for example, `test_set.json`) through the prompt, checks every answer, and prints a score, such as "45 of 50 = 90%." If you edit the prompt and the score drops, you catch the break (a *regression*) before customers see it.
 
 #### The five steps
 
-An eval works like a school exam for your prompt. Every version of the prompt sits the same exam, and you compare the marks.
-
-1. **Draft a prompt.** You write a first prompt with a slot, `{question}`, where each test question goes. Its score is the *baseline*, the score that later versions are compared with.
-2. **Create an eval dataset.** You write a list of sample questions like the ones real users will ask. Real evals have tens to thousands of them, written by hand or by the model.
-3. **Feed the questions through the model.** Your code puts each question into the slot and sends the prompt to the model. The model sends back one answer per question.
+1. **Draft a prompt.** You write a first prompt with a slot, `{question}`, where each test question goes. Its score is the *baseline*, the score later versions are compared with.
+2. **Create an eval dataset.** You write a list of sample questions like the ones real users ask. Real evals have tens to thousands, written by hand or by the model.
+3. **Feed the questions through the model.** Your code puts each question into the slot and sends it. The model sends back one answer per question.
 4. **Score the answers with a grader.** A *grader* reads each question with its answer and gives a score from 1 to 10. Your code averages the scores into one number.
 5. **Change the prompt and repeat.** You edit the prompt and run the same questions through the same grader. If the average goes up, the change helped.
 
@@ -72,26 +82,28 @@ An eval works like a school exam for your prompt. Every version of the prompt si
 
 ### The big picture
 
-The five steps form a loop. You go around it once for each version of your prompt.
-
 ![Prompt Eval Workflow. There are many different ways to assemble a workflow and many open source and paid options, and this module assembles its own. The five steps are Draft a Prompt, Create an Eval Dataset, Feed Through Claude, Feed Through a Grader, and Change Prompt and Repeat](../images/10-eval-workflow-steps.png)
-
-```mermaid
-flowchart LR
-    A["1. Draft a prompt<br/>(you)"] --> B["2. Create test questions<br/>(you or the model)"]
-    B --> C["3. Send each question<br/>to the model"]
-    C --> D["4. Grader scores<br/>each answer"]
-    D --> E["Average score<br/>for this version"]
-    E --> F["5. Change the prompt"]
-    F --> C
-```
-
-Two things to know before the steps:
 
 - **There is no single standard way to do this.** Teams build their eval workflows in different ways.
 - **Many tools can do it for you,** both free (open source) and paid. The course builds a small one from scratch in a Jupyter notebook, so you can see every step. You can start small and grow it later.
 
-**The running example:** a general question-answering prompt, tested on three questions: "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?"
+**The running example:** a general question-answering prompt, tested on three questions: "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?" Here is one full round for version 1:
+
+```mermaid
+sequenceDiagram
+    participant Code as Your notebook code
+    participant Model as The model
+    participant Grader as The grader
+    Code->>Model: "Please answer the user's question: What's 2+2?"
+    Model-->>Code: "2 + 2 = 4"
+    Code->>Model: "... How do I make oatmeal?"
+    Model-->>Code: "Add hot water to dry oatmeal."
+    Code->>Model: "... How far away is the Moon?"
+    Model-->>Code: "The Moon is about 384,400 km away."
+    Code->>Grader: each question with its answer
+    Grader-->>Code: scores 10, 4, 9
+    Note over Code: average = (10 + 4 + 9) ÷ 3 = 7.67
+```
 
 ---
 
@@ -121,7 +133,14 @@ The *eval dataset* is the list of test questions. This prompt has only one input
 
 ![Draft a Prompt, then Create an Eval Dataset. The dataset is a table with a Question column holding "What's 2+2?", "How do I make oatmeal?", and "How far away is the Moon?". The eval dataset contains questions that we will merge with our prompt, and it can be assembled by hand or generated by Claude](../images/10-eval-dataset.png)
 
-The course uses three questions to keep it simple. Real evals use tens, hundreds, or thousands, because with only a few questions one lucky answer can move the average a lot. You can write them by hand or ask the model to write them ([lesson 11](11-generating-test-datasets.md)).
+The course uses three questions to keep it simple. Real evals use tens, hundreds, or thousands, because with few questions one lucky answer moves the average a lot:
+
+| Questions in the dataset | One answer improves from 4 to 9. The average rises by… |
+|:---:|:---:|
+| 3 | (9 − 4) ÷ 3 = **1.67** |
+| 100 | (9 − 4) ÷ 100 = **0.05** |
+
+You can write the questions by hand or have the model write them ([lesson 11](11-generating-test-datasets.md)).
 
 ---
 
@@ -155,7 +174,7 @@ The grader gets each question paired with its answer, one pair at a time, and gi
 
 Your code averages the scores: (10 + 4 + 9) ÷ 3 = **7.67** (the course shows 7.66). That one number describes how well version 1 did.
 
-How the grader picks a score is covered later. A grader can be code, another model, or a person ([lesson 13](13-model-based-grading.md) and [lesson 14](14-code-based-grading.md)).
+A grader can be code, another model, or a person. How each picks a score is in [lesson 13](13-model-based-grading.md) and [lesson 14](14-code-based-grading.md).
 
 ---
 
@@ -175,16 +194,19 @@ Answer the question with ample detail
 
 ![Change Prompt and Repeat. The grader averaged 7.66 for the first prompt. The revised prompt adds the line "Answer the question with ample detail"](../images/10-change-prompt-and-repeat.png)
 
-You run steps 3 and 4 again with the same three questions and the same grader. The new average is 8.7.
+You run steps 3 and 4 again with the same three questions and the same grader:
+
+```mermaid
+flowchart LR
+    V1["Version 1<br/>'Please answer the<br/>user's question'<br/><b>7.67</b>"] -- "add 'Answer the question<br/>with ample detail'" --> V2["Version 2<br/><b>8.7</b>"]
+    K["Same 3 questions<br/>Same grader"] -.-> V1
+    K -.-> V2
+    style V2 fill:#c8f0c8,stroke:#2e7d32,stroke-width:2px,color:#000000
+```
 
 ![Prompt Scoring. Get an objective measurement of the output of each prompt, and use the version with the best score or iterate again. Prompt v1, "Please answer the user's question: {question}", scored 7.66. Prompt v2, which adds "Answer the question with ample detail", scored 8.7](../images/10-prompt-scoring.png)
 
-| Version | Change | Average score |
-|---|---|:---:|
-| v1 | The first prompt | 7.67 |
-| v2 | Added "Answer the question with ample detail" | 8.7 |
-
-The higher score is an objective sign that v2 is better. Now you can keep the best version and try again. Changing and retesting again and again is called *iterating*.
+The higher score is an objective sign that version 2 is better. Keep the best version and try again. Changing and retesting again and again is called *iterating*.
 
 **Warning:** If you change the questions or the grader between runs, the scores no longer compare. A rise from 7.67 to 8.7 could come from easier questions, not a better prompt.
 
@@ -206,7 +228,7 @@ The higher score is an objective sign that v2 is better. Now you can keep the be
 
 #### Trusting the score
 
-- Answers vary a little between runs ([lesson 6](../01-accessing-claude-with-the-api/06-temperature.md)). Rerun before trusting a small difference.
+- Answers vary a little between runs ([lesson 6, temperature](../01-accessing-claude-with-the-api/06-temperature.md)). Rerun before trusting a small difference.
 - A model grader can favor long answers even when they are not better. Spot-check some scores by hand.
 - Read the lowest-scoring answers each run. One bad answer can hide inside a good average.
 
@@ -244,7 +266,7 @@ It is the score of your first prompt version. Every later version is compared wi
 A regression is a change that breaks something that used to work. For example, a prompt edit drops the score from 45 of 50 to 40 of 50. Rerunning the same test after every change catches it before customers see it.
 
 **Q5. Why does an eval need so many test questions?**
-With only a few questions, one lucky or unlucky answer moves the average a lot. Many questions also cover more of the kinds of things real users ask.
+With only a few questions, one lucky or unlucky answer moves the average a lot: with 3 questions, one answer going from 4 to 9 raises the average by 1.67, but with 100 questions by only 0.05. Many questions also cover more of what real users ask.
 
 **Q6. What does "grader" mean?**
 It is whatever scores each answer. It reads the question and the answer and gives a score, such as 1 to 10. It can be code, another model, or a person.

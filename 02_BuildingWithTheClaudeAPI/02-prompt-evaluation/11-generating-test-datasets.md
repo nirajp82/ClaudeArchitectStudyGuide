@@ -125,7 +125,14 @@ Score: 1 of 2. You edit the prompt and run the **same two requests** again.
 
 **Compared with unit tests:** the prompt is your function, the dataset is the list of test inputs, and the eval is the test run.
 
-**One difference from lesson 9:** there, each email came with its right answer, such as `billing`. Here, each item has **only the request**. A coding request has many correct answers, so a grader judges each answer later instead of comparing it with a stored one.
+**Why this dataset has no right answers:** compare it with the email sorter from [lesson 9](09-prompt-evaluation.md), an app that sorts customer emails into `billing`, `technical`, or `other`.
+
+| | Email sorter ([lesson 9](09-prompt-evaluation.md)) | AWS code helper (this lesson) |
+|---|---|---|
+| One test item | "I was charged twice this month" | "Write a regex that matches an EC2 instance ID" |
+| Right answer stored with it? | Yes: `billing` | No |
+| Why | There is exactly one right group | Many different regexes are correct |
+| How the answer is graded | Code checks: did the model say `billing`? | A grader judges whether the answer is good ([lesson 13](13-model-based-grading.md)) |
 
 ---
 
@@ -318,8 +325,8 @@ It is the saved list of sample user requests that the eval sends through your pr
 **Q2. What is the difference between the dataset and the eval?**
 The dataset is an input. The eval is the process that puts each dataset item into the prompt, sends it to the model, grades the answer, and gives a score.
 
-**Q3. Why does this dataset have no right answers, when lesson 9's test set did?**
-Lesson 9's emails each had one right group, such as `billing`. A coding request has many correct answers, so a grader judges each answer instead of comparing it with a stored one.
+**Q3. Why does this dataset store no right answers, when the email sorter's test set did?**
+The email sorter in [lesson 9](09-prompt-evaluation.md) sorts customer emails into `billing`, `technical`, or `other`, so each test email has one right group stored with it, such as `billing`. A coding request, such as "Write a regex that matches an EC2 instance ID," has many correct answers. So this dataset stores only the requests, and a grader judges each answer instead.
 
 **Q4. Should I write the dataset by hand or let a model write it?**
 By hand when you need only a few items or have real user messages. With a model when you need many items quickly. Either way, read them before you use them.

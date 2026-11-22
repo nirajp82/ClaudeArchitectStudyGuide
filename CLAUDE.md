@@ -122,7 +122,9 @@ From **Building with the Claude API** onward, every lesson has an `### Architect
 - **Format:** one `####` heading per topic, 2–5 bullets each. Each bullet says what to do and why, with a concrete example.
 - **Source:** official Claude API documentation only. Check every number, and say that prices and limits change, so look up the current value.
 - **Keep it tight:** 30–60 lines. Add matching exam-angle points to the revision summary and FAQ.
-- **At most 2 diagrams per lesson.** Add "Things to notice" only when the point isn't obvious.
+- **Diagrams over text.** Use as many Mermaid diagrams as help: one overview diagram at the top of the revision summary showing where the lesson's idea fits, plus one for any process, flow, or comparison. Prefer a diagram or table to a long paragraph, but never cut a fact to make room. Add "Things to notice" only when the point isn't obvious.
+- **Open with a "why" chain.** Start the revision summary with 3–4 numbered steps that lead to the lesson's idea: "You are building X. X needs Y. Y needs Z, and this lesson builds Z."
+- **Never refer to another lesson by number alone.** Say what its example was and link it: "the email sorter from [lesson 9](09-prompt-evaluation.md), which sorts customer emails into billing, technical, or other."
 - **Sizes:** Common mix-ups 4–6 rows. Test yourself 3–4 questions. FAQ 10–13 questions, including the exam-angle ones (see section 5). Recap one short bullet per main idea.
 - **Cut, don't pad:** if a sentence doesn't help me understand or remember, delete it.
 

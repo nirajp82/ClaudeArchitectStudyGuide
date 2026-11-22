@@ -42,6 +42,28 @@ It writes "was". It doesn't look that word up, and no `if/else` rule tells it to
 
 ### Revision summary
 
+**Why this page exists:**
+
+1. In [lesson 1](01-accessing-the-api.md), a chat app sends "What is quantum computing?" to Claude and gets an answer back.
+2. That lesson treated the model as a box: text goes in, an answer comes out.
+3. This page opens the box. It shows what is saved inside the model, how it picks each next word, and how training set its numbers.
+
+```mermaid
+flowchart LR
+    subgraph Saved["Saved inside the model (set by training)"]
+        V["Vocabulary"]
+        ET["Embedding table"]
+        W["Weights in<br/>dozens of layers"]
+    end
+    subgraph Run["Each request (only reads the saved numbers)"]
+        A["Text to<br/>token IDs"] --> B["Look up<br/>each row"] --> C["Layers: attention +<br/>feed-forward"] --> D["Score every token,<br/>pick one"]
+        D -- "repeat until done" --> B
+    end
+    T["Training<br/>(once, before release)"] --> Saved
+    Saved -.-> Run
+    style T fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
 - **Model:** a huge saved set of numbers plus fixed math. It runs only on Anthropic's servers, and your app reaches it through the API.
 - **Token:** a small piece of text, such as a word, part of a word, or "?". The model reads, writes, and bills in tokens.
 - **Embedding:** a saved row of numbers for each token. The row describes what the token usually means.
@@ -310,6 +332,19 @@ The model then divides each score by the square root of the Key length (here √
 mat 26.8%   sat 16.8%   it 11.8%   the 10.2%   cat 9.7%   The 9.4%   because 7.9%   on 7.4%   (total 100%)
 ```
 
+```mermaid
+flowchart BT
+    The["The"] -- "9.4%" --> IT
+    cat["cat"] -- "9.7%" --> IT
+    sat["sat"] -- "16.8%" --> IT
+    on["on"] -- "7.4%" --> IT
+    the["the"] -- "10.2%" --> IT
+    mat["mat"] == "26.8%" ==> IT
+    because["because"] -- "7.9%" --> IT
+    IT["it<br/>(also 11.8% from itself)<br/>gets a blend of every<br/>earlier token's Value"]
+    style mat fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
 <details>
 <summary>Show the full softmax table</summary>
 
@@ -356,6 +391,14 @@ The blend is **added**, not swapped in, so "it" keeps its own meaning and gains 
 #### Step 4: the rest of each layer
 
 A **layer** is one round of work that every token's row goes through. Attention is only one part of it.
+
+```mermaid
+flowchart LR
+    IN["Row of 'it'<br/>from the layer before"] --> H["Many attention heads<br/>side by side,<br/>joined by Wo"]
+    H --> FF["Feed-forward<br/>widen, zero out negatives,<br/>narrow again"]
+    FF --> N["Normalization<br/>keep numbers<br/>in a steady range"]
+    N --> OUT["Row of 'it'<br/>to the next layer"]
+```
 
 | Part | What happens | Why it is there |
 |---|---|---|

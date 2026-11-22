@@ -27,6 +27,29 @@ This page sums up the whole chapter for revision. Each lesson summary ends with 
 
 ---
 
+## How the pieces fit together
+
+This chapter follows one question, "What is quantum computing?", from a chat app to Claude and back. Each lesson adds one piece to that trip.
+
+```mermaid
+flowchart LR
+    APP["Chat app<br/>(lesson 1: never holds the key)"] --> SRV["Your server<br/>API key from lesson 2<br/>code from lesson 3"]
+    SRV -- "messages list: the whole chat (lesson 4)<br/>system prompt (lesson 5)<br/>temperature (lesson 6)<br/>JSON schema (lesson 8)" --> API["Claude API<br/>+ the model<br/>(lesson 1 and the deep dive)"]
+    API -- "answer, streamed in pieces<br/>(lesson 7)" --> SRV
+    SRV --> APP
+```
+
+| Lesson | Which piece it adds |
+|---|---|
+| [1. Accessing the API](01-accessing-the-api.md) | The round trip, and what happens inside the model |
+| [2. Getting an API key](02-getting-an-api-key.md) | The secret key your server sends |
+| [3. Making a request](03-making-a-request.md) | The Python code that sends one question |
+| [4. Multi-turn conversations](04-multi-turn-conversations.md) | Resending the whole chat, because the API forgets |
+| [5. System prompts](05-system-prompts.md) | Standing instructions, such as "You are a patient math tutor" |
+| [6. Temperature](06-temperature.md) | How predictable or varied the answers are |
+| [7. Response streaming](07-response-streaming.md) | Showing the answer as it is written |
+| [8. Structured data](08-structured-data.md) | Getting clean JSON in an exact shape |
+
 ## Lessons in this chapter
 
 | # | Lesson | What it teaches | Notes |

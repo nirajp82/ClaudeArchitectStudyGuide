@@ -53,7 +53,7 @@ Where each lesson fits:
 | [9. Prompt evaluation](09-prompt-evaluation.md) | Why you need an eval at all |
 | [10. A typical eval workflow](10-a-typical-eval-workflow.md) | The five steps, from prompt to score |
 | [11. Generating test datasets](11-generating-test-datasets.md) | Where the test set comes from: a model drafts it, you check it, you save it |
-| 12. Running the eval | Sending every sample through the prompt |
+| [12. Running the eval](12-running-the-eval.md) | Sending every sample through the prompt and collecting the answers |
 | 13. Model based grading and 14. Code based grading | How the grader scores each answer |
 
 ## Lessons in this chapter
@@ -63,7 +63,7 @@ Where each lesson fits:
 | 9 | Prompt evaluation | [Prompt evaluation](https://academy.claude.com/courses/building-with-the-claude-api/prompt-evaluation) | [09-prompt-evaluation.md](09-prompt-evaluation.md) | ✅ Done |
 | 10 | A typical eval workflow | [A typical eval workflow](https://academy.claude.com/courses/building-with-the-claude-api/a-typical-eval-workflow) | [10-a-typical-eval-workflow.md](10-a-typical-eval-workflow.md) | ✅ Done |
 | 11 | Generating test datasets | [Generating test datasets](https://academy.claude.com/courses/building-with-the-claude-api/generating-test-datasets) | [11-generating-test-datasets.md](11-generating-test-datasets.md) | ✅ Done |
-| 12 | Running the eval | | `12-running-the-eval.md` | ⬜ |
+| 12 | Running the eval | [Running the eval](https://academy.claude.com/courses/building-with-the-claude-api/running-the-eval) | [12-running-the-eval.md](12-running-the-eval.md) | ✅ Done |
 | 13 | Model based grading | | `13-model-based-grading.md` | ⬜ |
 | 14 | Code based grading | | `14-code-based-grading.md` | ⬜ |
 | — | Quiz on prompt evaluation | | Quiz review section on this page | ⬜ |
@@ -100,6 +100,16 @@ Where each lesson fits:
 
 [Full lesson →](11-generating-test-datasets.md)
 
+### 12. Running the eval
+
+- **The run step is three functions.** `run_eval` loops over the dataset, `run_test_case` runs one test case and adds a score, and `run_prompt` puts the task into the prompt and asks the model.
+- **Each test case gets a new, empty conversation,** so the model answers each task on its own.
+- **Each result is a dictionary** with `output` (the reply), `test_case` (the task), and `score`. `print(json.dumps(results, indent=2))` shows them readably.
+- **The score is a fixed 10 for now.** It is a placeholder until the graders in lessons 13 and 14 exist.
+- **The first run is slow and wordy.** One request at a time took about 31 seconds even on Haiku, and prompt v1 has no format rule, so the model explains its code.
+
+[Full lesson →](12-running-the-eval.md)
+
 ## Exam takeaways
 
 - **A team tested a new prompt on three sample inputs and wants to ship it today.** Build an evaluation pipeline first, with realistic test inputs including edge cases and an automatic score. (Claude Models, Prompting & Context Engineering) [Lesson 9](09-prompt-evaluation.md)
@@ -112,6 +122,10 @@ Where each lesson fits:
 - **A team needs 200 test inputs by tomorrow.** Have a small, cheap model such as Haiku generate them in batches with structured outputs, then have a person review a sample. (Claude Models, Prompting & Context Engineering) [Lesson 11](11-generating-test-datasets.md)
 - **A generator asked for 500 test tasks in one request returns a cut-off answer.** It hit `max_tokens`. Check `stop_reason` and ask for smaller batches, such as 25 tasks per request. (Solution Design & Architecture) [Lesson 11](11-generating-test-datasets.md)
 - **Scores jump because the test cases are regenerated before each run.** Generate the dataset once, save it under version control, and reuse it. (Solution Design & Architecture) [Lesson 11](11-generating-test-datasets.md)
+
+- **An eval of 2,000 test cases takes hours, one request at a time.** Send several requests at once within the rate limit, or use the Message Batches API at half the price when results can wait. (Solution Design & Architecture) [Lesson 12](12-running-the-eval.md)
+- **An eval run crashes at case 180 of 200 and loses everything.** Catch errors per test case, rely on SDK retries, and save each result as it arrives. (Solution Design & Architecture) [Lesson 12](12-running-the-eval.md)
+- **The eval keeps its own copy of the prompt, and production changed.** Call the same function and prompt the app uses, or the score proves nothing. (Claude Models, Prompting & Context Engineering) [Lesson 12](12-running-the-eval.md)
 
 ## Quiz review
 

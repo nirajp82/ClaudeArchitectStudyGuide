@@ -32,7 +32,7 @@ Later chapters get their folder when their first lesson is written. Every chapte
 | 9 | Prompt evaluation | Prompt evaluation | [09-prompt-evaluation.md](02-prompt-evaluation/09-prompt-evaluation.md) | ✅ Done |
 | 10 | Prompt evaluation | A typical eval workflow | [10-a-typical-eval-workflow.md](02-prompt-evaluation/10-a-typical-eval-workflow.md) | ✅ Done |
 | 11 | Prompt evaluation | Generating test datasets | [11-generating-test-datasets.md](02-prompt-evaluation/11-generating-test-datasets.md) | ✅ Done |
-| 12 | Prompt evaluation | Running the eval | `12-running-the-eval.md` | ⬜ |
+| 12 | Prompt evaluation | Running the eval | [12-running-the-eval.md](02-prompt-evaluation/12-running-the-eval.md) | ✅ Done |
 | 13 | Prompt evaluation | Model based grading | `13-model-based-grading.md` | ⬜ |
 | 14 | Prompt evaluation | Code based grading | `14-code-based-grading.md` | ⬜ |
 | — | Prompt evaluation | Quiz on prompt evaluation | Chapter 2 README, quiz review | ⬜ |

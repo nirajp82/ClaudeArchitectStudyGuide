@@ -188,7 +188,7 @@ Read each case. Fix any wrong `category` or `priority` by hand, then copy the go
 
 ### Problem 3: Run every test question through the app
 
-**Lesson:** 12, Running the eval
+**Lesson:** [12, Running the eval](../../02-prompt-evaluation/12-running-the-eval.md)
 
 **The problem:** Write `evaluations/run_evals.py`. It reads every case, sends its `input` to the right part of the app, and collects the outputs. For now, just print each output. Grading comes in problems 4 and 5.
 

@@ -34,6 +34,25 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why this lesson exists:**
+
+1. In [lesson 3](03-making-a-request.md), your notebook sent one question, "What is quantum computing? Answer in one sentence", and printed one answer.
+2. A real chat has follow-ups, such as "Write another sentence."
+3. The API forgets everything between requests, so a follow-up sent alone makes no sense to the model.
+4. This lesson shows how your code keeps the whole chat and resends it, so the model can follow along.
+
+```mermaid
+flowchart TB
+    subgraph Bad["Sending only the newest message"]
+        B1["Request 2:<br/>'Write another sentence'"] --> B2["Model: a random sentence,<br/>maybe about the weather"]
+    end
+    subgraph Good["Sending the whole list"]
+        G1["Request 2:<br/>user: 'Define quantum computing...'<br/>assistant: 'Quantum computing is...'<br/>user: 'Write another sentence'"] --> G2["Model: a second sentence<br/>about quantum computing"]
+    end
+    style G2 fill:#c8f0c8,stroke:#2e7d32,stroke-width:2px,color:#000000
+    style B2 fill:#f8c8c8,stroke:#b22222,stroke-width:2px,color:#000000
+```
+
 - **Stateless:** the Claude API and the model store none of your messages. Every request stands alone, with no memory of earlier requests.
 - **The problem:** if you send only "Write another sentence", the model has no idea you were talking about quantum computing. It writes a sentence about anything.
 - **The fix:** your code keeps a list of every message, and sends the whole list with every request.
@@ -62,6 +81,14 @@ The course writes three small Python functions so you don't repeat the same code
 The helpers change the list itself, so the same `messages` list grows with every turn. `chat()` does not add the answer to the list. You must call `add_assistant_message()` yourself.
 
 #### What resending the history means for you
+
+```mermaid
+flowchart LR
+    T1["Turn 1<br/>sends 1 message"] --> T2["Turn 2<br/>sends 3 messages"] --> T3["Turn 3<br/>sends 5 messages"] --> T4["Turn 10<br/>sends 19 messages"]
+    style T4 fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
+Every turn resends everything before it, so each request has more input tokens than the last.
 
 - **Cost:** you pay for input tokens on every request, and the whole history is input. So every turn costs more than the one before.
 - **Limits:** the history must fit in the model's context window (the most tokens one request can hold), such as 200,000 tokens for Claude Haiku 4.5.

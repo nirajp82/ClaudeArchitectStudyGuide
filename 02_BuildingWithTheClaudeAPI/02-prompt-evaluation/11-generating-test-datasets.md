@@ -33,7 +33,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building an AWS code helper. A user types a request, such as "Write a regex that matches an EC2 instance ID."
 2. Your app puts each request into a **prompt** and sends it to Claude.

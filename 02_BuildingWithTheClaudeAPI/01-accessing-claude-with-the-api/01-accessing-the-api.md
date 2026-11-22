@@ -36,7 +36,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building a chat app. A user types "What is quantum computing?" and presses Send.
 2. The answer must come from Claude, which runs on Anthropic's servers, not on the user's phone.

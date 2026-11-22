@@ -35,7 +35,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building an app that answers users' questions. Your app puts each question into a **prompt** and sends it to Claude. The prompt is your production code.
 2. [Lesson 9](09-prompt-evaluation.md) showed why you must test that prompt on many sample inputs before going live. There, the example was an email sorter that sorts customer emails into `billing`, `technical`, or `other`.

@@ -42,7 +42,7 @@ It writes "was". It doesn't look that word up, and no `if/else` rule tells it to
 
 ### Revision summary
 
-**Why this page exists:**
+**Purpose of this page:**
 
 1. In [lesson 1](01-accessing-the-api.md), a chat app sends "What is quantum computing?" to Claude and gets an answer back.
 2. That lesson treated the model as a box: text goes in, an answer comes out.

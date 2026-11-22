@@ -33,7 +33,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building an AWS code helper. A user types a request, such as "Write a regex that matches an EC2 instance ID," and your prompt asks the model to answer with code only.
 2. Before you ship the prompt, an eval scores it on a saved list of sample requests, `dataset.json`.

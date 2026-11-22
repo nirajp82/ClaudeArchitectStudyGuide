@@ -34,7 +34,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building an AWS code helper. Its prompt should make the model answer with code only, such as a single regex.
 2. The eval from [lesson 12](12-running-the-eval.md) already sends every sample request through the prompt and collects the answers.

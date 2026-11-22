@@ -35,7 +35,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. In [lesson 1](01-accessing-the-api.md), you saw that the model writes one token at a time, picking each from a list of chances. That is why the same question can get different answers.
 2. Some apps need the same answer every time, such as pulling fields out of an invoice. Others want variety, such as brainstorming movie ideas.

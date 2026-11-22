@@ -36,7 +36,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. An online shop wants each customer email turned into a support ticket automatically.
 2. The shop's code asks the model to pull out the name, email, order ID, issue, and whether the customer wants a refund.

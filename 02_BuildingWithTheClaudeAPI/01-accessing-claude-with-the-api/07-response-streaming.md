@@ -35,7 +35,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. Your chat app sends "What is quantum computing?" through your server to Claude, as in [lesson 1](01-accessing-the-api.md).
 2. A long answer can take 10 to 30 seconds to write. Until it is finished, the user sees only "...".

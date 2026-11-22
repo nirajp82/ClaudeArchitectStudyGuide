@@ -35,7 +35,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building a math tutor chatbot. A student types "How do I solve 5x + 2 = 3 for x?"
 2. Left alone, the model just hands over the full solution, so the student learns nothing.

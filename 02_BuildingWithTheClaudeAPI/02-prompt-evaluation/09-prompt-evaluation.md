@@ -32,7 +32,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. You are building an email sorter for an online shop. It sorts each customer email into `billing`, `technical`, or `other`, and sends it to the right team.
 2. Your app puts each email into a **prompt** and sends it to Claude. The prompt is your production code.

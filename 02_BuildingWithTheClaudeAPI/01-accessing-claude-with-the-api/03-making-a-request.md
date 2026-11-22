@@ -35,7 +35,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. [Lesson 1](01-accessing-the-api.md) showed the round trip a question makes to Claude and back.
 2. [Lesson 2](02-getting-an-api-key.md) got you a secret API key.

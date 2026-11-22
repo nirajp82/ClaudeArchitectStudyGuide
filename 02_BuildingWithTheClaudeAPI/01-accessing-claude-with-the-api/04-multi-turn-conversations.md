@@ -34,7 +34,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. In [lesson 3](03-making-a-request.md), your notebook sent one question, "What is quantum computing? Answer in one sentence", and printed one answer.
 2. A real chat has follow-ups, such as "Write another sentence."

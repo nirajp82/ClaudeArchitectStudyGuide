@@ -34,7 +34,7 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
-**Why this lesson exists:**
+**Purpose of this lesson:**
 
 1. In [lesson 1](01-accessing-the-api.md), your server sent the user's question to the Claude API with a secret **API key** attached.
 2. The API key is a long secret password, such as `sk-ant-api03-...`. It tells Anthropic which account sent the request and which account pays.

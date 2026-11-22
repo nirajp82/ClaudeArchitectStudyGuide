@@ -325,7 +325,46 @@ Things to notice:
 
 #### Example: forwarding with SSE in Python
 
-This server uses FastAPI, a Python web framework. It reads text chunks from Claude and writes each one to the browser as an SSE event:
+This example has two pieces of code that talk to each other over one HTTP request:
+
+| Who | Where the code runs | What it does |
+|---|---|---|
+| **The browser code** (JavaScript) | On the user's computer, inside the web page | Sends the question to your server, then adds each piece of the answer to the page as it arrives. |
+| **Your server** (Python, using FastAPI, a Python web framework) | On your machine or in your cloud | Receives the question, asks Claude for a streamed answer, and passes each piece on to the browser. |
+| **The Claude API** | Anthropic's servers | Writes the answer and streams it to your server in pieces. |
+
+The key idea: the browser sends **one request**, and your server keeps that **one response open**. It writes a little more into the response each time Claude sends a piece. The response ends only when the answer is finished. Think of a phone call where the other person reads you a letter line by line, instead of mailing you the whole letter at the end.
+
+#### The whole trip, step by step
+
+The numbers in this diagram match the numbered comments in the code below.
+
+```mermaid
+sequenceDiagram
+    participant B as Browser code<br/>(JavaScript)
+    participant S as Your server<br/>(Python, FastAPI)
+    participant A as Claude API
+    B->>S: 1. POST /chat<br/>body: {"question": "What is quantum computing?"}
+    Note over S: 2. FastAPI calls chat()
+    S-->>B: 3. Response starts: status 200,<br/>Content-Type: text/event-stream<br/>(the body stays open)
+    S->>A: 4. messages.stream(...) with your API key
+    A-->>S: 5. piece "Quantum"
+    S-->>B: 6. data: {"text": "Quantum"}
+    Note over B: 7. Page shows "Quantum"
+    A-->>S: 5. piece " computing is"
+    S-->>B: 6. data: {"text": " computing is"}
+    Note over B: 7. Page shows "Quantum computing is"
+    A-->>S: message_stop (answer finished)
+    S-->>B: 8. data: [DONE]<br/>then the server closes the response
+    Note over B: 9. Loop ends
+```
+
+Things to notice:
+
+- Steps 5, 6, and 7 repeat once for every piece of the answer. The diagram shows only two pieces.
+- The browser never waits for the full answer. Each piece appears on the page about as soon as Claude writes it.
+
+#### The server code, with comments
 
 ```python
 import json
@@ -334,56 +373,108 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
 app = FastAPI()
-client = anthropic.AsyncAnthropic()
+client = anthropic.AsyncAnthropic()   # reads your API key from ANTHROPIC_API_KEY
 
+# 1-2. The browser sends POST /chat with {"question": "..."}.
+#      FastAPI turns that JSON into the Python dict `body` and calls chat().
 @app.post("/chat")
 async def chat(body: dict):
+
+    # relay() does not run yet. It is a recipe that produces the response body
+    # one piece at a time. FastAPI runs it in step 3.
     async def relay():
+        # 4. Your server asks Claude for a streamed answer.
         async with client.messages.stream(
             model="claude-haiku-4-5",
             max_tokens=1000,
             messages=[{"role": "user", "content": body["question"]}],
         ) as stream:
+            # 5. Wait for each piece of text from Claude, e.g. "Quantum".
             async for text in stream.text_stream:
-                yield f"data: {json.dumps({'text': text})}\n\n"   # one SSE event per chunk
+                # 6. Write one SSE event into the open response:
+                #    data: {"text": "Quantum"}   followed by a blank line
+                yield f"data: {json.dumps({'text': text})}\n\n"
+        # 8. Claude has finished. Tell the browser the answer is complete.
         yield "data: [DONE]\n\n"
+        # When relay() returns, FastAPI closes the response.
 
+    # 3. Send the response headers now and keep the body open.
+    #    Everything relay() yields is sent to the browser as soon as it is yielded.
     return StreamingResponse(relay(), media_type="text/event-stream")
 ```
 
 - `AsyncAnthropic()` is the SDK client for `async` code, so one server can handle many users at once.
-- `relay()` is a *generator*: a function that hands out values one at a time. Each `yield` sends one piece to the browser at once.
-- `json.dumps` wraps each chunk in JSON. Line breaks inside the text then can't break the SSE format.
+- `relay()` is a *generator*: a function that hands out values one at a time. Each `yield` sends one piece to the browser at once. A normal `return` would send everything at the end and lose the benefit of streaming.
+- `json.dumps` wraps each chunk in JSON. Line breaks inside the text then can't break the SSE format, which uses a blank line to mark the end of each event.
 - `[DONE]` is a marker you invent, so the browser knows the answer is finished.
+
+#### What actually travels between the browser and your server
+
+This is the request the browser sends in step 1:
+
+```text
+POST /chat HTTP/1.1
+Content-Type: application/json
+
+{"question": "What is quantum computing?"}
+```
+
+This is the response your server sends back. The headers go out in step 3. The body lines arrive one at a time, seconds apart, over the same open connection:
+
+```text
+HTTP/1.1 200 OK
+Content-Type: text/event-stream
+
+data: {"text": "Quantum"}
+
+data: {"text": " computing is"}
+
+data: {"text": " a way of computing that..."}
+
+data: [DONE]
+
+```
+
+Each `data:` line followed by a blank line is one SSE event. Your server wrote each one with a single `yield`.
+
+#### The browser code, with comments
 
 The browser reads the reply piece by piece with `fetch`. The browser's built-in `EventSource` object only supports `GET` requests, and you need `POST` to send the question.
 
 ```javascript
+// 1. Send the question to your server. `await` returns as soon as the
+//    headers arrive (step 3). The body is still coming.
 const res = await fetch("/chat", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ question: "What is quantum computing?" }),
 });
 
+// Get a reader that hands over the body as text, a bit at a time.
 const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-let buffer = "";
+let buffer = "";   // holds text that has arrived but is not a full event yet
+
 while (true) {
+  // Wait for the next bit of the body, e.g. 'data: {"text": "Quantum"}\n\n'
   const { value, done } = await reader.read();
-  if (done) break;
+  if (done) break;                       // 9. The server closed the response.
   buffer += value;
+
+  // A blank line ("\n\n") ends each event, so split on it.
   const events = buffer.split("\n\n");
-  buffer = events.pop();                          // keep any half-received event
+  buffer = events.pop();                 // keep any half-received event for next time
+
   for (const e of events) {
-    const data = e.replace(/^data: /, "");
-    if (data === "[DONE]") continue;
-    output.textContent += JSON.parse(data).text;  // add the chunk to the page
+    const data = e.replace(/^data: /, "");   // 'data: {"text":"Quantum"}' -> '{"text":"Quantum"}'
+    if (data === "[DONE]") continue;         // 8. The end marker. Nothing to show.
+    output.textContent += JSON.parse(data).text;  // 7. Add "Quantum" to the page
   }
 }
 ```
 
 - `reader.read()` waits for the next piece of the reply.
-- `buffer` matters because the network can split one event across two reads. The code keeps the unfinished part until the rest arrives.
-- `output` is the page element that shows the answer.
+- `buffer` matters because the network can split one event across two reads. For example, one read may bring `data: {"te` and the next `xt": "Quantum"}\n\n`. The code keeps the unfinished part until the rest arrives.
+- `output` is the page element that shows the answer, for example `<div id="output"></div>`.
 
 **Other options:** in an ASP.NET Core app, a SignalR hub method can return `IAsyncEnumerable<string>` and `yield return` each chunk from Claude. The JavaScript client then reads it with `connection.stream(...)`. Use WebSockets only if the browser must also send messages mid-answer. The Claude side stays the same in every case.
 

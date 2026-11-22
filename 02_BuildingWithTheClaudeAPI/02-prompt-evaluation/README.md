@@ -54,7 +54,7 @@ Where each lesson fits:
 | [10. A typical eval workflow](10-a-typical-eval-workflow.md) | The five steps, from prompt to score |
 | [11. Generating test datasets](11-generating-test-datasets.md) | Where the test set comes from: a model drafts it, you check it, you save it |
 | [12. Running the eval](12-running-the-eval.md) | Sending every sample through the prompt and collecting the answers |
-| 13. Model based grading and 14. Code based grading | How the grader scores each answer |
+| [13. Model based grading](13-model-based-grading.md) and 14. Code based grading | How the grader scores each answer |
 
 ## Lessons in this chapter
 
@@ -64,7 +64,7 @@ Where each lesson fits:
 | 10 | A typical eval workflow | [A typical eval workflow](https://academy.claude.com/courses/building-with-the-claude-api/a-typical-eval-workflow) | [10-a-typical-eval-workflow.md](10-a-typical-eval-workflow.md) | ✅ Done |
 | 11 | Generating test datasets | [Generating test datasets](https://academy.claude.com/courses/building-with-the-claude-api/generating-test-datasets) | [11-generating-test-datasets.md](11-generating-test-datasets.md) | ✅ Done |
 | 12 | Running the eval | [Running the eval](https://academy.claude.com/courses/building-with-the-claude-api/running-the-eval) | [12-running-the-eval.md](12-running-the-eval.md) | ✅ Done |
-| 13 | Model based grading | | `13-model-based-grading.md` | ⬜ |
+| 13 | Model based grading | [Model based grading](https://academy.claude.com/courses/building-with-the-claude-api/model-based-grading) | [13-model-based-grading.md](13-model-based-grading.md) | ✅ Done |
 | 14 | Code based grading | | `14-code-based-grading.md` | ⬜ |
 | — | Quiz on prompt evaluation | | Quiz review section on this page | ⬜ |
 
@@ -110,6 +110,16 @@ Where each lesson fits:
 
 [Full lesson →](12-running-the-eval.md)
 
+### 13. Model based grading
+
+- **Three kinds of grader:** code checks a fixed rule (valid JSON, length), a model judges meaning (does the code solve the task?), and a person spot-checks.
+- **Write the evaluation criteria first.** For the AWS code helper: format and valid syntax go to a code grader, and task following goes to a model grader.
+- **Ask for strengths, weaknesses, and reasoning before the score.** Asked only for a number, models drift toward a middling 6.
+- **Get the grade back with structured outputs:** `client.messages.parse(..., output_format=Grade)`. The course's prefill and stop-sequence trick works only on older models such as `claude-haiku-4-5`.
+- **`run_test_case` stores the score and reasoning,** and `run_eval` prints the average with `statistics.mean`, such as 7.33.
+
+[Full lesson →](13-model-based-grading.md)
+
 ## Exam takeaways
 
 - **A team tested a new prompt on three sample inputs and wants to ship it today.** Build an evaluation pipeline first, with realistic test inputs including edge cases and an automatic score. (Claude Models, Prompting & Context Engineering) [Lesson 9](09-prompt-evaluation.md)
@@ -126,6 +136,10 @@ Where each lesson fits:
 - **An eval of 2,000 test cases takes hours, one request at a time.** Send several requests at once within the rate limit, or use the Message Batches API at half the price when results can wait. (Solution Design & Architecture) [Lesson 12](12-running-the-eval.md)
 - **An eval run crashes at case 180 of 200 and loses everything.** Catch errors per test case, rely on SDK retries, and save each result as it arrives. (Solution Design & Architecture) [Lesson 12](12-running-the-eval.md)
 - **The eval keeps its own copy of the prompt, and production changed.** Call the same function and prompt the app uses, or the score proves nothing. (Claude Models, Prompting & Context Engineering) [Lesson 12](12-running-the-eval.md)
+
+- **A model grader gives almost every answer a 6.** Ask for strengths, weaknesses, and reasoning before the score, and add a rubric. (Claude Models, Prompting & Context Engineering) [Lesson 13](13-model-based-grading.md)
+- **A team must check valid JSON and helpfulness.** Valid JSON with a code grader, helpfulness with a model grader. (Solution Design & Architecture) [Lesson 13](13-model-based-grading.md)
+- **A team wants to trust model-grader scores with no human check.** Have people score a sample and compare first. (Governance, Safety & Risk) [Lesson 13](13-model-based-grading.md)
 
 ## Quiz review
 

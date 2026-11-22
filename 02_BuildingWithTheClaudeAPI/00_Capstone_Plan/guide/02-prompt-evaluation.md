@@ -329,7 +329,7 @@ You see `5` and `0`. Type `exit()` to leave.
 
 ### Problem 5: Grade answers with a second model
 
-**Lesson:** 13, Model based grading
+**Lesson:** [13, Model based grading](../../02-prompt-evaluation/13-model-based-grading.md)
 
 **The problem:** "Is this answer helpful and does it meet the criteria?" can't be checked with code. Add a model grader to `evaluations/graders.py`. It sends the question, the answer, and the case's `criteria` to a model, and gets back a score from 1 to 10 with a short reason. Then make `run_evals.py` grade every case and print the average score.
 

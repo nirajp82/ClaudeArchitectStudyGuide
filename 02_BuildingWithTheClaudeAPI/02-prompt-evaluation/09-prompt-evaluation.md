@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -23,56 +22,22 @@ Do the guide's problems in order, after you finish the chapter, because each one
 | 2 | [The big picture](#the-big-picture) |
 | 3 | [1. Writing a prompt vs. measuring a prompt](#1-writing-a-prompt-vs-measuring-a-prompt) |
 | 4 | [2. Three ways to check a new prompt](#2-three-ways-to-check-a-new-prompt) |
-| 5 | [Architect notes](#architect-notes) |
-| 6 | [Recap](#recap) |
-| 7 | [My notes / practice](#my-notes--practice) |
-| 8 | [FAQ](#faq) |
+| 5 | [3. What makes a good test set](#3-what-makes-a-good-test-set) |
+| 6 | [Architect notes](#architect-notes) |
+| 7 | [Recap](#recap) |
+| 8 | [My notes / practice](#my-notes--practice) |
+| 9 | [FAQ](#faq) |
 
 ---
 
 ### Revision summary
 
-**Why this matters.** A prompt that works on the few messages you try can still fail on real users, and the company pays for it.
+**Why this lesson exists:**
 
-- **A real case:** in 2022, Air Canada's website chatbot told a grieving customer they could claim a bereavement discount after their flight. No such policy existed. In 2024, a Canadian tribunal ordered the airline to pay, because a company is responsible for what its chatbot says.
-- **A smaller case:** a support bot that sorts emails sends a billing complaint to the technical team. The customer waits days, and you only find out from an angry review.
-
-Testing a prompt on many realistic messages and scoring the answers is how you catch mistakes like these before launch. That checking is what this lesson is about.
-
-- **Prompt engineering:** ways to *write* a better prompt. One example is adding a few sample questions with their right answers to the prompt.
-- **Prompt evaluation:** a way to *check* a prompt with a score. Your code sends the prompt many test questions and counts how many answers are right. For example, it reports "41 of 50 correct."
-- **They work together.** *engineering** is crafting the prompt; **evaluation** is grading how well it works. 
-
-#### Three ways to check a new prompt
-
-1. **Try it once, and ship it if the answer looks good.** This is fast, but the prompt will probably fail on some real user messages.
-2. **Try it a few times, and fix the one or two odd cases you find** (the course calls them *corner cases*). This is better, but users still send messages you never thought of.
-3. **Run it on a whole set of test questions, score it, and improve it until the score is good.** The code that does this is an *evaluation pipeline*. It costs more time and money, but you can trust the result.
-
-Options 1 and 2 are traps that almost every developer falls into. People expect users to write like they do. Real users send empty messages, two problems in one message, other languages, and attempts to trick the model.
-
-### Why you write a prompt and a test set (The Big Picture)
-
-When you build an AI-powered software feature—like an app that automatically sorts incoming customer emails into `billing`, `technical`, or `other`—**your prompt is your production code**. Every time a real customer sends an email, your app inserts that email into your prompt and sends it to Claude to get the right category.
-
-Why we need a test set: Before trusting a prompt with real users, you need a test set to verify that your prompt handles normal, regular, and messy edge-case inputs reliably. A prompt test case works just like a unit test in software development: given a specific input, you check whether you get the expected answer. In practice, this is a saved file (like test_set.json) of sample customer emails paired with the exact right labels you expect back.
-
-Think of the test set like unit tests for your prompt:
-
-1. **You write the test set** (`test_set.json`) with realistic emails and their right answers.
-2. **You write your draft prompt** and test it against that test set to get a score (for example, `41 / 50`).
-3. **You inspect the failures**, add rules or examples to your prompt to fix them, and **re-test against the exact same test set** until the score is high enough to launch. Once live, only your final prompt runs in production—the test set stays on your laptop.
-
-#### How the pieces fit together
-
-An eval is a process. It takes two inputs, the prompt and the test set, and produces one output, a score.
-
-| Piece | What it is | Example | Goes to production? |
-|---|---|---|---|
-| **The prompt** | The thing you will ship. You test it on your laptop first. | "Sort this email into billing, technical, or other: {email}" | Yes |
-| **The test set** | Sample user messages that stand in for real users during testing. Later lessons call it the *dataset* or *eval dataset*. | `test_set.json`: 50 sample emails, each with its right group | No. It stays on your laptop. |
-| **The eval** | The process. It puts each sample into the prompt, sends it to the model, and grades the answer. | Code that runs all 50 emails and counts the right answers | No |
-| **The score** | What the eval produces | "41 of 50 correct" | No |
+1. You are building an email sorter for an online shop. It sorts each customer email into `billing`, `technical`, or `other`, and sends it to the right team.
+2. Your app puts each email into a **prompt** and sends it to Claude. The prompt is your production code.
+3. Before you go live, you check that the prompt works on many realistic emails, not just the two you tried. That check is an **eval** (short for *prompt evaluation*).
+4. The eval needs sample emails to test with, each with its right group. That list is the **test set**.
 
 ```mermaid
 flowchart LR
@@ -93,29 +58,43 @@ flowchart LR
         U --> P2 --> M
     end
     S -- "score good enough:<br/>ship the prompt" --> P2
+    style E fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
 ```
 
-- **Only the prompt moves to production.** In production, real customer emails take the place of the test set.
-- **The test set stays fixed while you edit the prompt.** You change the prompt, rerun the same test set, and compare the scores.
-- **The eval has a third piece inside it, the grader,** which decides whether each answer is right ([lesson 13](13-model-based-grading.md) and [lesson 14](14-code-based-grading.md)).
+| Piece | What it is | Example | Goes to production? |
+|---|---|---|---|
+| **The prompt** | The thing you will ship. You test it on your laptop first. | "Sort this email into billing, technical, or other: {email}" | Yes |
+| **The test set** | Sample user messages that stand in for real users. Later lessons call it the *dataset* or *eval dataset*. | `test_set.json`: 50 sample emails, each with its right group | No |
+| **The eval** | Puts each sample into the prompt, sends it to the model, and grades the answer | Code that runs all 50 emails and counts the right answers | No |
+| **The score** | What the eval produces | "41 of 50 correct" | No |
 
 > **Remember this:** The test set is a practice crowd of users. The eval is the rehearsal. Only the prompt goes on stage.
 
----
+#### Why skipping the eval is costly
 
-### What makes a good test set
+- **A real case:** in 2022, Air Canada's website chatbot told a grieving customer they could claim a bereavement discount after their flight. No such policy existed. In 2024, a Canadian tribunal ordered the airline to pay, because a company is responsible for what its chatbot says.
+- **A smaller case:** the email sorter sends a billing complaint to the technical team. The customer waits days, and you only find out from an angry review.
 
-A **test set** is your saved list of sample customer emails, each paired with the exact answer you know is right (the *expected answer*). Without one, you are guessing—you might test 3 neat emails you made up, think your prompt works, and launch it, only for messy real-world messages to break your routing.
+#### Writing a prompt vs. measuring it
 
-To make your test set catch bugs before real users do, follow four rules:
+- **Prompt engineering** means *writing* a better prompt, such as adding a few sample emails with their right groups.
+- **Prompt evaluation** means *measuring* a prompt with a score. Your code sends many test emails and counts the right answers, such as "41 of 50 correct."
+- They work together: engineering makes a change, and evaluation checks whether it helped.
 
-* **Use real, messy messages:** Don't just test neat examples. Include the weird stuff real customers actually send—like `"hi"`, Spanish emails, or two complaints mashed into one message (*edge cases*)—because easy examples hide real bugs.
-* **Go big and automate:** Running 50+ test emails graded automatically by code uncovers way more hidden mistakes than testing 5 emails by hand.
-* **Keep the test set locked:** When comparing Prompt V1 and Prompt V2, run both on the **exact same saved list of emails**. If you change the emails between runs, you won't know if a higher score came from a better prompt or just easier emails.
-* **Pick the right grader:**
-* **Code:** Best for exact answers like `billing` (instant and free).
-* **Another AI:** Best for judgment calls, like checking if a reply sounds polite.
-* **A human:** Most accurate, but too slow and expensive for large test sets.
+#### Three ways to check a new prompt
+
+1. **Try it once, and ship it if the answer looks good.** Fast, but it will probably fail on some real emails.
+2. **Try a few, and fix the one or two odd cases you find** (the course calls them *corner cases*). Better, but users still send messages you never imagined.
+3. **Score it on a whole test set, and improve it until the score is good.** The code that does this is an *evaluation pipeline*. It costs more time and money, but you can trust the result.
+
+Options 1 and 2 are traps almost every developer falls into. Real users send empty messages, two problems in one message, other languages, and attempts to trick the model.
+
+#### What makes a good test set
+
+1. **Real, messy messages,** such as "hi", Spanish emails, or two complaints in one (*edge cases*). Easy examples hide real bugs.
+2. **Many tests, graded automatically.** 50 or more emails graded by code catch far more than 5 checked by hand.
+3. **Locked between runs.** Compare prompt versions on the exact same emails, or you can't tell whether the prompt or the emails changed the score.
+4. **The right grader:** code for exact answers like `billing` (instant and free), another model for judgment calls such as "is this reply polite?", and a person when accuracy matters most (but too slow for large sets).
 
 #### Exam takeaways
 
@@ -129,7 +108,7 @@ To make your test set catch bugs before real users do, follow four rules:
 
 **Everyday comparison:** prompt engineering is a cook's recipe tips. Prompt evaluation is a taste test where 50 guests score the dish. Tips give you ideas, but only the taste test tells you whether the dish got better.
 
-**The running example:** you run a small online shop. You write a prompt that asks the model to sort each customer email into one group: `billing`, `technical`, or `other`. Your app then sends the email to the right team.
+**Compared with unit tests:** the prompt is your function, each test email with its right group is one unit test, and the eval is the test run.
 
 #### Who's who
 
@@ -137,14 +116,20 @@ To make your test set catch bugs before real users do, follow four rules:
 |---|---|---|
 | **You, the developer** | Your laptop | Write the prompt and the test emails, and decide when the prompt is good enough |
 | **The model** | Anthropic's servers | Reads the prompt and one email, and answers with one group name |
-| **The test set** | A file in your project | A list of sample emails, each with its right group written next to it |
-| **The grader** | Your code | Compares each model answer with the right group, and marks it pass or fail |
+| **The test set** | A file in your project, such as `test_set.json` | A list of sample emails, each with its right group written next to it |
+| **The grader** | Your code | Compares each model answer with the right group, and marks it pass or fail ([lesson 13](13-model-based-grading.md) and [lesson 14](14-code-based-grading.md)) |
 
 ---
 
 ### 1. Writing a prompt vs. measuring a prompt
 
-The two terms sound alike, but they do different jobs.
+The two terms sound alike, but they do different jobs, and they take turns:
+
+```mermaid
+flowchart LR
+    W["Prompt engineering<br/>change the words<br/>(e.g. add sample emails)"] --> M["Prompt evaluation<br/>run the test set,<br/>get a score"]
+    M -- "score shows<br/>what to fix next" --> W
+```
 
 ![Improving and Evaluating Prompts. Prompt Engineering: a set of best practices and guidance to improve your prompts, such as multishot prompting, structuring with XML tags, and many more. Prompt Evaluation: automated testing to measure how well your prompts work, such as testing against expected answers, comparing different versions of the same prompt, and reviewing outputs for errors](../images/09-engineering-vs-evaluation.png)
 
@@ -169,13 +154,13 @@ The app crashes when I pay.
 ```
 
 - **Sample answers** (the course calls this *multishot prompting*): the two example emails with their answers show the model the pattern to copy ([lesson 19](../README.md)).
-- **XML tags**: `<email>` and `</email>` are labels that mark where the customer's text starts and ends. The model then can't mix it up with your instructions ([lesson 18](../README.md)).
+- **XML tags**: `<email>` and `</email>` mark where the customer's text starts and ends, so the model can't mix it up with your instructions ([lesson 18](../README.md)).
 
 ---
 
 ### 2. Three ways to check a new prompt
 
-You start with this first version of the prompt:
+You start with this first version of the prompt. `{email_text}` is a slot: your code puts the real email there before sending it.
 
 ```text
 Sort this customer email into one group: billing, technical, or other.
@@ -184,21 +169,20 @@ Answer with only the group name.
 Email: {email_text}
 ```
 
-`{email_text}` is a slot. Your code puts the real email there before sending the prompt to the model.
-
 ![Draft a Prompt branches into three options. Option 1: test the prompt once and decide it's good enough, with a risk of breaking in production. Option 2: test the prompt a few times and tweak it to handle a corner case or two, but users will often provide very unexpected outputs. Option 3: run the prompt through an evaluation pipeline to score it, then iterate on the prompt, which is more work and cost but gives more confidence](../images/09-three-paths.png)
 
-#### Option 1: Try it once
+```mermaid
+flowchart TD
+    A["Draft prompt"] --> O1["1. Try it once<br/>'I was charged twice' gives billing.<br/>Ship it."]
+    A --> O2["2. Try 5 emails, fix 1 odd case<br/>'The app crashes when I pay' gave billing,<br/>so add 'Crashes and errors are technical'"]
+    A --> O3["3. Score 50 test emails,<br/>change the prompt,<br/>score the same 50 again"]
+    O1 --> R1["One right answer says nothing<br/>about the next thousand emails"]
+    O2 --> R2["You only tried emails<br/>like the ones you would write"]
+    O3 --> R3["Every change is measured.<br/>More work and cost, but trustworthy"]
+    style R3 fill:#c8f0c8,stroke:#2e7d32,stroke-width:2px,color:#000000
+```
 
-You send "I was charged twice for my order." The model answers `billing`. You ship it.
-
-One right answer tells you almost nothing about the next thousand emails. The prompt may break in production, which means the live app that real customers use.
-
-#### Option 2: Try a few, and fix what you find
-
-You try five emails. "The app crashes when I pay" comes back as `billing` instead of `technical`. You add a rule: "Crashes and errors are technical." All five pass, and you ship it.
-
-You fixed the one odd case you found. But you only tried emails like the ones *you* would write. Real customers send these:
+#### Why options 1 and 2 fail: what real customers send
 
 | Real email | Why the prompt may fail |
 |---|---|
@@ -210,19 +194,19 @@ You fixed the one odd case you found. But you only tried emails like the ones *y
 
 The course slide says users send unexpected "outputs." It means *inputs*: the emails users send.
 
-**Warning:** A wrongly sorted email goes to the wrong team. A customer with a billing problem might wait days, and you only find out from complaints.
+**Warning:** A wrongly sorted email goes to the wrong team. A customer with a billing problem might wait days, and you only find out from complaints. A prompt "breaking in production" means failing in the live app that real customers use.
 
-#### Option 3: Score it on a test set, then improve it
+#### Option 3 in action: every change gets a score
 
 You write 50 test emails, including odd ones like those above, each with its right group. Your code sends all 50 and counts the correct answers. Then you change the prompt and run the same 50 again.
 
-| Prompt version | What you changed | Score |
-|---|---|---|
-| Version 1 | Nothing, the first version | 41 of 50 (82%) |
-| Version 2 | Added "Crashes and errors are technical" | 44 of 50 (88%) |
-| Version 3 | Added one sample email for each group | 47 of 50 (94%) |
+```mermaid
+flowchart LR
+    V1["Version 1<br/>first draft<br/><b>41 of 50 (82%)</b>"] -- "add 'Crashes and errors<br/>are technical'" --> V2["Version 2<br/><b>44 of 50 (88%)</b>"]
+    V2 -- "add one sample email<br/>for each group" --> V3["Version 3<br/><b>47 of 50 (94%)</b>"]
+```
 
-Now every change is measured. You see which change helped, and a score drop warns you at once if a change broke something. Changing and rerunning like this, again and again, is called *iterating*. [Lesson 10](10-a-typical-eval-workflow.md) builds this loop step by step.
+You see which change helped, and a score drop warns you at once if a change broke something. Changing and rerunning like this, again and again, is called *iterating*. [Lesson 10](10-a-typical-eval-workflow.md) builds this loop step by step.
 
 The cost: you must write the test emails and the code, and each run sends 50 paid requests to the API.
 
@@ -235,6 +219,19 @@ The cost: you must write the test emails and the code, and each run sends 50 pai
 | **1. Try it once** | A throwaway experiment that only you will see |
 | **2. Try a few** | A small internal tool, where a wrong answer is easy to spot and cheap to fix |
 | **3. Score it on a test set** | Any prompt that customers or other systems depend on, or whenever you compare two prompt versions |
+
+---
+
+### 3. What makes a good test set
+
+A **test set** is your saved list of sample emails, each paired with the answer you know is right (the *expected answer*). For "I was charged twice," the expected answer is `billing`. Without a test set, you are guessing: you test 3 neat emails you made up, launch, and messy real emails break your routing.
+
+| Rule | Bad test set | Good test set |
+|---|---|---|
+| **Real, messy messages** | 10 tidy emails you wrote | Also "hi", Spanish emails, two complaints in one |
+| **Many tests, graded automatically** | 5 emails checked by eye | 50+ emails, scored by code |
+| **Locked between runs** | New emails for each prompt version | The exact same emails for every version |
+| **The right grader** | A person reading 500 answers | Code for exact answers like `billing`, another model for judgment calls, a person for spot checks |
 
 ---
 
@@ -254,7 +251,7 @@ The cost: you must write the test emails and the code, and each run sends 50 pai
 
 #### Fair comparisons
 
-- Answers vary a little from run to run ([lesson 6](../01-accessing-claude-with-the-api/06-temperature.md)). Use enough tests that one lucky answer can't change the result.
+- Answers vary a little from run to run ([lesson 6, temperature](../01-accessing-claude-with-the-api/06-temperature.md)). Use enough tests that one lucky answer can't change the result.
 - Rerun the whole test set when you switch models. A prompt that scored 94% on one model may score lower on another.
 
 ---
@@ -262,9 +259,9 @@ The cost: you must write the test emails and the code, and each run sends 50 pai
 ### Recap
 
 - Prompt engineering changes the prompt. Prompt evaluation measures it with a score.
+- An eval runs the prompt on a test set and gives a score. Only the prompt goes to production.
 - Trying a prompt once, or a few times, misses the odd messages real users send.
-- Scoring a prompt on a set of test questions shows which changes really help.
-- It costs more time and money, but it catches problems before users do.
+- A good test set is messy, large, graded automatically, and the same for every version.
 
 ---
 

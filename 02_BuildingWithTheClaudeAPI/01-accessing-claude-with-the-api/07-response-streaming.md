@@ -35,6 +35,24 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 ### Revision summary
 
+**Why this lesson exists:**
+
+1. Your chat app sends "What is quantum computing?" through your server to Claude, as in [lesson 1](01-accessing-the-api.md).
+2. A long answer can take 10 to 30 seconds to write. Until it is finished, the user sees only "...".
+3. **Streaming** sends the answer in small pieces as the model writes it, so the first words appear within a second or two.
+
+```mermaid
+flowchart TB
+    subgraph Without["Without streaming"]
+        W1["0 s: question sent"] --> W2["0 to 20 s: user sees '...'"] --> W3["20 s: whole answer<br/>appears at once"]
+    end
+    subgraph With["With streaming"]
+        S1["0 s: question sent"] --> S2["1 s: 'Quantum'"] --> S3["2 s: 'Quantum computing is'"] --> S4["... text keeps growing ..."] --> S5["20 s: done"]
+    end
+    style S2 fill:#c8f0c8,stroke:#2e7d32,stroke-width:2px,color:#000000
+    style W2 fill:#f8c8c8,stroke:#b22222,stroke-width:2px,color:#000000
+```
+
 - **The problem:** a full answer can take 10 to 30 seconds. Without streaming, your server waits for the whole answer, and the user stares at a loading spinner.
 - **Streaming:** the API sends the answer in small pieces as the model writes it. Your server passes each piece on, so the user sees the text appear word by word.
 - **One request:** all the pieces belong to a single request. Streaming doesn't send more requests or cost more.
@@ -42,6 +60,16 @@ Do the guide's problems in order, after you finish the chapter, because each one
 #### The stream events, in order
 
 With streaming on, the API sends a series of *events* (small messages, each with a type and some data):
+
+```mermaid
+flowchart LR
+    A["MessageStart"] --> B["ContentBlockStart"] --> C["ContentBlockDelta<br/>'Quantum'"] --> C2["ContentBlockDelta<br/>' computing is'"] --> C3["... more deltas ..."] --> D["ContentBlockStop"] --> E["MessageDelta<br/>stop_reason,<br/>output tokens"] --> F["MessageStop"]
+    style C fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+    style C2 fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+    style C3 fill:#ffe9a8,stroke:#b8860b,stroke-width:2px,color:#000000
+```
+
+The highlighted deltas carry the text to show the user.
 
 1. **MessageStart:** a new message is starting.
 2. **ContentBlockStart:** a new block of content is starting. A block can hold text, a tool call, or other content.

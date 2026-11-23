@@ -53,6 +53,7 @@ Rules:
 - **Every file gets a full path and a folder tree.** Show where the file sits (`journal-app/CLAUDE.md`, `C:\Users\you\.claude\CLAUDE.md`), what's in it (real example content), who writes it, and who reads it.
 - **Course labels are never enough on their own.** If the course says "project file," "user file," "clean context," "reads it cold," explain what the label means in plain words the first time, and say what it does *not* mean if a beginner could misread it.
 - **Explain every tool, command, and code line in the running example**, even ones the course treats as obvious (`it.skip`, `localhost`, `pnpm`, "server actions"). I can't follow an example built on words I don't know.
+- **Explain code with comments inside the code block, not with a "Line by line" list after it.** Put a short plain comment above each line or group that needs one. Keep prose after a code block only for ideas that are not about a single line, such as why two functions are kept separate. JSON can't hold comments, so explain JSON fields in a short list after the block.
 
 ### Always say when to use what
 

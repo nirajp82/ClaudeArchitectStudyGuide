@@ -145,12 +145,12 @@ course-project/
 #### Cell 1: install the packages
 
 ```python
+# %pip runs pip, Python's package installer, and installs into the same Python the notebook uses.
+# A plain pip in a terminal can install into a different Python by mistake.
+# "anthropic<1" installs the newest version below 1.0. The quotes are needed because < has a
+# special meaning in a terminal. python-dotenv is a small package that reads .env files.
 %pip install "anthropic<1" python-dotenv
 ```
-
-- `%pip` is a notebook command that runs `pip`, Python's package installer, and installs into the same Python that the notebook uses. A plain `pip` in a terminal can install into a different Python by mistake.
-- `"anthropic<1"` installs the newest version below 1.0. The quotes are needed because `<` has a special meaning in a terminal.
-- `python-dotenv` is a small package that reads `.env` files.
 
 You run this cell once. After that, the packages stay installed.
 
@@ -158,21 +158,20 @@ You run this cell once. After that, the packages stay installed.
 
 ```python
 from dotenv import load_dotenv
+# Opens .env in the current folder and copies each line into the environment,
+# so ANTHROPIC_API_KEY now exists as an environment variable.
 load_dotenv()
 
+# The client class from the SDK.
 from anthropic import Anthropic
 
+# Creates the client. With no arguments, it finds ANTHROPIC_API_KEY in the environment and uses it.
 client = Anthropic()
+# The model name in one variable, so you can change the model in one place later.
 model = "claude-haiku-4-5"
 ```
 
-Line by line:
-
-1. `from dotenv import load_dotenv` brings in the `load_dotenv` function from the `python-dotenv` package.
-2. `load_dotenv()` opens `.env` in the current folder and copies each line into the environment, so `ANTHROPIC_API_KEY` now exists as an environment variable (see [lesson 2](02-getting-an-api-key.md#3-keeping-the-key-safe)).
-3. `from anthropic import Anthropic` brings in the client class from the SDK.
-4. `client = Anthropic()` creates the client. With no arguments, it looks for `ANTHROPIC_API_KEY` in the environment and uses it.
-5. `model = "claude-haiku-4-5"` saves the model name in a variable, so you can change the model in one place later.
+How the key gets into the environment is in [lesson 2](02-getting-an-api-key.md#3-keeping-the-key-safe).
 
 > **Warning:** If you see `Could not resolve authentication method` or a 401 `authentication_error`, the key wasn't found or is wrong. Check that `.env` sits in the same folder as the notebook, that the variable name is exactly `ANTHROPIC_API_KEY`, and that you ran `load_dotenv()` before `Anthropic()`.
 
@@ -300,12 +299,11 @@ Message(id='msg_01AbC...', type='message', role='assistant', model='claude-haiku
 Usually you only want the text:
 
 ```python
+# content is a list of content blocks: pieces of the answer, each labelled with a type.
+# [0] takes the first block. A plain text request has just one block, of type "text".
+# .text takes the words out of that block.
 message.content[0].text
 ```
-
-- `message.content` is a list of **content blocks**. A content block is one piece of the answer, labelled with a `type`.
-- `[0]` takes the first block. In a plain text request like this one, there is just one block, of type `text`.
-- `.text` takes the words out of that block.
 
 The output is the answer: "Quantum computing is a type of computation that leverages quantum mechanics principles like superposition and entanglement to process information using quantum bits (qubits), potentially solving certain complex problems exponentially faster than classical computers."
 

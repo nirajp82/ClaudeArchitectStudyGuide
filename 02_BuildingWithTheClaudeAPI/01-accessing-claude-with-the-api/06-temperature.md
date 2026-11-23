@@ -187,11 +187,13 @@ Match the temperature to the job. Tasks with one right answer need low temperatu
 The course adds one more optional setting to the `chat()` function from [lesson 5](05-system-prompts.md):
 
 ```python
+# New: an optional temperature. If you don't pass one, it uses 1.0, the API's own default.
 def chat(messages, system=None, temperature=1.0):
     params = {
         "model": model,
         "max_tokens": 1000,
         "messages": messages,
+        # Sent with every request. Unlike system, it always has a value, so it needs no if check.
         "temperature": temperature
     }
 
@@ -201,12 +203,6 @@ def chat(messages, system=None, temperature=1.0):
     message = client.messages.create(**params)
     return message.content[0].text
 ```
-
-What changed:
-
-- `temperature=1.0` adds an optional setting. If you don't pass one, it uses 1.0, the API's own default.
-- `"temperature": temperature` puts it in the settings sent with every request.
-- Unlike `system`, temperature always has a value, so it doesn't need an `if` check.
 
 Test it with a request for movie ideas:
 

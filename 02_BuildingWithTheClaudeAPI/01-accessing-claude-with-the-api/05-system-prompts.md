@@ -209,26 +209,25 @@ The question was the same in both requests. Only the system prompt changed, and 
 The `chat()` function from [lesson 4](04-multi-turn-conversations.md) can't send a system prompt. The course makes it reusable, so you can call it with or without one:
 
 ```python
+# system=None makes the setting optional. Without a system prompt, system is None,
+# Python's word for "nothing."
 def chat(messages, system=None):
+    # Collects the settings in a dictionary (a set of name-value pairs)
+    # instead of writing them straight into the call.
     params = {
         "model": model,
         "max_tokens": 1000,
         "messages": messages,
     }
 
+    # Adds "system" only when a system prompt was given.
     if system:
         params["system"] = system
 
+    # ** unpacks the dictionary: the same as writing model=model, max_tokens=1000, ... by hand.
     message = client.messages.create(**params)
     return message.content[0].text
 ```
-
-What each line does:
-
-- `system=None` makes the setting optional. If you don't pass a system prompt, `system` is `None`, Python's word for "nothing."
-- `params = {...}` collects the settings in a dictionary (a set of name-value pairs) instead of writing them straight into the call.
-- `if system:` adds `"system"` to the dictionary only when a system prompt was given.
-- `client.messages.create(**params)` unpacks the dictionary. The `**` turns each name-value pair into a setting, so it is the same as writing `model=model, max_tokens=1000, ...` by hand.
 
 Why not just pass `system=system` every time? Because the API doesn't accept `system=None`. Sending it when there is no system prompt would cause an error. Building the dictionary lets the code leave the setting out completely.
 

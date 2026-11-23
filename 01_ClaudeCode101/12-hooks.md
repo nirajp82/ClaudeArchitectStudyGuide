@@ -221,22 +221,23 @@ The script, `shop-app/.claude/hooks/format-file.sh`:
 
 ```bash
 #!/bin/bash
-FILE=$(jq -r '.tool_input.file_path')       # read the edited file's path from the JSON input
+# The line above tells the computer to run this file with Bash, a common terminal program.
 
+# jq is a small tool that pulls one value out of JSON. Here it reads the edited file's path,
+# for example services/refund-service.ts.
+FILE=$(jq -r '.tool_input.file_path')
+
+# Checks the file's ending and picks the matching formatter.
+# npx runs a tool installed in the project, here Prettier.
 case "$FILE" in
   *.ts|*.tsx|*.js) npx prettier --write "$FILE" ;;   # TypeScript and JavaScript
   *.go)            gofmt -w "$FILE" ;;               # Go
   *.py)            ruff format "$FILE" ;;            # Python
 esac
+
+# Tells Claude Code that everything went fine.
 exit 0
 ```
-
-Line by line:
-
-- `#!/bin/bash` tells the computer to run the file with Bash, a common terminal program.
-- `jq` is a small tool that pulls one value out of JSON. Here it reads `tool_input.file_path`, for example `services/refund-service.ts`.
-- `case` checks the file's ending and picks the matching formatter. `npx` runs a tool installed in the project, here Prettier.
-- `exit 0` tells Claude Code that everything went fine.
 
 Now every time the model edits `refund-service.ts`, Claude Code runs Prettier on it. When the hook works, nothing appears in the conversation. The file is simply formatted.
 

@@ -210,26 +210,26 @@ Your server receives the text "What is quantum computing?". It puts the text ins
 
 ```python
 # server.py — runs on your server, never in the app
+# The official Python SDK. You install it once with: pip install anthropic
 import anthropic
 
-client = anthropic.Anthropic()          # reads the key from ANTHROPIC_API_KEY
+# A client is an object that sends requests for you. With no arguments, it reads the key
+# from the environment variable ANTHROPIC_API_KEY: a named setting stored on the server,
+# outside your code, so the key never appears in your source files.
+client = anthropic.Anthropic()
 
 def ask_claude(question):
+    # Sends one request to the Messages API, the part of the Claude API that handles conversations.
+    # model, max_tokens, and messages are three of the four required fields.
+    # The SDK adds the fourth, the key, for you.
     response = client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=1000,
         messages=[{"role": "user", "content": question}],
     )
+    # content is a list of blocks. For a plain question, the first block holds the text answer.
     return response.content[0].text
 ```
-
-What each line does:
-
-- `import anthropic` loads the official Python SDK. You install it once with `pip install anthropic`.
-- `anthropic.Anthropic()` creates a **client**, which is an object that sends requests for you. With no arguments, it reads the key from the **environment variable** `ANTHROPIC_API_KEY`. An environment variable is a named setting stored on the server, outside your code, so the key never appears in your source files.
-- `client.messages.create(...)` sends one request to the Messages API, the part of the Claude API that handles conversations.
-- `model`, `max_tokens`, and `messages` are three of the four required fields. The SDK adds the fourth, the key, for you.
-- `response.content[0].text` reads the answer text. `content` is a list of blocks. For a plain question, the first block holds the text answer.
 
 #### The same request as plain HTTP
 

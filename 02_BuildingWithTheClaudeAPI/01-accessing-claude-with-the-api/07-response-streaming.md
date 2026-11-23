@@ -183,8 +183,11 @@ Each event has a type that tells your code what it holds:
 
 ```python
 messages = []
+# The helper from lesson 4.
 add_user_message(messages, "Write a 1 sentence description of a fake database")
 
+# stream=True turns streaming on. Instead of one finished message,
+# create() returns a stream of events.
 stream = client.messages.create(
     model=model,
     max_tokens=1000,
@@ -192,14 +195,11 @@ stream = client.messages.create(
     stream=True
 )
 
+# Handles each event as it arrives, in order. print shows the raw event: first a
+# RawMessageStartEvent, then a RawContentBlockStartEvent, then many delta events.
 for event in stream:
     print(event)
 ```
-
-- `add_user_message()` is the helper from [lesson 4](04-multi-turn-conversations.md).
-- `stream=True` turns streaming on. Instead of one finished message, `create()` returns a stream of events.
-- `for event in stream:` handles each event as it arrives, in order.
-- `print(event)` shows the raw event. The output starts with a `RawMessageStartEvent`, then a `RawContentBlockStartEvent`, then many delta events.
 
 Things to notice in the output: the first event already shows `input_tokens=18`, but `stop_reason` is still `None` and the text is empty, because the model has not written anything yet. The text arrives in the delta events that follow.
 
@@ -208,19 +208,18 @@ Things to notice in the output: the first event already shows `input_tokens=18`,
 Picking the text out of raw events by hand is tedious. The SDK has a simpler way:
 
 ```python
+# The SDK's streaming helper. It needs no stream=True.
+# "with ... as stream" closes the connection cleanly when the block ends, even after an error.
 with client.messages.stream(
     model=model,
     max_tokens=1000,
     messages=messages
 ) as stream:
+    # Only the text chunks, such as "A", " fake", " database". Every other event is filtered out.
     for text in stream.text_stream:
+        # end="" prints no line break, so the chunks join into one sentence on screen.
         print(text, end="")
 ```
-
-- `client.messages.stream(...)` is the SDK's streaming helper. It needs no `stream=True`.
-- `with ... as stream:` opens the stream and closes the connection cleanly when the block ends, even if an error happens.
-- `stream.text_stream` gives only the text chunks, such as "A", " fake", " database". Every other event is filtered out.
-- `print(text, end="")` prints each chunk with no line break, so the chunks join into one sentence on screen.
 
 #### Way 3: text for the user, plus the full message for your code
 
@@ -233,15 +232,13 @@ with client.messages.stream(
     messages=messages
 ) as stream:
     for text in stream.text_stream:
-        # Send each chunk to your client
+        # A placeholder. In a real app, you would send text to the user's app here.
         pass
 
-    # Get the complete message for database storage
+    # The whole message, built from all the chunks. It looks like a normal response:
+    # the full text, stop_reason, and usage. Save it or add it to the chat history.
     final_message = stream.get_final_message()
 ```
-
-- `pass` is a placeholder. In a real app, you would send `text` to the user's app here.
-- `stream.get_final_message()` returns the whole message, built from all the chunks. It looks the same as a normal, non-streamed response: the full text, `stop_reason`, and `usage`.
 
 This gives you both: live text for the user, and a complete message for your code.
 
@@ -373,15 +370,18 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 
 app = FastAPI()
-client = anthropic.AsyncAnthropic()   # reads your API key from ANTHROPIC_API_KEY
+# The SDK client for async code, so one server can handle many users at once.
+# It reads your API key from ANTHROPIC_API_KEY.
+client = anthropic.AsyncAnthropic()
 
 # 1-2. The browser sends POST /chat with {"question": "..."}.
 #      FastAPI turns that JSON into the Python dict `body` and calls chat().
 @app.post("/chat")
 async def chat(body: dict):
 
-    # relay() does not run yet. It is a recipe that produces the response body
-    # one piece at a time. FastAPI runs it in step 3.
+    # relay() does not run yet. It is a generator: a function that hands out values one at a
+    # time. Each yield sends one piece to the browser at once; a normal return would send
+    # everything at the end and lose the benefit of streaming. FastAPI runs it in step 3.
     async def relay():
         # 4. Your server asks Claude for a streamed answer.
         async with client.messages.stream(
@@ -393,8 +393,11 @@ async def chat(body: dict):
             async for text in stream.text_stream:
                 # 6. Write one SSE event into the open response:
                 #    data: {"text": "Quantum"}   followed by a blank line
+                #    json.dumps wraps the chunk in JSON, so a line break inside the text
+                #    can't break the SSE format, which ends each event with a blank line.
                 yield f"data: {json.dumps({'text': text})}\n\n"
-        # 8. Claude has finished. Tell the browser the answer is complete.
+        # 8. Claude has finished. [DONE] is a marker you invent, so the browser
+        #    knows the answer is complete.
         yield "data: [DONE]\n\n"
         # When relay() returns, FastAPI closes the response.
 
@@ -402,11 +405,6 @@ async def chat(body: dict):
     #    Everything relay() yields is sent to the browser as soon as it is yielded.
     return StreamingResponse(relay(), media_type="text/event-stream")
 ```
-
-- `AsyncAnthropic()` is the SDK client for `async` code, so one server can handle many users at once.
-- `relay()` is a *generator*: a function that hands out values one at a time. Each `yield` sends one piece to the browser at once. A normal `return` would send everything at the end and lose the benefit of streaming.
-- `json.dumps` wraps each chunk in JSON. Line breaks inside the text then can't break the SSE format, which uses a blank line to mark the end of each event.
-- `[DONE]` is a marker you invent, so the browser knows the answer is finished.
 
 #### What actually travels between the browser and your server
 

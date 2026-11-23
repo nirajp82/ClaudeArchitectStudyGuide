@@ -199,31 +199,29 @@ Things to notice:
 Building the list by hand every time is repetitive and easy to get wrong. The course writes three helper functions. A *helper function* is a small, reusable piece of code for one job.
 
 ```python
+# Takes the list and the user's text.
 def add_user_message(messages, text):
+    # One message, as a dictionary.
     user_message = {"role": "user", "content": text}
+    # Adds it to the end of the list. append changes the list itself, so the caller's list grows too.
     messages.append(user_message)
 
+# The same, with the role "assistant".
 def add_assistant_message(messages, text):
     assistant_message = {"role": "assistant", "content": text}
     messages.append(assistant_message)
 
+# Sends the whole list in one request. client and model come from lesson 3
+# (model = "claude-haiku-4-5").
 def chat(messages):
     message = client.messages.create(
         model=model,
         max_tokens=1000,
         messages=messages,
     )
+    # Only the answer text, not the whole response.
     return message.content[0].text
 ```
-
-What each line does:
-
-- `def add_user_message(messages, text):` defines a function that takes the list and the user's text.
-- `{"role": "user", "content": text}` builds one message as a dictionary.
-- `messages.append(...)` adds that message to the end of the list. `append` changes the list itself. It doesn't make a copy, so the caller's list grows too.
-- `add_assistant_message` does the same, with the role `assistant`.
-- `chat(messages)` sends the whole list in one request, using the `client` and `model` variables from [lesson 3](03-making-a-request.md) (`model = "claude-haiku-4-5"`).
-- `return message.content[0].text` hands back only the answer text, not the whole response.
 
 **Warning:** `chat()` does not add the answer to the list. If you forget to call `add_assistant_message()`, the next request has two `user` messages in a row and no answer between them. The model then never sees what it said before.
 

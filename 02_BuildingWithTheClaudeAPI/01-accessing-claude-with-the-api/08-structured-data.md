@@ -109,10 +109,13 @@ The shop's code asks the model to pull out the details. Then it saves them in th
 Your code puts the whole email, the full message the customer wrote, in a variable. Then it just asks for JSON:
 
 ```python
-# The full text of the customer's email, not only their email address
+# The full text of the customer's email: the order, the problem, the refund request,
+# the name, and the address. Not only their email address.
 email_text = """Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived
 with a cracked lid. I'd like a refund please. - Priya Shah, priya@example.com"""
 
+# The f makes the prompt an f-string: Python replaces {email_text} with the whole email
+# before sending. \n\n adds a blank line between the instruction and the email.
 response = client.messages.create(
     model="claude-opus-5-5",
     max_tokens=1000,
@@ -120,9 +123,6 @@ response = client.messages.create(
 )
 print(response.content[0].text)
 ```
-
-- `email_text` holds the whole email: the order, the problem, the refund request, the name, and the address.
-- The `f` before the prompt makes it an *f-string*: Python replaces `{email_text}` with the whole email before sending. `\n\n` adds a blank line between the instruction and the email.
 
 So the model receives this exact user message:
 
@@ -178,10 +178,14 @@ from pydantic import BaseModel
 
 client = anthropic.Anthropic()
 
+# The fields the ticket system needs. Every field is required.
+# str means text, and bool means True or False.
 class SupportTicket(BaseModel):
     name: str
+    # Only the address, such as priya@example.com. The email_text variable below is the whole message.
     email: str
     order_id: str
+    # issue must be exactly one of these four words.
     issue: Literal["damaged", "late", "wrong_item", "other"]
     wants_refund: bool
 
@@ -189,6 +193,8 @@ class SupportTicket(BaseModel):
 email_text = """Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived
 with a cracked lid. I'd like a refund please. - Priya Shah, priya@example.com"""
 
+# Works like messages.create(), but output_format=SupportTicket adds the schema.
+# It is sent in the output_config.format setting.
 response = client.messages.parse(
     model="claude-opus-5-5",
     max_tokens=1000,
@@ -196,20 +202,15 @@ response = client.messages.parse(
     output_format=SupportTicket,
 )
 
+# Stop early if the answer was cut off or refused, because then it may not match the schema.
 if response.stop_reason in ("max_tokens", "refusal"):
     raise RuntimeError(f"No ticket created: {response.stop_reason}")
 
+# A ready SupportTicket object, so you skip json.loads().
 ticket = response.parsed_output
 print(ticket.issue)         # damaged
 print(ticket.wants_refund)  # True
 ```
-
-- `class SupportTicket(BaseModel)` lists the fields the ticket system needs. Every field is required.
-- `str` means text, and `bool` means `True` or `False`. The class's `email` field is only the address, such as `priya@example.com`. The `email_text` variable is the whole message.
-- `Literal["damaged", "late", "wrong_item", "other"]` means `issue` must be exactly one of those four words.
-- `client.messages.parse()` works like `messages.create()`, but `output_format=SupportTicket` adds the schema. It is sent in the `output_config.format` setting.
-- The `if` line stops early when the answer was cut off or refused, because then it may not match the schema.
-- `response.parsed_output` is a ready `SupportTicket` object, so you skip `json.loads()`.
 
 #### What comes back
 
@@ -248,25 +249,26 @@ response = client.messages.create(
         "format": {
             "type": "json_schema",
             "schema": {
+                # The answer is a JSON object, the { ... } kind.
                 "type": "object",
+                # Its fields. "string" means text.
                 "properties": {
                     "first_name": {"type": "string"},
                     "last_name": {"type": "string"}
                 },
+                # Fields that must appear.
                 "required": ["first_name", "last_name"],
+                # No other field is allowed.
                 "additionalProperties": False
             }
         }
     },
 )
 
+# Here you get plain JSON text, so json.loads() turns it into a Python dictionary yourself.
 customer = json.loads(response.content[0].text)
 print(customer)   # {'first_name': 'Priya', 'last_name': 'Shah'}
 ```
-
-- `"type": "object"` means the answer is a JSON object, the `{ ... }` kind. `"properties"` lists its fields, and `"string"` means text.
-- `"required"` lists the fields that must appear. `"additionalProperties": False` forbids any other field.
-- Here you get plain JSON text, so `json.loads()` turns it into a Python dictionary yourself.
 
 | | Pydantic class with `parse()` | Dictionary with `create()` |
 |---|---|---|

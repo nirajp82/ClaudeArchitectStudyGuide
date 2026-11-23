@@ -54,7 +54,7 @@ Where each lesson fits:
 | [10. A typical eval workflow](10-a-typical-eval-workflow.md) | The five steps, from prompt to score |
 | [11. Generating test datasets](11-generating-test-datasets.md) | Where the test set comes from: a model drafts it, you check it, you save it |
 | [12. Running the eval](12-running-the-eval.md) | Sending every sample through the prompt and collecting the answers |
-| [13. Model based grading](13-model-based-grading.md) and 14. Code based grading | How the grader scores each answer |
+| [13. Model based grading](13-model-based-grading.md) and [14. Code based grading](14-code-based-grading.md) | How the grader scores each answer |
 
 ## Lessons in this chapter
 
@@ -65,7 +65,7 @@ Where each lesson fits:
 | 11 | Generating test datasets | [Generating test datasets](https://academy.claude.com/courses/building-with-the-claude-api/generating-test-datasets) | [11-generating-test-datasets.md](11-generating-test-datasets.md) | ✅ Done |
 | 12 | Running the eval | [Running the eval](https://academy.claude.com/courses/building-with-the-claude-api/running-the-eval) | [12-running-the-eval.md](12-running-the-eval.md) | ✅ Done |
 | 13 | Model based grading | [Model based grading](https://academy.claude.com/courses/building-with-the-claude-api/model-based-grading) | [13-model-based-grading.md](13-model-based-grading.md) | ✅ Done |
-| 14 | Code based grading | | `14-code-based-grading.md` | ⬜ |
+| 14 | Code based grading | [Code based grading](https://academy.claude.com/courses/building-with-the-claude-api/code-based-grading) | [14-code-based-grading.md](14-code-based-grading.md) | ✅ Done |
 | — | Quiz on prompt evaluation | | Quiz review section on this page | ⬜ |
 
 ## Lesson summaries
@@ -120,6 +120,16 @@ Where each lesson fits:
 
 [Full lesson →](13-model-based-grading.md)
 
+### 14. Code based grading
+
+- **A code grader checks exact rules for free,** with the same answer every time. Here it checks format and valid syntax, and the model grader checks task following.
+- **Three checks, each returning 10 or 0:** `json.loads` for JSON, `ast.parse` for Python (it reads the code without running it), and `re.compile` for regex. Almost any text compiles as a regex, so that check only catches broken patterns.
+- **Each test case gets a `format` field** (`python`, `json`, or `regex`), so `grade_syntax` picks the right check.
+- **Ask for code only:** prompt rules ("Respond only with Python, JSON, or a plain Regex") plus structured outputs with a `{"code": "..."}` shape. The course's ` ```code ` prefill works only on older models.
+- **`score_answer` averages the model score and the syntax score.** The result is a baseline to raise by improving the prompt. A gate (invalid syntax means 0) is stricter.
+
+[Full lesson →](14-code-based-grading.md)
+
 ## Exam takeaways
 
 - **A team tested a new prompt on three sample inputs and wants to ship it today.** Build an evaluation pipeline first, with realistic test inputs including edge cases and an automatic score. (Claude Models, Prompting & Context Engineering) [Lesson 9](09-prompt-evaluation.md)
@@ -140,6 +150,10 @@ Where each lesson fits:
 - **A model grader gives almost every answer a 6.** Ask for strengths, weaknesses, and reasoning before the score, and add a rubric. (Claude Models, Prompting & Context Engineering) [Lesson 13](13-model-based-grading.md)
 - **A team must check valid JSON and helpfulness.** Valid JSON with a code grader, helpfulness with a model grader. (Solution Design & Architecture) [Lesson 13](13-model-based-grading.md)
 - **A team wants to trust model-grader scores with no human check.** Have people score a sample and compare first. (Governance, Safety & Risk) [Lesson 13](13-model-based-grading.md)
+
+- **A team uses a model grader to check that generated JSON is valid.** Use a code grader with `json.loads`: exact, free, and repeatable. (Prompt Engineering & Structured Output) [Lesson 14](14-code-based-grading.md)
+- **Averaging lets broken code score 5 out of 10.** Make syntax a gate: code that does not parse scores 0. (Solution Design & Architecture) [Lesson 14](14-code-based-grading.md)
+- **A team wants the grader to run generated Python.** Check syntax with `ast.parse`, which does not run code, and run real tests only in an isolated sandbox. (Governance, Safety & Risk) [Lesson 14](14-code-based-grading.md)
 
 ## Quiz review
 

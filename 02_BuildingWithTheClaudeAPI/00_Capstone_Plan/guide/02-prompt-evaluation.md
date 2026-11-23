@@ -263,16 +263,16 @@ uv run python -m evaluations.run_evals
 
 ### Problem 4: Grade answers with code
 
-**Lesson:** 14, Code based grading
+**Lesson:** [14, Code based grading](../../02-prompt-evaluation/14-code-based-grading.md)
 
 **The problem:** Write a code grader in `evaluations/graders.py`. It scores what code can check exactly:
 
-1. **Triage:** do `category` and `priority` match the expected values?
+1. **Triage:** is the output valid JSON, and do `category` and `priority` match the expected values? Output that is not valid JSON scores 0.
 2. **Customer answers:** do they avoid the internal words `signal level`, `router logs`, and `outage map`, and keep to at most 5 numbered steps?
 
 Each check returns a score from 0 to 10.
 
-- **Check:** a correct triage scores 10, a half-right one scores 5, and a customer answer that says `router logs` scores 0.
+- **Check:** a correct triage scores 10, a half-right one scores 5, triage output that is not valid JSON scores 0, and a customer answer that says `router logs` scores 0.
 
 <details>
 <summary>Show the step-by-step answer</summary>
@@ -287,8 +287,12 @@ INTERNAL_WORDS = ["signal level", "router logs", "outage map"]
 
 
 def grade_triage(output: str, case: dict) -> int:
-    # Turns the triage JSON text back into a dictionary.
-    result = json.loads(output)
+    try:
+        # Turns the triage JSON text back into a dictionary.
+        result = json.loads(output)
+    except json.JSONDecodeError:
+        # Not valid JSON, so the syntax check fails and the answer scores 0.
+        return 0
     score = 0
     if result["category"] == case["category"]:
         # Gives half the points for each field that matches.
@@ -314,10 +318,11 @@ def grade_customer_rules(output: str) -> int:
 ```python
 from evaluations.graders import grade_triage, grade_customer_rules
 grade_triage('{"category": "outage", "priority": "low"}', {"category": "outage", "priority": "high"})
+grade_triage('category: outage', {"category": "outage", "priority": "high"})
 grade_customer_rules("Check your router logs.")
 ```
 
-You see `5` and `0`. Type `exit()` to leave.
+You see `5`, `0`, and `0`. Type `exit()` to leave.
 
 **Step 3. Know when code grading fits.** Use code when the right answer is exact: a field value, a format, a forbidden word, a length. It is free, fast, and gives the same score every time. It can't judge whether an answer is *helpful*.
 

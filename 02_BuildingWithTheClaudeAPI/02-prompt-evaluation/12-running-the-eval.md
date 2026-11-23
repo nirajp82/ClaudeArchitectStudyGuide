@@ -20,9 +20,9 @@ Do the guide's problems in order, after you finish the chapter, because each one
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [1. get\_answer: send one task to the model and get its answer](#1-get_answer-send-one-task-to-the-model-and-get-its-answer) |
-| 4 | [2. get\_answer\_and\_grade: get the answer, then grade it](#2-get_answer_and_grade-get-the-answer-then-grade-it) |
-| 5 | [3. get\_all\_answers\_and\_grades: do it for every task in the dataset](#3-get_all_answers_and_grades-do-it-for-every-task-in-the-dataset) |
+| 3 | [1. send\_one\_task\_to\_model: get the model's answer to one task](#1-send_one_task_to_model-get-the-models-answer-to-one-task) |
+| 4 | [2. send\_one\_task\_and\_score\_answer: add a score to that answer](#2-send_one_task_and_score_answer-add-a-score-to-that-answer) |
+| 5 | [3. send\_every\_task\_and\_score\_answers: repeat for the whole dataset](#3-send_every_task_and_score_answers-repeat-for-the-whole-dataset) |
 | 6 | [4. Run it and read the results](#4-run-it-and-read-the-results) |
 | 7 | [Architect notes](#architect-notes) |
 | 8 | [Recap](#recap) |
@@ -65,23 +65,23 @@ flowchart LR
 
 The run step is three small Python functions. Each name says what the function gives back, and each one calls the one below it:
 
-- **`get_answer(test_case)`:** puts one task from the dataset into the prompt, sends it to the model, and returns **only the model's answer**.
-- **`get_answer_and_grade(test_case)`:** calls `get_answer`, then grades that answer. It returns **the task, the answer, and the grade** together in one record.
-- **`get_all_answers_and_grades(dataset)`:** calls `get_answer_and_grade` for every task in the dataset and returns the list of records.
+- **`send_one_task_to_model(test_case)`:** puts one task from the dataset into the prompt, sends it to the model, and returns **only the model's answer**.
+- **`send_one_task_and_score_answer(test_case)`:** calls `send_one_task_to_model`, then scores that answer. It returns **the task, the answer, and the score** together in one record.
+- **`send_every_task_and_score_answers(dataset)`:** calls `send_one_task_and_score_answer` for every task in the dataset and returns the list of records.
 
 These notes use clearer names than the course. Match them to the course's code, videos, and quiz with this table:
 
 | Name in these notes | Name in the course | Returns |
 |---|---|---|
-| `get_answer` | `run_prompt` | The model's answer only |
-| `get_answer_and_grade` | `run_test_case` | The task, the answer, and the grade |
-| `get_all_answers_and_grades` | `run_eval` | One record per task in the dataset |
+| `send_one_task_to_model` | `run_prompt` | The model's answer only |
+| `send_one_task_and_score_answer` | `run_test_case` | The task, the answer, and the score |
+| `send_every_task_and_score_answers` | `run_eval` | One record per task in the dataset |
 
 #### What a "test case" and a "result" are
 
 - **A test case** is one item from `dataset.json`, such as `{"task": "Write a regex that matches an EC2 instance ID"}`.
-- **A result** is a Python dictionary with three fields: `output` (the model's answer), `test_case` (the item it answered), and `score` (the grade).
-- `get_all_answers_and_grades` returns a list of results, one per test case. `print(json.dumps(results, indent=2))` prints that list in a readable layout.
+- **A result** is a Python dictionary with three fields: `output` (the model's answer), `test_case` (the item it answered), and `score` (how good the answer is, from 1 to 10).
+- `send_every_task_and_score_answers` returns a list of results, one per test case. `print(json.dumps(results, indent=2))` prints that list in a readable layout.
 
 #### What to expect on the first run
 
@@ -109,8 +109,8 @@ These notes use clearer names than the course. Match them to the course's code, 
 
 | Player | Where it lives | What it does in this lesson | Example |
 |---|---|---|---|
-| **You** | At your laptop | Run the notebook cells and read the results | You run `results = get_all_answers_and_grades(dataset)` |
-| **Your notebook code** | A Jupyter notebook on your laptop | Holds the three functions and the loop | `get_all_answers_and_grades`, `get_answer_and_grade`, `get_answer` |
+| **You** | At your laptop | Run the notebook cells and read the results | You run `results = send_every_task_and_score_answers(dataset)` |
+| **Your notebook code** | A Jupyter notebook on your laptop | Holds the three functions and the loop | `send_every_task_and_score_answers`, `send_one_task_and_score_answer`, `send_one_task_to_model` |
 | **`dataset.json`** | A file next to the notebook | Holds the sample requests from [lesson 11](11-generating-test-datasets.md) | `[{"task": "Write a regex that matches an EC2 instance ID"}, ...]` |
 | **The model** | Anthropic's servers | Answers each request. This is the prompt being tested. | Claude Haiku answers with a regex and an explanation |
 | **The grader** | Not built yet | Will score each answer ([lesson 13](13-model-based-grading.md), [lesson 14](14-code-based-grading.md)) | For now, a fixed `score = 10` |
@@ -127,19 +127,19 @@ Then each question and its answer go to the grader, which gives a score. This le
 
 #### How the three functions call each other
 
-Think of a teacher marking a pile of exam papers. The teacher takes one paper (`get_all_answers_and_grades`'s loop), reads the student's answer (`get_answer`), writes a mark on it (`get_answer_and_grade`), and puts it on the done pile (the `results` list).
+Think of a teacher marking a pile of exam papers. The teacher takes one paper (`send_every_task_and_score_answers`'s loop), reads the student's answer (`send_one_task_to_model`), writes a mark on it (`send_one_task_and_score_answer`), and puts it on the done pile (the `results` list).
 
 ```mermaid
 sequenceDiagram
     participant You
-    participant Eval as get_all_answers_and_grades
-    participant Case as get_answer_and_grade
-    participant Prompt as get_answer
+    participant Eval as send_every_task_and_score_answers
+    participant Case as send_one_task_and_score_answer
+    participant Prompt as send_one_task_to_model
     participant Model as The model<br/>(Anthropic's servers)
-    You->>Eval: get_all_answers_and_grades(dataset)
+    You->>Eval: send_every_task_and_score_answers(dataset)
     loop For each test case in the dataset
-        Eval->>Case: get_answer_and_grade(test_case)
-        Case->>Prompt: get_answer(test_case)
+        Eval->>Case: send_one_task_and_score_answer(test_case)
+        Case->>Prompt: send_one_task_to_model(test_case)
         Prompt->>Model: "Please solve the following task:<br/>Write a regex that matches an EC2 instance ID"
         Model-->>Prompt: The answer text
         Prompt-->>Case: output
@@ -151,10 +151,10 @@ sequenceDiagram
 
 ---
 
-### 1. get_answer: send one task to the model and get its answer
+### 1. send_one_task_to_model: get the model's answer to one task
 
 ```python
-def get_answer(test_case):
+def send_one_task_to_model(test_case):
     """Merges the prompt and test case input, then returns the result"""
     prompt = f"""
 Please solve the following task:
@@ -180,12 +180,12 @@ This prompt is **prompt v1**, kept as simple as possible on purpose. It says not
 
 ---
 
-### 2. get_answer_and_grade: get the answer, then grade it
+### 2. send_one_task_and_score_answer: add a score to that answer
 
 ```python
-def get_answer_and_grade(test_case):
-    """Calls get_answer, then grades the result"""
-    output = get_answer(test_case)
+def send_one_task_and_score_answer(test_case):
+    """Calls send_one_task_to_model, then grades the result"""
+    output = send_one_task_to_model(test_case)
 
     # TODO - Grading
     score = 10
@@ -197,35 +197,35 @@ def get_answer_and_grade(test_case):
     }
 ```
 
-- `output = get_answer(test_case)` gets the model's answer for this one task.
+- `output = send_one_task_to_model(test_case)` gets the model's answer for this one task.
 - `score = 10` is a **placeholder**: a fixed value that stands in until real grading code exists. It lets you run the whole pipeline now. `# TODO` is a note to yourself that this part is unfinished.
 - The function returns a dictionary that keeps the answer, the task it answered, and the score together. Keeping the task with the answer matters later: when a score is low, you can see which task caused it.
 
-#### How this differs from get_answer
+#### How the first two functions differ
 
 Both functions get the same record, `{"task": "Write a regex that matches an EC2 instance ID"}`. They return different things:
 
-| | `get_answer` | `get_answer_and_grade` |
+| | `send_one_task_to_model` | `send_one_task_and_score_answer` |
 |---|---|---|
-| Sends the task to the model being tested? | Yes | No, it lets `get_answer` do that |
+| Sends the task to the model being tested? | Yes | No, it lets `send_one_task_to_model` do that |
 | Grades the answer? | No | Yes |
 | Returns | The answer text only: `"Here's a regular expression... ^i-[0-9a-f]{8,17}$ ..."` | One record: `{"output": "Here's a regular expression...", "test_case": {"task": "..."}, "score": 10}` |
 
-Think of a restaurant. The cook makes the dish (`get_answer`). The inspector takes the dish, tastes it, and writes a report card with the order, the dish, and the score (`get_answer_and_grade`).
+Think of a restaurant. The cook makes the dish (`send_one_task_to_model`). The inspector takes the dish, tastes it, and writes a report card with the order, the dish, and the score (`send_one_task_and_score_answer`).
 
-Keeping the two jobs apart means you can change one without touching the other. In this lesson the grade is a placeholder. The next lesson swaps in a real grader, and `get_answer` does not change. If you rewrite the prompt, only `get_answer` changes.
+Keeping the two jobs apart means you can change one without touching the other. In this lesson the score is a placeholder. The next lesson swaps in a real grader, and `send_one_task_to_model` does not change. If you rewrite the prompt, only `send_one_task_to_model` changes.
 
 ---
 
-### 3. get_all_answers_and_grades: do it for every task in the dataset
+### 3. send_every_task_and_score_answers: repeat for the whole dataset
 
 ```python
-def get_all_answers_and_grades(dataset):
-    """Loads the dataset and calls get_answer_and_grade with each case"""
+def send_every_task_and_score_answers(dataset):
+    """Loads the dataset and calls send_one_task_and_score_answer with each case"""
     results = []
 
     for test_case in dataset:
-        result = get_answer_and_grade(test_case)
+        result = send_one_task_and_score_answer(test_case)
         results.append(result)
 
     return results
@@ -235,7 +235,7 @@ def get_all_answers_and_grades(dataset):
 - The `for` loop takes each test case in turn, runs it, and adds the result to the list with `append`.
 - The function returns the whole list. In the video, the instructor first printed the results inside the function, then changed it to `return`. Returning is better, because other code, such as the code that averages the scores, can then use the list.
 
-> **Remember this:** `get_answer` gets one answer. `get_answer_and_grade` adds a grade. `get_all_answers_and_grades` does it for every task.
+> **Remember this:** `send_one_task_to_model` gets one answer. `send_one_task_and_score_answer` adds a score. `send_every_task_and_score_answers` does it for every task.
 
 ---
 
@@ -249,7 +249,7 @@ import json
 with open("dataset.json", "r") as f:   # opens the file saved in lesson 11, for reading
     dataset = json.load(f)              # turns the JSON text into a Python list
 
-results = get_all_answers_and_grades(dataset)
+results = send_every_task_and_score_answers(dataset)
 ```
 
 **Warning:** Run all the cells above first, so that `client`, `chat`, and the three functions exist. Otherwise Python stops with a `NameError`.
@@ -325,8 +325,8 @@ The course calls this the core of most eval pipelines: the loop is short, and th
 
 ### Recap
 
-- The run step of an eval is three functions: `get_answer` gets one answer, `get_answer_and_grade` adds a grade, and `get_all_answers_and_grades` does it for every task. The course calls them `run_prompt`, `run_test_case`, and `run_eval`.
-- `get_answer` puts each task into the prompt with an f-string and sends it as a new conversation.
+- The run step of an eval is three functions: `send_one_task_to_model` gets one answer, `send_one_task_and_score_answer` adds a score, and `send_every_task_and_score_answers` does it for every task. The course calls them `run_prompt`, `run_test_case`, and `run_eval`.
+- `send_one_task_to_model` puts each task into the prompt with an f-string and sends it as a new conversation.
 - Each result keeps the answer, the test case, and the score together.
 - The score is a placeholder of 10 until the graders in lessons 13 and 14 exist.
 - The first run is slow and the answers are wordy. Both get fixed later: speed with parallel requests, wordiness with a better prompt.
@@ -336,9 +336,9 @@ The course calls this the core of most eval pipelines: the loop is short, and th
 ## My notes / practice
 
 - [ ] Write the three functions and run them on the `dataset.json` from lesson 11.
-- [ ] Time the run with `import time` and `time.time()` before and after `get_all_answers_and_grades`.
+- [ ] Time the run with `import time` and `time.time()` before and after `send_every_task_and_score_answers`.
 - [ ] Print only `result["output"]` for each result and count how many answers contain an explanation.
-- [ ] Add a `try`/`except` inside `get_all_answers_and_grades`, so a failed case records `{"error": str(e)}` instead of stopping the loop.
+- [ ] Add a `try`/`except` inside `send_every_task_and_score_answers`, so a failed case records `{"error": str(e)}` instead of stopping the loop.
 - [ ] Save `results` to `results.json` with `json.dump(results, f, indent=2)`.
 
 ---
@@ -352,9 +352,9 @@ The dataset holds only sample requests, not the model's answers. You can't tell 
 A test case is one item from `dataset.json`, such as `{"task": "Write a regex that matches an EC2 instance ID"}`. The eval runs each test case through the prompt once.
 
 **Q3. What does each of the three functions do?**
-`get_answer` sends one task to the model and returns only its answer. `get_answer_and_grade` calls `get_answer`, grades the answer, and returns the task, the answer, and the grade in one record. `get_all_answers_and_grades` does that for every task in the dataset. The course calls them `run_prompt`, `run_test_case`, and `run_eval`.
+`send_one_task_to_model` sends one task to the model and returns only its answer. `send_one_task_and_score_answer` calls `send_one_task_to_model`, scores the answer, and returns the task, the answer, and the score in one record. `send_every_task_and_score_answers` does that for every task in the dataset. The course calls them `run_prompt`, `run_test_case`, and `run_eval`.
 
-**Q4. Why does `get_answer` start a new, empty message list for each test case?**
+**Q4. Why does `send_one_task_to_model` start a new, empty message list for each test case?**
 So each task is answered on its own. If the list kept growing, the model would see earlier tasks and answers, and a answer could depend on the order of the dataset.
 
 **Q5. Why is every score 10?**

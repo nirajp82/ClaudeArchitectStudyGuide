@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -112,15 +111,6 @@ The Claude API streams with *Server-Sent Events* (SSE). SSE is plain HTTP: one r
 | Events | The labelled pieces the API sends during one answer | Parcels in one delivery, each with a label: "starting", "contents", "finished" |
 
 **The running example:** a user types "What is quantum computing?" into your chat app. Later, your code asks the model for "a 1 sentence description of a fake database" and streams the answer.
-
-#### Who's who
-
-| Player | Where it lives | What it does |
-|---|---|---|
-| **The user** | In front of your chat app | Asks the question and watches the answer appear |
-| **Your chat app** (the client) | The user's phone or browser | Shows each text chunk the moment your server forwards it |
-| **Your server** | A computer you run | Calls the Claude API with streaming on, and forwards each chunk to the app |
-| **The Claude API and the model** | Anthropic's servers | Writes the answer and sends it as a series of events |
 
 ---
 

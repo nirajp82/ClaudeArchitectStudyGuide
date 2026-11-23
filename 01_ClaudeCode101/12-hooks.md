@@ -14,15 +14,14 @@
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. Why use hooks](#1-why-use-hooks) |
-| 5 | [2. How hooks work](#2-how-hooks-work) |
-| 6 | [3. A practical example: auto-formatting](#3-a-practical-example-auto-formatting) |
-| 7 | [4. Blocking with PreToolUse](#4-blocking-with-pretooluse) |
-| 8 | [5. Sharing hooks with your team](#5-sharing-hooks-with-your-team) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 3 | [1. Why use hooks](#1-why-use-hooks) |
+| 4 | [2. How hooks work](#2-how-hooks-work) |
+| 5 | [3. A practical example: auto-formatting](#3-a-practical-example-auto-formatting) |
+| 6 | [4. Blocking with PreToolUse](#4-blocking-with-pretooluse) |
+| 7 | [5. Sharing hooks with your team](#5-sharing-hooks-with-your-team) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
@@ -109,18 +108,6 @@ shop-app/
 ```
 
 A `.sh` file is a *shell script*: a text file of terminal commands that run one after another.
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does | Example |
-|---|---|---|---|
-| **You** | At your computer | Write the hooks in `settings.json` and the scripts | Write `block-dangerous-commands.sh` |
-| **The model** | Anthropic's servers | Decides which tool calls to make. It cannot skip or turn off a hook. | Asks to run `rm -rf dist` |
-| **Claude Code** | The program on your computer | Runs the matching hooks at each event and acts on their exit codes | Runs the script before the Bash command |
-| **The hook script** | A file on your computer, in `.claude/hooks/` | Reads the tool call details and answers with an exit code | Exits with code 2 and explains why |
-| **Your teammates** | Their own computers | Get the project's hooks when they pull the repository | A new hire's edits are formatted on day one |
 
 ---
 

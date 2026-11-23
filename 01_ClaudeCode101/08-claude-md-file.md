@@ -14,15 +14,14 @@
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. The problem: Claude Code forgets everything between sessions](#1-the-problem-claude-code-forgets-everything-between-sessions) |
-| 5 | [2. What a CLAUDE.md file is, and how Claude Code uses it](#2-what-a-claudemd-file-is-and-how-claude-code-uses-it) |
-| 6 | [3. What to write in it: the course's example](#3-what-to-write-in-it-the-courses-example) |
-| 7 | [4. Two CLAUDE.md files: one for the team, one just for you](#4-two-claudemd-files-one-for-the-team-one-just-for-you) |
-| 8 | [5. Three tips for a good CLAUDE.md](#5-three-tips-for-a-good-claudemd) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 3 | [1. The problem: Claude Code forgets everything between sessions](#1-the-problem-claude-code-forgets-everything-between-sessions) |
+| 4 | [2. What a CLAUDE.md file is, and how Claude Code uses it](#2-what-a-claudemd-file-is-and-how-claude-code-uses-it) |
+| 5 | [3. What to write in it: the course's example](#3-what-to-write-in-it-the-courses-example) |
+| 6 | [4. Two CLAUDE.md files: one for the team, one just for you](#4-two-claudemd-files-one-for-the-team-one-just-for-you) |
+| 7 | [5. Three tips for a good CLAUDE.md](#5-three-tips-for-a-good-claudemd) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
@@ -127,18 +126,6 @@ In this kind of app, there are **two common ways to save or delete data**. Both 
 Think of a café that only takes card. Cash works at most cafés, so a new staff member would accept it, unless someone told them "card only." Server actions are this project's "card only" rule. Nothing in the code makes it obvious, so Claude Code would likely guess API routes, the more common choice. **That's exactly the kind of rule that belongs in `CLAUDE.md`.**
 
 > 💡 **You've already seen one.** This study repo has its own: `ClaudeArchitectStudyGuide/CLAUDE.md`. It holds rules like "every lesson ends with an FAQ" and "define every technical term the first time." Claude Code reads it every time it starts in this folder, which is why every lesson has the same layout without anyone explaining it again.
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does with `CLAUDE.md` |
-|---|---|---|
-| 🧑 **You** | At your computer | **Write** the notes (or ask Claude Code to). |
-| 👥 **Your teammates** | Their own computers | Get the **same** project `CLAUDE.md` through Git, so their Claude Code follows the same rules. |
-| 💻 **Claude Code** | The program on your computer | **Finds and reads** the file when it starts, and sends its text to the model. Can **edit** it when you ask. |
-| ☁️ **The model** | Anthropic's servers | **Reads the text** and tries to follow it. Never opens the file itself. |
-| 🏢 **Your company's IT team** (optional) | — | Can put a company-wide `CLAUDE.md` on everyone's computer (section 4, extras). |
 
 ---
 

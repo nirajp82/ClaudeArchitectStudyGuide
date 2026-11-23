@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -21,16 +20,15 @@ Do the guide's problems in order, after you finish the chapter, because each one
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. The five steps of a request](#1-the-five-steps-of-a-request) |
-| 5 | [2. Why your app needs a server](#2-why-your-app-needs-a-server) |
-| 6 | [3. What a request contains](#3-what-a-request-contains) |
-| 7 | [4. What happens inside the model](#4-what-happens-inside-the-model) |
-| 8 | [5. When the model stops, and what comes back](#5-when-the-model-stops-and-what-comes-back) |
-| 9 | [Architect notes](#architect-notes) |
-| 10 | [Recap](#recap) |
-| 11 | [My notes / practice](#my-notes--practice) |
-| 12 | [FAQ](#faq) |
+| 3 | [1. The five steps of a request](#1-the-five-steps-of-a-request) |
+| 4 | [2. Why your app needs a server](#2-why-your-app-needs-a-server) |
+| 5 | [3. What a request contains](#3-what-a-request-contains) |
+| 6 | [4. What happens inside the model](#4-what-happens-inside-the-model) |
+| 7 | [5. When the model stops, and what comes back](#5-when-the-model-stops-and-what-comes-back) |
+| 8 | [Architect notes](#architect-notes) |
+| 9 | [Recap](#recap) |
+| 10 | [My notes / practice](#my-notes--practice) |
+| 11 | [FAQ](#faq) |
 
 ---
 
@@ -140,19 +138,6 @@ The response also holds the answer text, in a message with the role `assistant`,
 **The running example:** a user types **"What is quantum computing?"** into your chat app and presses Send. This lesson follows that one question all the way through.
 
 ![Chat window with the user's message "What is quantum computing?" and a Send button](../images/01-chat-window.png)
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does in the example |
-|---|---|---|
-| **The user** | In front of a phone or browser | Types "What is quantum computing?" and presses Send. |
-| **Your app** (the *client*) | On the user's phone or in their browser | Sends the question to your server, then shows the answer. Holds **no** API key. |
-| **Your server** | A computer you run, such as a cloud server | Receives the question, adds the API key, calls Anthropic, and passes the answer back. |
-| **The Anthropic SDK** | A code library installed on your server | Builds the request and reads the response for your server code. |
-| **The Claude API** | Anthropic's servers at `api.anthropic.com` | Checks the key, hands the request to the model, and returns the result. |
-| **The model** (Claude) | On Anthropic's servers | Reads the question and writes the answer. |
 
 ---
 

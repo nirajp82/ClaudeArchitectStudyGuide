@@ -14,15 +14,14 @@
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. What MCP lets Claude Code do](#1-what-mcp-lets-claude-code-do) |
-| 5 | [2. Adding an MCP server](#2-adding-an-mcp-server) |
-| 6 | [3. Checking your servers with /mcp](#3-checking-your-servers-with-mcp) |
-| 7 | [4. Scoping servers: who gets which server](#4-scoping-servers-who-gets-which-server) |
-| 8 | [5. Context costs](#5-context-costs) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 3 | [1. What MCP lets Claude Code do](#1-what-mcp-lets-claude-code-do) |
+| 4 | [2. Adding an MCP server](#2-adding-an-mcp-server) |
+| 5 | [3. Checking your servers with /mcp](#3-checking-your-servers-with-mcp) |
+| 6 | [4. Scoping servers: who gets which server](#4-scoping-servers-who-gets-which-server) |
+| 7 | [5. Context costs](#5-context-costs) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
@@ -99,19 +98,6 @@ shop-app/
 │   └── refund-service.ts
 └── CLAUDE.md
 ```
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does | Example |
-|---|---|---|---|
-| **You** | At your computer | Add servers with `claude mcp add` and approve tool use | Approve "read issue SHOP-142" |
-| **Claude Code** | The program on your computer | Connects to MCP servers and passes the model's tool requests to them | Calls the Linear server |
-| **The model** | Anthropic's servers | Sees the list of available tools and decides when to use one | Decides "I need the issue text first" |
-| **An MCP server** | Remote (the provider's computers) or local (a program on your computer) | Offers tools and does the work when a tool is called | The Linear server, your `dev-utils` program |
-| **The outside service** | The provider's systems | Holds the real data | Linear's database of issues |
-| **Your teammates** | Their own computers | Get project-scope servers automatically from `.mcp.json` | A new hire gets Linear on day one |
 
 ---
 

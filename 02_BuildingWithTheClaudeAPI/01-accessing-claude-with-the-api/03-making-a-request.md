@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -21,15 +20,14 @@ Do the guide's problems in order, after you finish the chapter, because each one
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. Setting up the notebook](#1-setting-up-the-notebook) |
-| 5 | [2. The create function and its three settings](#2-the-create-function-and-its-three-settings) |
-| 6 | [3. Messages: who said what](#3-messages-who-said-what) |
-| 7 | [4. Sending the request and reading the answer](#4-sending-the-request-and-reading-the-answer) |
-| 8 | [Architect notes](#architect-notes) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 3 | [1. Setting up the notebook](#1-setting-up-the-notebook) |
+| 4 | [2. The create function and its three settings](#2-the-create-function-and-its-three-settings) |
+| 5 | [3. Messages: who said what](#3-messages-who-said-what) |
+| 6 | [4. Sending the request and reading the answer](#4-sending-the-request-and-reading-the-answer) |
+| 7 | [Architect notes](#architect-notes) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
@@ -111,19 +109,6 @@ Prices and model names change, so check the current list before choosing.
 | `message.content[0].text` | Where the answer's text sits in the reply. | The item you want from a box full of packing slips. |
 
 **The running example:** in a Jupyter notebook, you ask `claude-haiku-4-5` "What is quantum computing? Answer in one sentence" and print the answer.
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does in the example |
-|---|---|---|
-| **You** | At your computer | Write and run the notebook cells. |
-| **The Jupyter notebook** | A file on your computer, such as `course-project/001_requests.ipynb` | Holds your Python code in cells and shows each cell's output below it. |
-| **The `.env` file** | `course-project/.env`, next to the notebook | Holds your API key. You write it once; `load_dotenv()` reads it. |
-| **The client** (`client = Anthropic()`) | An object inside your running notebook | Holds your key and sends requests to the Claude API for you. |
-| **The Claude API** | Anthropic's servers, `api.anthropic.com` | Checks your key and passes the request to the model. |
-| **The model** (`claude-haiku-4-5`) | Anthropic's servers | Reads your message and writes the answer. |
 
 ---
 

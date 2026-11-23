@@ -14,15 +14,14 @@
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. The problem: repeating yourself](#1-the-problem-repeating-yourself) |
-| 5 | [2. What a skill looks like](#2-what-a-skill-looks-like) |
-| 6 | [3. How Claude Code picks a skill](#3-how-claude-code-picks-a-skill) |
-| 7 | [4. Where skills live](#4-where-skills-live) |
-| 8 | [5. Skills compared with CLAUDE.md, slash commands, and subagents](#5-skills-compared-with-claudemd-slash-commands-and-subagents) |
-| 9 | [Recap](#recap) |
-| 10 | [My notes / practice](#my-notes--practice) |
-| 11 | [FAQ](#faq) |
+| 3 | [1. The problem: repeating yourself](#1-the-problem-repeating-yourself) |
+| 4 | [2. What a skill looks like](#2-what-a-skill-looks-like) |
+| 5 | [3. How Claude Code picks a skill](#3-how-claude-code-picks-a-skill) |
+| 6 | [4. Where skills live](#4-where-skills-live) |
+| 7 | [5. Skills compared with CLAUDE.md, slash commands, and subagents](#5-skills-compared-with-claudemd-slash-commands-and-subagents) |
+| 8 | [Recap](#recap) |
+| 9 | [My notes / practice](#my-notes--practice) |
+| 10 | [FAQ](#faq) |
 
 ---
 
@@ -102,18 +101,6 @@ shop-app/
 │   └── refund-service.ts
 └── CLAUDE.md
 ```
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does | Example |
-|---|---|---|---|
-| **You** | At your computer | Write the skill once, then make normal requests | "Review this PR." |
-| **Claude Code** | The program on your computer | Finds skill folders, puts their names and descriptions in the context window, and loads the full skill when needed | Loads `pr-review/SKILL.md` |
-| **The model** | Anthropic's servers | Compares your request with the skill descriptions and follows the chosen skill's instructions | Decides "this is a review, use `pr-review`" |
-| **The skill folder** | `shop-app/.claude/skills/pr-review/` or `~/.claude/skills/<name>/` | Holds `SKILL.md` and any extra files | `SKILL.md`, `checklist.md` |
-| **Your teammates** | Their own computers | Get project skills automatically when they clone or pull the repository | A new hire gets `pr-review` on day one |
 
 ---
 

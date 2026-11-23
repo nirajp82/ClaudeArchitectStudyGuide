@@ -102,15 +102,6 @@ Write down the qualities you will score (the course calls them *evaluation crite
 
 ### The big picture
 
-#### Who's who
-
-| Player | Where it lives | What it does in this lesson | Example |
-|---|---|---|---|
-| **You** | At your laptop | Choose the criteria and read the scores | You decide "task following" needs a model grader |
-| **Your notebook code** | A Jupyter notebook on your laptop | Runs the eval and calls the grader for each answer | `run_all_tasks` calls `get_model_answer`, then `score_answer` |
-| **The model being tested** | Anthropic's servers | Answers each AWS task with the prompt you are testing | Replies with a regex plus an explanation |
-| **The grading model** | Anthropic's servers | A separate request. It reads the task and the answer and returns a score. | `{"score": 7, "reasoning": "Correct regex, but adds explanation..."}` |
-
 The grading model can be the same model as the one being tested, such as Claude Haiku, but each grading call is a **separate request** with its own prompt. The grading model does not remember writing the answer.
 
 ---

@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -113,15 +112,6 @@ Every turn resends everything before it, so each request has more input tokens t
 **The running example:** a user asks "Define quantum computing in one sentence". Then they ask "Write another sentence". The second question only makes sense if the model can see the first one.
 
 ![Chat window: the user asks "What's quantum computing? Answer in one sentence.", the AI answers, the user says "Write another sentence", and the AI answers about applications of quantum computing](../images/04-chat-window.png)
-
-#### Who's who
-
-| Player | Where it lives | What it does in the example |
-|---|---|---|
-| **The user** | In front of your app | Types the two questions |
-| **Your code** | Your notebook or server | Keeps the `messages` list, adds each message, and sends the list |
-| **The `messages` list** | A Python list in your code's memory | Holds every question and answer so far, in order |
-| **The Claude API and the model** | Anthropic's servers | Reads the list it receives, writes one answer, then forgets everything |
 
 ---
 

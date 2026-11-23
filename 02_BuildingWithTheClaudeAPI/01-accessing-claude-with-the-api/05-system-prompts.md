@@ -13,7 +13,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -99,20 +98,11 @@ A good tutor prompt says what the model should do (give hints first, walk throug
 
 | Part | In plain words | Everyday comparison |
 |---|---|---|
-| System prompt | Standing instructions from you, the developer | A job briefing a new tutor gets before meeting any students |
+| System prompt | Standing instructions from you, the developer. The user never sees them. | A job briefing a new tutor gets before meeting any students |
 | User message | What the person asks right now | The student's question in the lesson |
 | The answer | The model answers the question, following the briefing | The tutor answers the way the briefing said to |
 
 **The running example:** you build a math tutor chatbot. A student types "How do I solve 5x + 2 = 3 for x?" You want the model to teach, not just hand over the answer.
-
-#### Who's who
-
-| Player | Where it lives | What it does in the example |
-|---|---|---|
-| **You, the developer** | Your code | Write the system prompt once, such as "You are a patient math tutor" |
-| **The student** (the user) | In front of your app | Types the math question. Never sees the system prompt. |
-| **Your code** | Your notebook or server | Sends the system prompt and the `messages` list together in each request |
-| **The model** | Anthropic's servers | Reads the system prompt first, then the messages, and answers as a tutor |
 
 ---
 

@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -21,14 +20,13 @@ Do the guide's problems in order, after you finish the chapter, because each one
 |:---:|:---|
 | 1 | [Revision summary](#revision-summary) |
 | 2 | [The big picture](#the-big-picture) |
-| 3 | [Who's who](#whos-who) |
-| 4 | [1. Creating a key, step by step](#1-creating-a-key-step-by-step) |
-| 5 | [2. What a workspace is](#2-what-a-workspace-is) |
-| 6 | [3. Keeping the key safe](#3-keeping-the-key-safe) |
-| 7 | [Architect notes](#architect-notes) |
-| 8 | [Recap](#recap) |
-| 9 | [My notes / practice](#my-notes--practice) |
-| 10 | [FAQ](#faq) |
+| 3 | [1. Creating a key, step by step](#1-creating-a-key-step-by-step) |
+| 4 | [2. What a workspace is](#2-what-a-workspace-is) |
+| 5 | [3. Keeping the key safe](#3-keeping-the-key-safe) |
+| 6 | [Architect notes](#architect-notes) |
+| 7 | [Recap](#recap) |
+| 8 | [My notes / practice](#my-notes--practice) |
+| 9 | [FAQ](#faq) |
 
 ---
 
@@ -113,19 +111,6 @@ flowchart TD
 | Keeping it safe | The key lives outside your code, and you replace it if it leaks. | You don't write your PIN on the card, and you cancel the card if it's stolen. |
 
 **The running example:** you are starting this course and need a key so that, in [lesson 3](03-making-a-request.md), your code can send its first request. You will create a key named "Anthropic Course" in the Default workspace and store it safely on your Windows laptop.
-
----
-
-### Who's who
-
-| Player | Where it lives | What it does in the example |
-|---|---|---|
-| **You** | At your computer | Log in, create the key, copy it, and store it. |
-| **The Claude Console** | Anthropic's website, `platform.claude.com` | Creates the key and shows it to you once. |
-| **Your organization** | Your account inside the Console | Owns the workspaces and pays the bill. |
-| **The workspace** ("Default") | Inside your organization | Holds the key and applies any spend and rate limits. |
-| **Your code** | On your computer now, on a server later | Reads the key from `ANTHROPIC_API_KEY` and sends it with each request. |
-| **The Claude API** | Anthropic's servers, `api.anthropic.com` | Checks the key on every request and rejects bad ones. |
 
 ---
 

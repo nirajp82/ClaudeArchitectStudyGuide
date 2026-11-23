@@ -119,21 +119,21 @@ Think of a teacher marking a pile of exam papers. For each paper (`run_all_tasks
 ```mermaid
 sequenceDiagram
     participant You
-    participant Loop as run_all_tasks
+    participant Runner as run_all_tasks
     participant Get as get_model_answer
     participant Model as The model<br/>(Anthropic's servers)
     participant Score as score_answer
-    You->>Loop: run_all_tasks(dataset)
+    You->>Runner: run_all_tasks(dataset)
     loop For each task in the dataset
-        Loop->>Get: get_model_answer(test_case)
+        Runner->>Get: get_model_answer(test_case)
         Get->>Model: "Please solve the following task:<br/>Write a regex that matches an EC2 instance ID"
         Model-->>Get: The answer text
-        Get-->>Loop: answer
-        Loop->>Score: score_answer(test_case, answer)
-        Score-->>Loop: 10 (placeholder)
-        Loop->>Loop: save {"test_case", "answer", "score"}
+        Get-->>Runner: answer
+        Runner->>Score: score_answer(test_case, answer)
+        Score-->>Runner: 10 (placeholder)
+        Runner->>Runner: save {"test_case", "answer", "score"}
     end
-    Loop-->>You: results (a list, one result per task)
+    Runner-->>You: results (a list, one result per task)
 ```
 
 ---

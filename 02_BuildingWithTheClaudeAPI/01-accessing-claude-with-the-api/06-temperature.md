@@ -12,7 +12,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -115,14 +114,6 @@ Temperature changes only the *chances* of different answers. A high temperature 
 | High temperature | Give less likely words a real chance | Trying something different from the menu each visit |
 
 **The running example:** the model has read "What do you think" and must pick the next word. Later, you ask it for movie ideas at temperature 0.0 and 1.0.
-
-#### Who's who
-
-| Player | Where it lives | What it does |
-|---|---|---|
-| **You, the developer** | Your code | Choose the temperature for each kind of task |
-| **Your `chat()` function** | Your notebook or server | Sends `temperature` with the request |
-| **The model** | Anthropic's servers | Works out each word's chance, applies the temperature, and picks one word |
 
 ---
 

@@ -110,15 +110,6 @@ Options 1 and 2 are traps almost every developer falls into. Real users send emp
 
 **Compared with unit tests:** the prompt is your function, each test email with its right group is one unit test, and the eval is the test run.
 
-#### Who's who
-
-| Player | Where it lives | What it does |
-|---|---|---|
-| **You, the developer** | Your laptop | Write the prompt and the test emails, and decide when the prompt is good enough |
-| **The model** | Anthropic's servers | Reads the prompt and one email, and answers with one group name |
-| **The test set** | A file in your project, such as `test_set.json` | A list of sample emails, each with its right group written next to it |
-| **The grader** | Your code | Compares each model answer with the right group, and marks it pass or fail ([lesson 13](13-model-based-grading.md) and [lesson 14](14-code-based-grading.md)) |
-
 ---
 
 ### 1. Writing a prompt vs. measuring a prompt

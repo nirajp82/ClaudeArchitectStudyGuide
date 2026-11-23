@@ -105,16 +105,6 @@ These notes use clearer names than the course. Match them to the course's code, 
 
 ### The big picture
 
-#### Who's who
-
-| Player | Where it lives | What it does in this lesson | Example |
-|---|---|---|---|
-| **You** | At your laptop | Run the notebook cells and read the results | You run `results = send_every_task_and_score_answers(dataset)` |
-| **Your notebook code** | A Jupyter notebook on your laptop | Holds the three functions and the loop | `send_every_task_and_score_answers`, `send_one_task_and_score_answer`, `send_one_task_to_model` |
-| **`dataset.json`** | A file next to the notebook | Holds the sample requests from [lesson 11](11-generating-test-datasets.md) | `[{"task": "Write a regex that matches an EC2 instance ID"}, ...]` |
-| **The model** | Anthropic's servers | Answers each request. This is the prompt being tested. | Claude Haiku answers with a regex and an explanation |
-| **The grader** | Not built yet | Will score each answer ([lesson 13](13-model-based-grading.md), [lesson 14](14-code-based-grading.md)) | For now, a fixed `score = 10` |
-
 #### The two stages from the course slides
 
 The course's slides use simple questions, such as "What's 2+2?", to show the stages. Each question is put into the prompt and sent to the model.

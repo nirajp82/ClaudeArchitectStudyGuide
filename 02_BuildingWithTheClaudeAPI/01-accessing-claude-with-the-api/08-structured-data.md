@@ -14,7 +14,6 @@
 
 Do the guide's problems in order, after you finish the chapter, because each one builds on the one before.
 
-
 ---
 
 **On this page**
@@ -102,14 +101,6 @@ flowchart TD
 > Hi, I ordered a blue kettle (order #A-1042) last Tuesday and it arrived with a cracked lid. I'd like a refund please. — Priya Shah, priya@example.com
 
 The shop's code asks the model to pull out the details. Then it saves them in the ticket system, which needs exact fields.
-
-#### Who's who
-
-| Player | Where it lives | What it does |
-|---|---|---|
-| **Your code** (Python) | The shop's server | Sends the email to the API, then saves the ticket |
-| **The Claude API** | Anthropic's servers | Holds the model to your schema while it writes |
-| **The model** | Anthropic's servers | Reads the email and fills in the fields |
 
 ---
 

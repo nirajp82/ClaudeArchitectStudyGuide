@@ -37,9 +37,19 @@ Do the guide's problems in order, after you finish the chapter, because each one
 **Purpose of this lesson:**
 
 1. You are building an AWS code helper. Its prompt should make the model answer with code only, such as a single regex.
-2. The eval from [lesson 12](12-running-the-eval.md) already sends every sample request through the prompt and collects the answers.
-3. Every answer still gets a fixed score of 10, so the eval cannot tell good answers from bad ones.
-4. This lesson replaces that placeholder with a real grader: a second request to a model that reads each answer and scores it.
+2. The eval from [lesson 12](12-running-the-eval.md) sends every sample request through the prompt and collects the answers. But every answer gets a fixed score of 10, so a bad prompt and a good prompt look the same.
+3. To know whether a prompt change helped, you need a real score for each answer, and one average to compare between prompt versions.
+4. Some qualities need understanding to judge, such as "does this regex really match EC2 instance IDs?" This lesson builds a grader that judges them: a second request asks a model to read each answer and score it.
+
+**Why let a model do the grading:**
+
+| | You read every answer yourself | A code grader | A model grader (this lesson) |
+|---|---|---|---|
+| 100 answers, after every prompt change | Hours each time | Seconds | A few minutes |
+| Gives one average score to compare? | Only if you write down scores carefully | Yes | Yes |
+| Catches a valid regex that matches S3 bucket names when the task asked for EC2 instance IDs? | Yes | No: the regex is valid, so code sees nothing wrong | Yes: it reads the task and the answer |
+
+So the model grader does the judging that code can't, at a speed you can't. You still check a sample of its scores by hand, because it can be wrong.
 
 The highlighted box is what this lesson builds.
 
@@ -327,40 +337,43 @@ return json.loads(eval_text)                          # turn the JSON text into 
 
 ## FAQ
 
-**Q1. What does "grader" mean?**
+**Q1. Why does the eval need a grader at all?**
+Without one, every answer gets the same placeholder score, so a bad prompt and a good prompt look the same. A grader gives each answer a real score, and the average shows whether a prompt change helped.
+
+**Q2. What does "grader" mean?**
 A grader is whatever reads an answer and gives back a score, usually a number from 1 to 10. It can be code, a model, or a person.
 
-**Q2. What is the difference between a code grader and a model grader?**
+**Q3. What is the difference between a code grader and a model grader?**
 A code grader is a function that checks a fixed rule, such as "the answer parses as JSON." A model grader sends the task and the answer to a model and asks it to judge, such as "does this policy really give read-only access?" Code is free and exact, and a model can judge meaning.
 
-**Q3. What does "evaluation criteria" mean?**
+**Q4. What does "evaluation criteria" mean?**
 It is the list of qualities you will score. For the AWS code helper it is format (code only), valid syntax, and task following (the code solves the task).
 
-**Q4. Why is "task following" checked by a model and not by code?**
+**Q5. Why is "task following" checked by a model and not by code?**
 Code can check that a regex compiles, but not that it matches EC2 instance IDs as the task asked. Judging whether the answer solves the task needs a reader that understands the task.
 
-**Q5. Why does the grading prompt ask for strengths and weaknesses before the score?**
+**Q6. Why does the grading prompt ask for strengths and weaknesses before the score?**
 Asked only for a number, models tend to give a middling 6. Listing strengths and weaknesses first makes the grader look closely, so the score is based on what it found.
 
-**Q6. Is the grading model the same as the model being tested?**
+**Q7. Is the grading model the same as the model being tested?**
 It can be the same model, such as Claude Haiku, but each grading call is a separate request with its own prompt. Many teams use a stronger model as the grader.
 
-**Q7. How does the grader's reply come back as JSON?**
+**Q8. How does the grader's reply come back as JSON?**
 On current models, use structured outputs: `client.messages.parse(..., output_format=Grade)` guarantees all four fields. On older models such as `claude-haiku-4-5`, the course prefills ` ```json ` and stops at ` ``` `, then calls `json.loads`; newer models reject the prefill.
 
-**Q8. Why does the average score change when I run the same eval twice?**
+**Q9. Why does the average score change when I run the same eval twice?**
 The grader is a model, and it can score the same answer slightly differently each time. A clear rubric and a fixed grader setup make the scores steadier.
 
-**Q9. What does `mean()` do in `run_eval`?**
+**Q10. What does `mean()` do in `run_eval`?**
 `mean()` from Python's `statistics` module adds up the scores and divides by how many there are. Scores of 8, 7, and 6 give 7.
 
-**Q10. (Exam angle) A model grader gives almost every answer a 6. What do you change?**
+**Q11. (Exam angle) A model grader gives almost every answer a 6. What do you change?**
 Ask the grader for strengths, weaknesses, and reasoning before the score, and give it a rubric that says what each score means. (Claude Models, Prompting & Context Engineering)
 
-**Q11. (Exam angle) A team must check that answers are valid JSON and that they are helpful. Which graders do you recommend?**
+**Q12. (Exam angle) A team must check that answers are valid JSON and that they are helpful. Which graders do you recommend?**
 Check valid JSON with a code grader, which is exact and free. Check helpfulness with a model grader, which can judge meaning. (Solution Design & Architecture)
 
-**Q12. (Exam angle) A team wants to ship based only on model-grader scores. What do you advise?**
+**Q13. (Exam angle) A team wants to ship based only on model-grader scores. What do you advise?**
 Have people score a sample and compare with the model grader first. A model grader can be wrong, can favor long answers, and can be swayed by text inside the answer it grades. (Governance, Safety & Risk)
 
 ---

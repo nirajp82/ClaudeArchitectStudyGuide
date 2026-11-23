@@ -102,7 +102,7 @@ Where each lesson fits:
 
 ### 12. Running the eval
 
-- **The run step is three functions.** `send_one_task_to_model` sends one task to the model and returns only its answer. `send_one_task_and_score_answer` adds a score and returns the task, answer, and score together. `send_every_task_and_score_answers` does that for every task. (The course calls them `run_prompt`, `run_test_case`, and `run_eval`.)
+- **The run step is three functions.** `get_model_answer` sends one task to the model and returns its answer. `score_answer` scores that answer, a fixed 10 for now. `run_all_tasks` calls both for every task and saves the task, answer, and score together. (The course uses `run_prompt`, `run_test_case`, and `run_eval`.)
 - **Each test case gets a new, empty conversation,** so the model answers each task on its own.
 - **Each result is a dictionary** with `output` (the reply), `test_case` (the task), and `score`. `print(json.dumps(results, indent=2))` shows them readably.
 - **The score is a fixed 10 for now.** It is a placeholder until the graders in lessons 13 and 14 exist.
@@ -116,7 +116,7 @@ Where each lesson fits:
 - **Write the evaluation criteria first.** For the AWS code helper: format and valid syntax go to a code grader, and task following goes to a model grader.
 - **Ask for strengths, weaknesses, and reasoning before the score.** Asked only for a number, models drift toward a middling 6.
 - **Get the grade back with structured outputs:** `client.messages.parse(..., output_format=Grade)`. The course's prefill and stop-sequence trick works only on older models such as `claude-haiku-4-5`.
-- **`send_one_task_and_score_answer` stores the score and reasoning,** and `send_every_task_and_score_answers` prints the average with `statistics.mean`, such as 7.33.
+- **The model grader becomes the new `score_answer`.** `run_all_tasks` stores each score and reasoning and prints the average with `statistics.mean`, such as 7.33.
 
 [Full lesson →](13-model-based-grading.md)
 

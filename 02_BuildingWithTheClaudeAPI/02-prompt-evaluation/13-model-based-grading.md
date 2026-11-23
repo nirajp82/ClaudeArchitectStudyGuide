@@ -180,15 +180,19 @@ Provide your evaluation as a structured JSON object with:
 In [lesson 12](12-running-the-eval.md#2-score_answer-give-that-answer-a-score), `score_answer(test_case, answer)` always returned 10. This new version asks a model instead. It uses structured outputs ([lesson 8](../01-accessing-claude-with-the-api/08-structured-data.md)), so the grade always comes back in the right shape:
 
 ```python
+# Pydantic is a Python library that describes the shape of data.
 from pydantic import BaseModel
 
-class Grade(BaseModel):          # the shape of the grader's reply
+# The shape of the grader's reply: four fields.
+class Grade(BaseModel):
     strengths: list[str]
     weaknesses: list[str]
     reasoning: str
-    score: int                   # last, so it is written after the reasons
+    # Last, because the model writes the fields in this order, so the score comes after the reasons.
+    score: int
 
 def score_answer(test_case, answer):
+    # The grading prompt holds the task and the tested model's answer.
     eval_prompt = f"""
 You are an expert code reviewer. Evaluate this AI-generated solution.
 
@@ -198,25 +202,20 @@ Solution: {answer}
 Give 1-3 key strengths, 1-3 key areas for improvement, a concise explanation
 of your assessment, and a score from 1 to 10.
 """
+    # Sends the prompt and the shape. The reply is guaranteed to have all four fields
+    # with the right types.
     response = client.messages.parse(
         model=model,
         max_tokens=1000,
         messages=[{"role": "user", "content": eval_prompt}],
-        output_format=Grade,     # the reply must match Grade
+        output_format=Grade,
     )
     grade = response.parsed_output
-    grade.score = max(1, min(10, grade.score))   # keep the score between 1 and 10
-    return grade.model_dump()    # a plain dictionary, like the course's json.loads result
+    # The shape guarantees a whole number, not the range: a 12 becomes 10, a 0 becomes 1.
+    grade.score = max(1, min(10, grade.score))
+    # A plain dictionary, such as {"strengths": [...], "weaknesses": [...], "reasoning": "...", "score": 7}.
+    return grade.model_dump()
 ```
-
-Line by line:
-
-- `class Grade(BaseModel)` describes the four fields. **Pydantic** is a Python library that describes the shape of data.
-- `test_case["task"]` and `answer` put the task and the tested model's answer into the grading prompt.
-- `client.messages.parse(..., output_format=Grade)` sends the prompt and the shape. The reply is guaranteed to have all four fields with the right types.
-- The model writes the fields in the order the class lists them, so `score` comes after the reasons.
-- `max(1, min(10, ...))` clamps the score: a 12 becomes 10, a 0 becomes 1. The schema guarantees a whole number, not the range.
-- `model_dump()` turns the `Grade` object into a dictionary, such as `{"strengths": [...], "weaknesses": [...], "reasoning": "...", "score": 7}`.
 
 ---
 
@@ -227,32 +226,33 @@ This lesson uses the three functions from [lesson 12](12-running-the-eval.md#rev
 The new `score_answer` returns a dictionary instead of a single number, so `run_all_tasks` takes the score and the reasoning out of it, and prints the average at the end:
 
 ```python
-from statistics import mean   # mean() adds the numbers and divides by how many there are
+# mean() adds the numbers and divides by how many there are.
+from statistics import mean
 
 def run_all_tasks(dataset):
     results = []
 
     for test_case in dataset:
-        answer = get_model_answer(test_case)          # step 1: unchanged
-        grade = score_answer(test_case, answer)       # step 2: now a model grades it
+        # Step 1: unchanged from lesson 12.
+        answer = get_model_answer(test_case)
+        # Step 2: now a model grades the answer and returns a dictionary.
+        grade = score_answer(test_case, answer)
         results.append({
             "test_case": test_case,
             "answer": answer,
             "score": grade["score"],
-            "reasoning": grade["reasoning"],          # new: why the grader gave this score
+            # New: why the grader gave this score. You can also keep strengths and weaknesses.
+            "reasoning": grade["reasoning"],
         })
 
+    # A one-line loop (a list comprehension) that builds the list of scores, such as [8, 7, 6].
     average_score = mean([result["score"] for result in results])
     print(f"Average score: {average_score}")
 
     return results
 ```
 
-Keeping `reasoning` lets you read why an answer lost points. The course drops `strengths` and `weaknesses` to keep the result short, but you can keep them too.
-
 The course does the same work in two functions: `run_test_case` calls the grader and builds each result, and `run_eval` loops and prints the average. Its grader function is called `grade_by_model`.
-
-`[result["score"] for result in results]` is a *list comprehension*: a one-line loop that builds a list, here the list of scores, such as `[8, 7, 6]`.
 
 In the video, one run scored the three answers 8, 7, and 6, with reasons such as "correct, but includes explanation the task did not ask for." The final run printed an average of 7.33. The grader runs again each time, so the scores moved slightly between runs.
 

@@ -141,29 +141,28 @@ sequenceDiagram
 ### 1. get_model_answer: get the model's answer to one task
 
 ```python
+# test_case is one item from dataset.json,
+# such as {"task": "Write a regex that matches an EC2 instance ID"}.
 def get_model_answer(test_case):
-    """Puts the task into the prompt, sends it to the model, and returns the answer"""
+    # An f-string: Python replaces {test_case["task"]} with the task text, so the prompt becomes
+    # "Please solve the following task: Write a regex that matches an EC2 instance ID".
     prompt = f"""
 Please solve the following task:
 
 {test_case["task"]}
 """
 
+    # A new, empty conversation for every task, so the model never sees the other tasks.
     messages = []
+    # Helper from lesson 4: adds the prompt to the list as a user message.
     add_user_message(messages, prompt)
+    # Helper from lesson 4: sends the list to the model and returns the answer text.
     answer = chat(messages)
+    # Only the answer text, such as "Here's a regular expression... ^i-[0-9a-f]{8,17}$ ...".
     return answer
 ```
 
-Line by line:
-
-- `test_case` is one item from the dataset, such as `{"task": "Write a regex that matches an EC2 instance ID"}`.
-- `f"""..."""` is an *f-string*: Python text in which anything inside `{ }` is replaced by its value.
-- `{test_case["task"]}` takes the `task` field out of the item. So the prompt becomes "Please solve the following task: Write a regex that matches an EC2 instance ID."
-- `add_user_message` and `chat` are the helper functions from [lesson 4](../01-accessing-claude-with-the-api/04-multi-turn-conversations.md#3-three-helper-functions). The first adds the prompt to the message list as a user message. The second sends the list to the model and returns the answer text.
-- `messages = []` starts a new, empty conversation for every task. So the model never sees the other tasks, and each answer is independent.
-
-The function returns only the answer text, such as `"Here's a regular expression... ^i-[0-9a-f]{8,17}$ ..."`. It knows nothing about scores.
+The helpers `add_user_message` and `chat` come from [lesson 4](../01-accessing-claude-with-the-api/04-multi-turn-conversations.md#3-three-helper-functions).
 
 This prompt is **prompt v1**, kept as simple as possible on purpose. It says nothing about format. The goal is code only, but the model will add explanations. Prompt engineering in chapter 3 fixes that, and the eval measures whether the fix worked.
 
@@ -172,15 +171,14 @@ This prompt is **prompt v1**, kept as simple as possible on purpose. It says not
 ### 2. score_answer: give that answer a score
 
 ```python
+# Gets the task too, because an answer can only be judged against the task it was meant to solve.
 def score_answer(test_case, answer):
-    """Returns a score from 1 to 10 for one answer"""
-    # TODO - real grading comes in lessons 13 and 14
+    # TODO - real grading comes in lessons 13 and 14.
+    # A placeholder: a fixed score that lets you run the whole eval before a grader exists.
     return 10
 ```
 
-- The function gets the task and the answer, because a real grader needs both: an answer can only be judged against the task it was meant to solve.
-- `return 10` is a **placeholder**: a fixed value that stands in until real grading code exists. It lets you run the whole pipeline now. `# TODO` is a note to yourself that this part is unfinished.
-- The function never talks to the model being tested. It only judges an answer that already exists.
+This function never talks to the model being tested. It only judges an answer that already exists.
 
 **Why keep the two jobs in separate functions:** you can change one without touching the other.
 
@@ -194,25 +192,26 @@ def score_answer(test_case, answer):
 
 ```python
 def run_all_tasks(dataset):
-    """Gets and scores an answer for every task in the dataset"""
+    # An empty list that will hold one result per task.
     results = []
 
     for test_case in dataset:
-        answer = get_model_answer(test_case)           # step 1: the model answers
-        score = score_answer(test_case, answer)        # step 2: the answer gets a score
+        # Step 1: the model answers the task.
+        answer = get_model_answer(test_case)
+        # Step 2: the answer gets a score.
+        score = score_answer(test_case, answer)
+        # Keep the task, answer, and score together, so a low score can be traced to its task.
         results.append({
             "test_case": test_case,
             "answer": answer,
             "score": score,
         })
 
+    # Return the list, so other code (such as the average in lesson 13) can use it.
     return results
 ```
 
-- `results = []` starts an empty list.
-- For each task, the loop gets the model's answer, then scores it. You can read both steps right here, in order.
-- `results.append({...})` saves the task, the answer, and the score together. Keeping the task with the answer matters later: when a score is low, you can see which task caused it.
-- The function returns the whole list, so other code, such as the code that averages the scores, can use it. In the video, the instructor first printed the results inside the function, then changed it to `return`.
+In the video, the instructor first printed the results inside the function, then changed it to `return`.
 
 > **Remember this:** `get_model_answer` gets the answer. `score_answer` scores it. `run_all_tasks` does both for every task.
 

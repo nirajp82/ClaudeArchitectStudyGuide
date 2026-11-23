@@ -35,10 +35,21 @@ Do the guide's problems in order, after you finish the chapter, because each one
 
 **Purpose of this lesson:**
 
-1. You are building an AWS code helper. A user types a request, such as "Write a regex that matches an EC2 instance ID," and your prompt asks the model to answer with code only.
-2. Before you ship the prompt, an eval scores it on a saved list of sample requests, `dataset.json`.
-3. The eval needs code that sends every sample request through the prompt and collects the answers.
-4. This lesson writes that code. Grading comes in the next two lessons, so the score is a fixed placeholder for now.
+1. You are building an AWS code helper. A user types a request, such as "Write a regex that matches an EC2 instance ID," and your prompt should make the model reply with code only.
+2. Reading the prompt cannot tell you whether it works. You only find out by seeing what the model really replies.
+3. The [dataset from lesson 11](11-generating-test-datasets.md), `dataset.json`, holds sample requests but no replies yet. A grader has nothing to score until every request has a reply.
+4. This lesson writes the code that sends every sample request through the prompt and collects the replies. Grading comes in the next two lessons, so the score is a fixed placeholder for now.
+
+**Why run the requests with code instead of trying them by hand:**
+
+| | Trying requests by hand in a chat window | Running the eval with code |
+|---|---|---|
+| Time for 100 requests | Hours of copy and paste | One command, then wait |
+| After every prompt change | Do it all again by hand | Run the same command again |
+| Same prompt, model, and settings for every request? | Easy to slip | Yes, every time |
+| Can two prompt versions be compared? | Not reliably | Yes, on the same requests |
+
+The first run is useful even before a grader exists. Reading the replies here already shows the main problem with prompt v1: the model wraps its code in explanations.
 
 The highlighted box is what this lesson builds.
 
@@ -312,40 +323,43 @@ The course calls this the core of most eval pipelines: the loop is short, and th
 
 ## FAQ
 
-**Q1. What does "test case" mean in this lesson?**
+**Q1. Why do I need to run the eval at all, when I already have the dataset?**
+The dataset holds only sample requests, not the model's replies. You can't tell whether a prompt works until you see real replies, and a grader can't score anything until every request has one. Running it with code also sends every request the same way, so two prompt versions can be compared fairly.
+
+**Q2. What does "test case" mean in this lesson?**
 A test case is one item from `dataset.json`, such as `{"task": "Write a regex that matches an EC2 instance ID"}`. The eval runs each test case through the prompt once.
 
-**Q2. What does each of the three functions do?**
+**Q3. What does each of the three functions do?**
 `run_prompt` puts one task into the prompt and returns the model's reply. `run_test_case` calls `run_prompt`, adds a score, and returns one result. `run_eval` runs `run_test_case` for every test case and returns the list of results.
 
-**Q3. Why does `run_prompt` start a new, empty message list for each test case?**
+**Q4. Why does `run_prompt` start a new, empty message list for each test case?**
 So each task is answered on its own. If the list kept growing, the model would see earlier tasks and answers, and a reply could depend on the order of the dataset.
 
-**Q4. Why is every score 10?**
+**Q5. Why is every score 10?**
 `score = 10` is a placeholder that stands in until a real grader exists. It lets you test the rest of the pipeline first. Lessons 13 and 14 replace it.
 
-**Q5. Why does the model's reply include explanations when the goal is code only?**
+**Q6. Why does the model's reply include explanations when the goal is code only?**
 Prompt v1 is only "Please solve the following task:" plus the task. It has no rule about format, so the model explains its code. A later prompt version adds that rule, and the eval shows whether it helped.
 
-**Q6. Why does the first run take about 30 seconds?**
+**Q7. Why does the first run take about 30 seconds?**
 The loop sends one request and waits for the reply before sending the next. The total time is the sum of every reply time. Sending several requests at once makes it much faster.
 
-**Q7. Why does each result keep the test case next to the reply?**
+**Q8. Why does each result keep the test case next to the reply?**
 So you can see which task produced which answer. When a score is low, you need to know the task to understand the failure.
 
-**Q8. What does `json.dumps(results, indent=2)` do?**
+**Q9. What does `json.dumps(results, indent=2)` do?**
 It turns the Python list of results into JSON text, with each field on its own line, indented by 2 spaces. That makes a long result list easy to read.
 
-**Q9. What happens if one request fails halfway through the loop?**
+**Q10. What happens if one request fails halfway through the loop?**
 In the course's code, Python stops and every result so far is lost. Catch the error for each test case and save results as they arrive, so one failure costs only one case.
 
-**Q10. (Exam angle) An eval of 2,000 test cases takes hours, because the code sends one request at a time. What do you recommend?**
+**Q11. (Exam angle) An eval of 2,000 test cases takes hours, because the code sends one request at a time. What do you recommend?**
 Send several requests at once, staying under the account's rate limit. If the results can wait, use the Message Batches API, which costs half the normal price and usually finishes within an hour. (Solution Design & Architecture)
 
-**Q11. (Exam angle) An eval run crashes at test case 180 of 200 and loses all earlier answers. How do you make it reliable?**
+**Q12. (Exam angle) An eval run crashes at test case 180 of 200 and loses all earlier answers. How do you make it reliable?**
 Catch errors for each test case, rely on the SDK's automatic retries for rate-limit and overload errors, and write each result to a file as it arrives. (Solution Design & Architecture)
 
-**Q12. (Exam angle) The eval script has its own copy of the prompt, and the production app has since changed its prompt. What is the risk?**
+**Q13. (Exam angle) The eval script has its own copy of the prompt, and the production app has since changed its prompt. What is the risk?**
 The eval scores a prompt that nobody ships, so a good score proves nothing. The eval should call the same function and prompt the app uses. (Claude Models, Prompting & Context Engineering)
 
 ---

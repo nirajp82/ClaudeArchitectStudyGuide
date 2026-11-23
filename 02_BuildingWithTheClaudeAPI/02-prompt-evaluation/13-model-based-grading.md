@@ -82,7 +82,7 @@ Write down the qualities you will score (the course calls them *evaluation crite
 1. `grade_by_model(test_case, output)` builds a grading prompt that holds the task and the answer.
 2. The prompt asks for **strengths, weaknesses, reasoning, and a score**, in that order. Without the reasons first, models tend to give a middling 6 to almost everything.
 3. Your code gets the grade back as structured data: `client.messages.parse(..., output_format=Grade)`, where `Grade` is a Pydantic class with those four fields.
-4. `run_test_case` stores the `score` and `reasoning` in each result, and `run_eval` prints the average with `statistics.mean`.
+4. `get_answer_and_grade` stores the `score` and `reasoning` in each result, and `get_all_answers_and_grades` prints the average with `statistics.mean`.
 
 **Warning:** The course gets the grader's JSON with prefill and a stop sequence. Claude Haiku 5.5 and other newer models reject prefill with a 400 error, so use structured outputs.
 
@@ -107,7 +107,7 @@ Write down the qualities you will score (the course calls them *evaluation crite
 | Player | Where it lives | What it does in this lesson | Example |
 |---|---|---|---|
 | **You** | At your laptop | Choose the criteria and read the scores | You decide "task following" needs a model grader |
-| **Your notebook code** | A Jupyter notebook on your laptop | Runs the eval and calls the grader for each answer | `run_test_case` calls `grade_by_model` |
+| **Your notebook code** | A Jupyter notebook on your laptop | Runs the eval and calls the grader for each answer | `get_answer_and_grade` calls `grade_by_model` |
 | **The model being tested** | Anthropic's servers | Answers each AWS task with the prompt you are testing | Replies with a regex plus an explanation |
 | **The grading model** | Anthropic's servers | A separate request. It reads the task and the answer and returns a score. | `{"score": 7, "reasoning": "Correct regex, but adds explanation..."}` |
 
@@ -222,11 +222,13 @@ Line by line:
 
 ### 4. Plug the grader into the eval and average the scores
 
-Replace the placeholder `score = 10` in `run_test_case`:
+These notes use clearer function names than the course: `get_answer` is the course's `run_prompt`, `get_answer_and_grade` is `run_test_case`, and `get_all_answers_and_grades` is `run_eval` ([why](12-running-the-eval.md#how-this-differs-from-get_answer)).
+
+Replace the placeholder `score = 10` in `get_answer_and_grade`:
 
 ```python
-def run_test_case(test_case):
-    output = run_prompt(test_case)
+def get_answer_and_grade(test_case):
+    output = get_answer(test_case)
 
     model_grade = grade_by_model(test_case, output)
     score = model_grade["score"]
@@ -242,16 +244,16 @@ def run_test_case(test_case):
 
 Keeping `reasoning` lets you read why an answer lost points. The course drops `strengths` and `weaknesses` to keep the result short, but you can keep them too.
 
-Then print the average at the end of `run_eval`:
+Then print the average at the end of `get_all_answers_and_grades`:
 
 ```python
 from statistics import mean   # mean() adds the numbers and divides by how many there are
 
-def run_eval(dataset):
+def get_all_answers_and_grades(dataset):
     results = []
 
     for test_case in dataset:
-        result = run_test_case(test_case)
+        result = get_answer_and_grade(test_case)
         results.append(result)
 
     average_score = mean([result["score"] for result in results])
@@ -284,7 +286,7 @@ return json.loads(eval_text)                          # turn the JSON text into 
 - A **prefill** is a last assistant message that the model continues from. Starting with ` ```json ` makes the model write JSON next.
 - The **stop sequence** ` ``` ` ends the reply where the JSON ends, so only the JSON is left.
 - It works only on older models such as `claude-haiku-4-5`. Claude Haiku 5.5 and other newer models reject a prefilled last assistant message with a 400 error.
-- Even where it works, nothing guarantees the fields. A missing `score` crashes `run_test_case` with a `KeyError`. Structured outputs remove both problems.
+- Even where it works, nothing guarantees the fields. A missing `score` crashes `get_answer_and_grade` with a `KeyError`. Structured outputs remove both problems.
 
 ---
 
@@ -321,7 +323,7 @@ return json.loads(eval_text)                          # turn the JSON text into 
 - Write the evaluation criteria first, then pick a grader for each one: code for rules, a model for judgment, people to check.
 - Ask the model grader for strengths, weaknesses, and reasoning before the score, or it drifts toward a middling 6.
 - Get the grade back with structured outputs. The course's prefill trick fails on newer models.
-- `run_eval` averages the scores with `mean()`, giving one number to improve.
+- `get_all_answers_and_grades` averages the scores with `mean()`, giving one number to improve.
 
 ---
 
@@ -364,7 +366,7 @@ On current models, use structured outputs: `client.messages.parse(..., output_fo
 **Q9. Why does the average score change when I run the same eval twice?**
 The grader is a model, and it can score the same answer slightly differently each time. A clear rubric and a fixed grader setup make the scores steadier.
 
-**Q10. What does `mean()` do in `run_eval`?**
+**Q10. What does `mean()` do in `get_all_answers_and_grades`?**
 `mean()` from Python's `statistics` module adds up the scores and divides by how many there are. Scores of 8, 7, and 6 give 7.
 
 **Q11. (Exam angle) A model grader gives almost every answer a 6. What do you change?**
